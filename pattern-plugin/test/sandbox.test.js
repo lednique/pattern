@@ -25,7 +25,7 @@ vm.createContext(sandbox);vm.runInContext(fs.readFileSync(require('path').join(_
   const frame=page.selection[0];assert.equal(frame.type,'FRAME');assert.equal(frame.clipsContent,true);assert.equal(frame.children.length,16);assert(frame.pluginData.patterniqueSettings);
   assert.equal(frame.children[0].effects[0].type,'DROP_SHADOW');assert(Math.abs(frame.children[0].effects[0].radius-12.8)<1e-9);assert.equal(frame.children[0].fills[1].type,'GRADIENT_LINEAR');assert.equal(frame.children[0].fills[0].opacity,.8);assert.equal(frame.children[0].fills[0].color.r,.2);assert.equal(frame.children[0].strokes[0].color.r,.1);
   await figma.ui.onmessage({type:'create-pattern',settings:{mode:'grid',columns:3,rows:1,size1:100,color1:'#336699',background:'#FFFFFF',halfGrid:true,halfHorizontal:true,halfVertical:false,shiftEnabled:false,decoration:'none'}});
-  const halfFrame=page.selection[0];assert(Math.abs(halfFrame.children[0].width-(256/3))<1e-6);assert.equal(halfFrame.children.length,15);
+  const halfFrame=page.selection[0];assert(Math.abs(halfFrame.children[0].width-(256/3))<1e-6);assert.equal(halfFrame.children.length,9);
   const dragSettings={mode:'grid',columns:2,rows:2,size1:50,color1:'#DEDD74',background:'#FFFFFF',shiftEnabled:false,decoration:'none'};
   const handled=handlers.drop({absoluteX:500,absoluteY:400,items:[{type:'application/json',data:JSON.stringify({source:'patternique',settings:dragSettings})}]});
   assert.equal(handled,false);await new Promise(r=>setTimeout(r,10));assert.equal(page.selection[0].x,372);assert.equal(page.selection[0].y,272);

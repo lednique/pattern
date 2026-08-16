@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 const assert=require('assert');const fs=require('fs');const path=require('path');
-const source=fs.readFileSync(path.join(__dirname,'..','src','ui-template.html'),'utf8');const built=fs.readFileSync(path.join(__dirname,'..','ui.html'),'utf8');let passed=0;
+const source=fs.readFileSync(path.join(__dirname,'..','src','ui-template.html'),'utf8');const built=fs.readFileSync(path.join(__dirname,'..','ui.html'),'utf8');const sliderSvg=fs.readFileSync(path.join(__dirname,'..','src','assets','slider-thumb.svg'),'utf8');let passed=0;
 function test(value,name){assert(value,name);passed++;console.log('  ✓ '+name);}
 test(source.includes('.previewDock{position:sticky;top:5px'),'preview is sticky with a 5 px top offset');
 test(source.includes("previewProgress=Math.max(0,Math.min(1,window.scrollY/180))")&&!source.includes("classList.toggle('compact'"),'preview geometry follows scroll continuously without snapping');
@@ -31,8 +31,11 @@ test(source.includes('class="objectGrid"')&&source.includes('objectPanel inactiv
 test(!source.includes('selectionTitle')&&!source.includes('selectionMeta')&&!source.includes('selectionIcon'),'selection labels, dimensions, and icon are removed from preview');
 test(source.includes('viewBox="0 0 270 154"')&&source.includes('font-size:24px')&&source.includes('font-weight:500'),'provided header figure and black 24 px medium title are used');
 test(source.includes('font-style:normal')&&source.includes('data-checker="1"'),'checker layout digits are not italic');
-test(source.includes('0 3px 6px rgba(0,0,0,.2),1px 0 2px')&&source.includes('inset 0 2px 6px'),'active modes include the requested outer and inner shadows');
-test(source.includes('width:22px;height:14px')&&source.includes('border-radius:7px')&&source.includes('rgba(255,255,255,.6)'),'slider thumb matches the requested pill shape, shadows, and gradient');
+test(source.includes('modeGlider')&&source.includes('transition:left 150ms')&&source.includes('requestAnimationFrame(updateModeGlider)'),'mode selection glider flies between buttons in 150 ms');
+test(source.includes('.modeSegment>button:hover .modeText')&&source.includes('transform:scale(1.08) translateY(-1px)'),'mode text uses the purchase-site hover animation');
+test(source.includes('.activateBtn:hover:not(:disabled),.buyBtn:hover:not(:disabled)')&&source.includes('.activateBtn:after,.buyBtn:after'),'license buttons use hover motion and active-mode shadow layers');
+test(source.includes('0 3px 6px rgba(0,0,0,.2),1px 0 2px')&&source.includes('inset 0 2px 6px')&&source.includes('mix-blend-mode:lighten'),'active modes use requested shadows with lighten white highlights');
+test(source.includes('width:34px;height:26px')&&source.includes('__SLIDER_THUMB_B64__')&&sliderSvg.includes('width="22" height="14" rx="7"')&&sliderSvg.includes('mode="lighten"'),'slider thumb embeds the requested 22 × 14 pill and lighten-blended white shadows');
 test(source.includes('var state={mode:\'grid\',checkerLayout:1,decoration:\'star\'}')&&source.includes('id="shiftEnabled" type="checkbox" checked')&&source.includes('id="shiftX" type="range" min="-100" max="100" value="50"')&&source.includes('id="rotationStep" type="range" min="-180" max="180" step="15" value="-15"')&&source.includes('id="size1" type="range" min="10" max="150" value="70"')&&source.includes('id="size2" type="range" min="10" max="150" value="40"')&&source.includes('id="rotation2" type="range" min="-180" max="180" step="5" value="180"')&&source.includes('id="decorationSize" type="range" min="4" max="100" value="25"'),'all requested first-open defaults are present');
 test(source.includes('class="hidden" id="decorationHost"')&&!source.includes('id="decorationCard"')&&source.includes("state.mode==='checker'"),'inactive intersection card is removed and controls only appear in checker mode');
 test(source.includes('--accent:#DEDD74')&&built.includes('data:image/png;base64,')&&!built.includes('__LEDNIQUE_B64__'),'new theme and footer branding are built');

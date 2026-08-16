@@ -62,8 +62,8 @@ var PatternCore = (function () {
       shiftY: shiftY,
       halfGrid: halfGrid,
       halfEligible: halfEligible,
-      halfHorizontal: halfGrid && source.halfHorizontal !== false && source.halfHorizontal !== 'false',
-      halfVertical: halfGrid && source.halfVertical !== false && source.halfVertical !== 'false',
+      halfHorizontal: halfGrid && columns >= 3 && source.halfHorizontal !== false && source.halfHorizontal !== 'false',
+      halfVertical: halfGrid && rows >= 3 && source.halfVertical !== false && source.halfVertical !== 'false',
       decoration: decoration,
       decorationChoice: decorationChoice,
       decorationColor: validHex(source.decorationColor, '#5E5D22'),
@@ -104,10 +104,11 @@ var PatternCore = (function () {
     var x = (column + 0.5) * settings.cellWidth;
     var y = (row + 0.5) * settings.cellHeight;
 
-    // Half-size grid recomposes the existing repeats instead of adding clones:
-    // every second row/column is moved into the midpoint of the neighboring cells.
-    if (settings.halfGrid && settings.halfHorizontal && mod(row, 2) === 1) x += settings.cellWidth * 0.5;
-    if (settings.halfGrid && settings.halfVertical && mod(column, 2) === 1) y += settings.cellHeight * 0.5;
+    // Half-size grid behaves like negative padding for every container. The
+    // complete existing grid is compressed to 50% around the tile center;
+    // figure dimensions stay controlled by the regular cell and may overlap.
+    if (settings.halfGrid && settings.halfHorizontal) x = TILE_SIZE / 2 + (x - TILE_SIZE / 2) * 0.5;
+    if (settings.halfGrid && settings.halfVertical) y = TILE_SIZE / 2 + (y - TILE_SIZE / 2) * 0.5;
     if (settings.shiftEnabled && mod(row, 2) === 1) x += settings.cellWidth * settings.shiftX / 100;
     if (settings.shiftEnabled && mod(column, 2) === 1) y += settings.cellHeight * settings.shiftY / 100;
 
@@ -126,9 +127,13 @@ var PatternCore = (function () {
   function buildPlacements(input, objectCount) {
     var settings = normalizeSettings(input);
     var overscan = settings.shiftEnabled ? 2 : 1;
+    var rowStart = settings.halfGrid && settings.halfVertical ? 0 : -overscan;
+    var rowEnd = settings.halfGrid && settings.halfVertical ? settings.rows : settings.rows + overscan;
+    var columnStart = settings.halfGrid && settings.halfHorizontal ? 0 : -overscan;
+    var columnEnd = settings.halfGrid && settings.halfHorizontal ? settings.columns : settings.columns + overscan;
     var placements = [];
-    for (var row = -overscan; row < settings.rows + overscan; row++) {
-      for (var column = -overscan; column < settings.columns + overscan; column++) {
+    for (var row = rowStart; row < rowEnd; row++) {
+      for (var column = columnStart; column < columnEnd; column++) {
         var item = placementAt(settings, row, column, objectCount || 1);
         if (item.visible) placements.push(item);
       }

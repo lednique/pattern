@@ -3,12 +3,14 @@ set -euo pipefail
 cd "$(dirname "$0")"
 python3 - <<'PY'
 from pathlib import Path
+import base64
 root = Path('.')
 core = (root / 'src/pattern-core.js').read_text(encoding='utf-8')
 code = (root / 'src/code-template.js').read_text(encoding='utf-8')
 ui = (root / 'src/ui-template.html').read_text(encoding='utf-8')
 led = (root / 'src/assets/LEDNIQUE.b64').read_text(encoding='utf-8').strip()
 mont = (root / 'src/assets/mont.css').read_text(encoding='utf-8')
+slider_thumb = base64.b64encode((root / 'src/assets/slider-thumb.svg').read_bytes()).decode('ascii')
 for target, placeholder, value in [
     ('code.js', '/*__PATTERN_CORE__*/', core),
 ]:
@@ -19,6 +21,7 @@ for target, placeholder, value in [
 for placeholder, value in [
     ('/*__PATTERN_CORE__*/', core),
     ('/*__MONT_CSS__*/', mont),
+    ('__SLIDER_THUMB_B64__', slider_thumb),
     ('__LEDNIQUE_B64__', led),
 ]:
     if placeholder not in ui:
