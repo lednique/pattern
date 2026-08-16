@@ -47,8 +47,8 @@ var PatternCore = (function () {
       rows: rows,
       cellWidth: TILE_SIZE / columns,
       cellHeight: TILE_SIZE / rows,
-      size1: clamp(source.size1, 10, 180),
-      size2: clamp(source.size2, 10, 180),
+      size1: clamp(source.size1, 10, 150),
+      size2: clamp(source.size2, 10, 150),
       rotation1: clamp(source.rotation1, -180, 180),
       rotation2: clamp(source.rotation2, -180, 180),
       rotationStep: clamp(source.rotationStep, -180, 180),
@@ -149,8 +149,13 @@ var PatternCore = (function () {
   function fitDimensions(sourceWidth, sourceHeight, settings, percent) {
     var safeWidth = Math.max(0.001, Number(sourceWidth) || 1);
     var safeHeight = Math.max(0.001, Number(sourceHeight) || 1);
-    var maxWidth = settings.cellWidth * percent / 100;
-    var maxHeight = settings.cellHeight * percent / 100;
+    // In half-size mode each inserted repeat receives a container that is
+    // exactly half of the original cell on the enabled axis. Preview and Figma
+    // export both use this function, so their visual scale stays identical.
+    var containerWidth = settings.cellWidth * (settings.halfGrid && settings.halfHorizontal ? 0.5 : 1);
+    var containerHeight = settings.cellHeight * (settings.halfGrid && settings.halfVertical ? 0.5 : 1);
+    var maxWidth = containerWidth * percent / 100;
+    var maxHeight = containerHeight * percent / 100;
     var factor = Math.min(maxWidth / safeWidth, maxHeight / safeHeight);
     return {
       width: Math.max(0.5, safeWidth * factor),

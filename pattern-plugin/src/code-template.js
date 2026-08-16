@@ -50,6 +50,22 @@ function representativeColor(node) {
   return null;
 }
 
+function previewMetrics(node) {
+  try {
+    var box = node.absoluteBoundingBox;
+    var render = node.absoluteRenderBounds;
+    if (box && render) {
+      return {
+        renderWidth: render.width,
+        renderHeight: render.height,
+        renderOffsetX: (render.x + render.width / 2) - (box.x + box.width / 2),
+        renderOffsetY: (render.y + render.height / 2) - (box.y + box.height / 2)
+      };
+    }
+  } catch (error) { /* render bounds are unavailable for some node types */ }
+  return { renderWidth: node.width, renderHeight: node.height, renderOffsetX: 0, renderOffsetY: 0 };
+}
+
 async function exportThumb(node) {
   try {
     return await node.exportAsync({
@@ -83,7 +99,14 @@ async function sendSelection() {
   figma.ui.postMessage({
     type: 'selection', valid: true,
     items: selected.map(function (node) {
-      return { id: node.id, name: node.name, type: node.type, width: node.width, height: node.height, color: representativeColor(node) };
+      var metrics = previewMetrics(node);
+      return {
+        id: node.id, name: node.name, type: node.type,
+        width: node.width, height: node.height,
+        renderWidth: metrics.renderWidth, renderHeight: metrics.renderHeight,
+        renderOffsetX: metrics.renderOffsetX, renderOffsetY: metrics.renderOffsetY,
+        color: representativeColor(node)
+      };
     })
   });
 

@@ -3,7 +3,7 @@
 const fs=require('fs');const vm=require('vm');const assert=require('assert');
 let nextId=0;const messages=[];const pageChildren=[];
 function node(type,name,width,height){return{id:'n'+(++nextId),type,name:name||type,width:width||10,height:height||10,x:0,y:0,fills:[{type:'SOLID',color:{r:0,g:0,b:0}}],strokes:[],children:type==='FRAME'?[]:undefined,absoluteTransform:[[1,0,0],[0,1,0]],effects:[],clone(){const cloned=node(this.type,this.name,this.width,this.height);cloned.fills=JSON.parse(JSON.stringify(this.fills));cloned.strokes=JSON.parse(JSON.stringify(this.strokes));cloned.effects=JSON.parse(JSON.stringify(this.effects||[]));return cloned;},resize(w,h){this.width=w;this.height=h;},resizeWithoutConstraints(w,h){this.resize(w,h);},exportAsync:async()=>new Uint8Array([1,2,3]),setPluginData(k,v){this.pluginData=this.pluginData||{};this.pluginData[k]=v;},remove(){this.removed=true;},appendChild(child){this.children=this.children||[];this.children.push(child);child.parent=this;}};}
-const source=node('VECTOR','Leaf',40,20);source.absoluteTransform=[[1,0,100],[0,1,200]];source.fills=[{type:'SOLID',color:{r:.2,g:.4,b:.6},opacity:.8},{type:'GRADIENT_LINEAR',gradientStops:[]}];source.strokes=[{type:'SOLID',color:{r:.1,g:.1,b:.1}}];source.effects=[{type:'DROP_SHADOW',radius:8,visible:true,blendMode:'NORMAL',color:{r:0,g:0,b:0,a:.3},offset:{x:0,y:3}}];
+const source=node('VECTOR','Leaf',40,20);source.absoluteTransform=[[1,0,100],[0,1,200]];source.absoluteBoundingBox={x:100,y:200,width:40,height:20};source.absoluteRenderBounds={x:95,y:192,width:50,height:34};source.fills=[{type:'SOLID',color:{r:.2,g:.4,b:.6},opacity:.8},{type:'GRADIENT_LINEAR',gradientStops:[]}];source.strokes=[{type:'SOLID',color:{r:.1,g:.1,b:.1}}];source.effects=[{type:'DROP_SHADOW',radius:8,visible:true,blendMode:'NORMAL',color:{r:0,g:0,b:0,a:.3},offset:{x:0,y:3}}];
 const page={selection:[source],children:pageChildren,loadAsync:async()=>{},appendChild(child){pageChildren.push(child);}};
 const handlers={};
 const figma={
@@ -18,12 +18,14 @@ const sandbox={figma,__html__:'',console,Uint8Array,Math,Number,String,Array,JSO
 vm.createContext(sandbox);vm.runInContext(fs.readFileSync(require('path').join(__dirname,'..','code.js'),'utf8'),sandbox);
 (async function(){
   await new Promise(r=>setTimeout(r,10));
-  assert(messages.some(m=>m.type==='selection'&&m.valid));
+  const selectionMessage=messages.find(m=>m.type==='selection'&&m.valid);assert(selectionMessage);assert.equal(selectionMessage.items[0].renderWidth,50);assert.equal(selectionMessage.items[0].renderHeight,34);assert.equal(selectionMessage.items[0].renderOffsetX,0);assert.equal(selectionMessage.items[0].renderOffsetY,-1);
   await figma.ui.onmessage({type:'create-pattern',settings:{mode:'grid',columns:2,rows:2,size1:50,color1:'#336699',background:'#FFFFFF',shiftEnabled:false,decoration:'none'}});
   const done=messages.find(m=>m.type==='pattern-created');assert(done,'pattern-created message');
   assert.equal(done.result.width,256);assert.equal(done.result.height,256);
   const frame=page.selection[0];assert.equal(frame.type,'FRAME');assert.equal(frame.clipsContent,true);assert.equal(frame.children.length,16);assert(frame.pluginData.patterniqueSettings);
   assert.equal(frame.children[0].effects[0].type,'DROP_SHADOW');assert.equal(frame.children[0].fills[1].type,'GRADIENT_LINEAR');assert.equal(frame.children[0].fills[0].opacity,.8);assert.equal(frame.children[0].fills[0].color.r,.2);assert.equal(frame.children[0].strokes[0].color.r,.1);
+  await figma.ui.onmessage({type:'create-pattern',settings:{mode:'grid',columns:3,rows:1,size1:100,color1:'#336699',background:'#FFFFFF',halfGrid:true,halfHorizontal:true,halfVertical:false,shiftEnabled:false,decoration:'none'}});
+  const halfFrame=page.selection[0];assert(Math.abs(halfFrame.children[0].width-(256/3/2))<1e-6);assert.equal(halfFrame.children.length,30);
   const dragSettings={mode:'grid',columns:2,rows:2,size1:50,color1:'#DEDD74',background:'#FFFFFF',shiftEnabled:false,decoration:'none'};
   const handled=handlers.drop({absoluteX:500,absoluteY:400,items:[{type:'application/json',data:JSON.stringify({source:'patternique',settings:dragSettings})}]});
   assert.equal(handled,false);await new Promise(r=>setTimeout(r,10));assert.equal(page.selection[0].x,372);assert.equal(page.selection[0].y,272);
@@ -32,6 +34,7 @@ vm.createContext(sandbox);vm.runInContext(fs.readFileSync(require('path').join(_
   console.log('  ✓ overscan repeat clones are appended and clipped');
   console.log('  ✓ settings are stored in plugin data');
   console.log('  ✓ fills, strokes, opacity, and effects are preserved');
+  console.log('  ✓ half-size export uses the same half-cell container as preview');
   console.log('  ✓ drag and drop places the pattern at scene coordinates');
-  console.log('\nSandbox: 6 checks passed.');
+  console.log('\nSandbox: 7 checks passed.');
 })().catch(e=>{console.error(e.stack||e);process.exit(1);});

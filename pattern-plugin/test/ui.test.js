@@ -5,15 +5,19 @@ const source=fs.readFileSync(path.join(__dirname,'..','src','ui-template.html'),
 function test(value,name){assert(value,name);passed++;console.log('  ✓ '+name);}
 test(source.includes('.previewDock{position:sticky;top:5px'),'preview is sticky with a 5 px top offset');
 test(source.includes("previewProgress=Math.max(0,Math.min(1,window.scrollY/180))")&&!source.includes("classList.toggle('compact'"),'preview geometry follows scroll continuously without snapping');
-test(source.includes('height:100px;background:linear-gradient(180deg,rgba(222,221,116,.92)')&&source.includes("--preview-progress',previewProgress"),'compact preview gets a 100 px theme gradient behind it');
-test(source.includes('var display=256+(172-256)*previewProgress')&&source.includes('top:-100px;width:100%;height:456px'),'full preview renders the central tile at 100% scale and 100 px higher');
+test(source.includes('.topGlow{position:fixed')&&source.includes('width:100%;height:372px')&&source.includes('172px,rgba(222,221,116,0) 372px'),'full-width translucent backdrop fades for 200 px below the preview');
+test(source.includes('.page{position:relative;z-index:1')&&!source.includes('.previewDock:before'),'preview gradient stays behind all blocks and text');
+test(source.includes('.previewDock{position:sticky;top:5px;z-index:35')&&source.includes('.previewDock+.card{position:relative;z-index:16'),'sticky preview stays above repeat-mode cards');
+test(source.includes('var display=256+(172-256)*previewProgress')&&source.includes('top:-100px;width:100%;height:356px'),'full preview renders the central tile at 100% scale and 100 px higher');
 test(source.includes('.previewDock+.card')&&source.includes('margin-top:-100px'),'settings are raised 100 px over the preview continuation');
-test(source.includes("ctx.lineWidth=3")&&source.includes('radius=5+(22-5)*previewProgress'),'central tile has a 3 px border and scroll-linked corner radius');
+test(source.includes("ctx.lineWidth=3")&&source.includes("ctx.strokeStyle='#DEDD74'")&&source.includes('radius=8+(22-8)*previewProgress'),'central tile has a yellow 3 px border and 8 px starting radius');
 test(source.includes("for(var side=-2;side<=2;side++){if(side!==0)ctx.drawImage(ghost"),'side repeats are transparent theme-colored figures');
 test(source.includes("out.contentEditable='true'")&&source.includes("input.value=value"),'slider values support direct keyboard entry');
 test(!source.includes('stopImmediatePropagation')&&!source.includes('thumb/2+3'),'clicking anywhere on a slider is no longer blocked');
 test(source.includes('pluginDrop')&&source.includes("source:'patternique'"),'central preview square starts a Figma drag and drop');
-test(source.includes('-webkit-appearance:auto;appearance:auto')&&source.includes('input[type=color]'),'color controls use the standard system picker');
+test(source.includes('-webkit-appearance:auto;appearance:auto')&&source.includes('colorspace="display-p3"')&&source.includes('input.showPicker()'),'color controls explicitly open the standard platform picker');
+test(source.includes('id="size1" type="range" min="10" max="150"')&&source.includes('id="size2" type="range" min="10" max="150"'),'object size can be increased up to 150%');
+test(source.includes('item.renderWidth||item.width')&&source.includes('fitted.factor'),'preview scales rendered effects with the same factor used by Figma export');
 test(!source.includes('id="cellWidth"')&&!source.includes('id="cellHeight"'),'cell width and height inputs are removed');
 test(source.includes('id="halfGrid"')&&source.includes('id="halfHorizontal"')&&source.includes('id="halfVertical"'),'half-size grid has horizontal and vertical checkboxes');
 test(source.includes('id="shiftEnabled"')&&!source.includes('id="shiftMode"'),'alternate offset is a single both-directions checkbox');
