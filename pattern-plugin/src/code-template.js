@@ -173,9 +173,13 @@ function cloneForPattern(source, parent) {
 function resizeProportionally(node, source, settings, percent) {
   var fitted = PatternCore.fitDimensions(source.width, source.height, settings, percent);
   try {
-    node.resizeWithoutConstraints(fitted.width, fitted.height);
+    // rescale() scales strokes, corner radii and effects together with geometry;
+    // this matches the PNG preview factor instead of resizing only width/height.
+    if (typeof node.rescale === 'function') node.rescale(fitted.factor);
+    else node.resizeWithoutConstraints(fitted.width, fitted.height);
   } catch (error) {
-    try { node.resize(fitted.width, fitted.height); } catch (nested) { /* non-resizable nodes are filtered earlier */ }
+    try { node.resizeWithoutConstraints(fitted.width, fitted.height); }
+    catch (nested) { try { node.resize(fitted.width, fitted.height); } catch (ignored) { /* unsupported node */ } }
   }
   return { width: Number(node.width) || fitted.width, height: Number(node.height) || fitted.height };
 }

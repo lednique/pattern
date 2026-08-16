@@ -5,9 +5,12 @@ const source=fs.readFileSync(path.join(__dirname,'..','src','ui-template.html'),
 function test(value,name){assert(value,name);passed++;console.log('  ✓ '+name);}
 test(source.includes('.previewDock{position:sticky;top:5px'),'preview is sticky with a 5 px top offset');
 test(source.includes("previewProgress=Math.max(0,Math.min(1,window.scrollY/180))")&&!source.includes("classList.toggle('compact'"),'preview geometry follows scroll continuously without snapping');
-test(source.includes('.patternBackdrop{position:absolute;z-index:0;left:0;right:0;top:0')&&source.includes('.page{position:relative;z-index:1'),'pattern backdrop spans the plugin width and scrolls behind all interface content');
+test(source.includes('.baseGradient{position:fixed;z-index:0')&&source.includes('linear-gradient(180deg,var(--grad)'),'original theme gradient is restored behind the plugin');
+test(source.includes('.patternBackdrop{position:absolute;z-index:1;left:0;right:0;top:0')&&source.includes('.page{position:relative;z-index:2'),'pattern backdrop spans the plugin width and remains behind all interface content');
 test(source.includes('fadeStart=backdropAnchorY+256,height=Math.ceil(fadeStart+200)')&&source.includes("makeTile(settings,'#DEDD74',true)"),'transparent theme pattern fades for 200 px below the original preview');
-test(source.includes("$('patternBackdropCanvas').style.opacity=String(1-previewProgress)")&&source.includes('backdropAnchorY===null'),'backdrop pattern stays anchored and only fades while the preview transforms');
+test(source.includes("$('patternBackdropCanvas').style.opacity=String(0.5*(1-previewProgress))")&&source.includes('backdropAnchorY===null'),'anchored backdrop starts at 50% opacity and only fades while the preview transforms');
+test(source.includes('.scrollPreviewGlow')&&source.includes('opacity:var(--preview-progress)'),'a scroll-only gradient appears between the central preview and settings');
+test(source.includes('.previewStage')&&source.includes('box-shadow:none')&&source.includes('.previewHint')&&source.includes('background:transparent'),'semi-transparent shrinking wrapper around the center preview is removed');
 test(source.includes('.previewDock{position:sticky;top:5px;z-index:35')&&source.includes('.previewDock+.card{position:relative;z-index:16'),'sticky preview stays above repeat-mode cards');
 test(source.includes('var display=256+(172-256)*previewProgress')&&source.includes('top:-100px;width:100%;height:356px'),'full preview renders the central tile at 100% scale and 100 px higher');
 test(source.includes('.previewDock+.card')&&source.includes('margin-top:-100px'),'settings are raised 100 px over the preview continuation');
@@ -26,6 +29,12 @@ test(source.includes('checkerInline')&&source.includes('data-checker="1"')&&sour
 test(source.includes("$('checkerSlot').appendChild($('decorationPanel'))"),'intersection controls move into checker mode settings');
 test(source.includes('class="objectGrid"')&&source.includes('objectPanel inactive'),'object settings use two persistent columns');
 test(!source.includes('selectionTitle')&&!source.includes('selectionMeta')&&!source.includes('selectionIcon'),'selection labels, dimensions, and icon are removed from preview');
-test(source.includes('--accent:#DEDD74')&&built.includes('data:image/png;base64,')&&!built.includes('__TRACEBASE_LOGO_B64__'),'new theme and embedded TraceBase-style logo are built');
+test(source.includes('viewBox="0 0 270 154"')&&source.includes('font-size:24px')&&source.includes('font-weight:500'),'provided header figure and black 24 px medium title are used');
+test(source.includes('font-style:normal')&&source.includes('data-checker="1"'),'checker layout digits are not italic');
+test(source.includes('0 3px 6px rgba(0,0,0,.2),1px 0 2px')&&source.includes('inset 0 2px 6px'),'active modes include the requested outer and inner shadows');
+test(source.includes('width:22px;height:14px')&&source.includes('border-radius:7px')&&source.includes('rgba(255,255,255,.6)'),'slider thumb matches the requested pill shape, shadows, and gradient');
+test(source.includes('var state={mode:\'grid\',checkerLayout:1,decoration:\'star\'}')&&source.includes('id="shiftEnabled" type="checkbox" checked')&&source.includes('id="shiftX" type="range" min="-100" max="100" value="50"')&&source.includes('id="rotationStep" type="range" min="-180" max="180" step="15" value="-15"')&&source.includes('id="size1" type="range" min="10" max="150" value="70"')&&source.includes('id="size2" type="range" min="10" max="150" value="40"')&&source.includes('id="rotation2" type="range" min="-180" max="180" step="5" value="180"')&&source.includes('id="decorationSize" type="range" min="4" max="100" value="25"'),'all requested first-open defaults are present');
+test(source.includes('class="hidden" id="decorationHost"')&&!source.includes('id="decorationCard"')&&source.includes("state.mode==='checker'"),'inactive intersection card is removed and controls only appear in checker mode');
+test(source.includes('--accent:#DEDD74')&&built.includes('data:image/png;base64,')&&!built.includes('__LEDNIQUE_B64__'),'new theme and footer branding are built');
 ['en','ru','it','pt','fr','zh','ja'].forEach((code)=>test(source.includes(code+':{subtitle:'),code+' plugin localization exists'));
 console.log('\nPlugin UI: '+passed+' checks passed.');
