@@ -98,21 +98,29 @@ var PatternCore = (function () {
     };
   }
 
-  function placementAt(settings, row, column, objectCount) {
-    var x = (column + 0.5) * settings.cellWidth;
-    var y = (row + 0.5) * settings.cellHeight;
-    if (settings.shiftEnabled && mod(row, 2) === 1) x += settings.cellWidth * settings.shiftX / 100;
-    if (settings.shiftEnabled && mod(column, 2) === 1) y += settings.cellHeight * settings.shiftY / 100;
+  function placementAt(settings, row, column, objectCount, phaseX, phaseY) {
+    var horizontalPhase = Number(phaseX) || 0;
+    var verticalPhase = Number(phaseY) || 0;
+    var horizontalFactor = settings.halfGrid && settings.halfHorizontal ? 2 : 1;
+    var verticalFactor = settings.halfGrid && settings.halfVertical ? 2 : 1;
+    var virtualColumn = column * horizontalFactor + (horizontalPhase ? 1 : 0);
+    var virtualRow = row * verticalFactor + (verticalPhase ? 1 : 0);
+    var x = (column + 0.5 + horizontalPhase) * settings.cellWidth;
+    var y = (row + 0.5 + verticalPhase) * settings.cellHeight;
+    if (settings.shiftEnabled && mod(virtualRow, 2) === 1) x += settings.cellWidth * settings.shiftX / 100;
+    if (settings.shiftEnabled && mod(virtualColumn, 2) === 1) y += settings.cellHeight * settings.shiftY / 100;
 
     // Overscan copies use the style of the opposite edge, so both clipped halves
     // of a rotated or checkerboard object remain identical in adjacent tiles.
-    var styleRow = mod(row, settings.rows);
-    var styleColumn = mod(column, settings.columns);
+    var styleRow = mod(virtualRow, settings.rows * verticalFactor);
+    var styleColumn = mod(virtualColumn, settings.columns * horizontalFactor);
     var variant = variantAt(settings, styleRow, styleColumn, objectCount);
     variant.x = x;
     variant.y = y;
     variant.row = row;
     variant.column = column;
+    variant.phaseX = horizontalPhase;
+    variant.phaseY = verticalPhase;
     variant.styleRow = styleRow;
     variant.styleColumn = styleColumn;
     return variant;
@@ -121,11 +129,18 @@ var PatternCore = (function () {
   function buildPlacements(input, objectCount) {
     var settings = normalizeSettings(input);
     var overscan = settings.shiftEnabled ? 2 : 1;
+    var horizontalPhases = settings.halfGrid && settings.halfHorizontal ? [0, 0.5] : [0];
+    var verticalPhases = settings.halfGrid && settings.halfVertical ? [0, 0.5] : [0];
     var placements = [];
     for (var row = -overscan; row < settings.rows + overscan; row++) {
       for (var column = -overscan; column < settings.columns + overscan; column++) {
-        var item = placementAt(settings, row, column, objectCount || 1);
-        if (item.visible) placements.push(item);
+        for (var verticalIndex = 0; verticalIndex < verticalPhases.length; verticalIndex++) {
+          for (var horizontalIndex = 0; horizontalIndex < horizontalPhases.length; horizontalIndex++) {
+            var item = placementAt(settings, row, column, objectCount || 1,
+              horizontalPhases[horizontalIndex], verticalPhases[verticalIndex]);
+            if (item.visible) placements.push(item);
+          }
+        }
       }
     }
     return { settings: settings, placements: placements };
@@ -134,9 +149,8 @@ var PatternCore = (function () {
   function fitDimensions(sourceWidth, sourceHeight, settings, percent) {
     var safeWidth = Math.max(0.001, Number(sourceWidth) || 1);
     var safeHeight = Math.max(0.001, Number(sourceHeight) || 1);
-    var effectivePercent = settings.halfGrid ? Math.min(Number(percent) || 100, 100) : percent;
-    var maxWidth = settings.cellWidth * (settings.halfHorizontal ? 2 / 3 : 1) * effectivePercent / 100;
-    var maxHeight = settings.cellHeight * (settings.halfVertical ? 2 / 3 : 1) * effectivePercent / 100;
+    var maxWidth = settings.cellWidth * percent / 100;
+    var maxHeight = settings.cellHeight * percent / 100;
     var factor = Math.min(maxWidth / safeWidth, maxHeight / safeHeight);
     return {
       width: Math.max(0.5, safeWidth * factor),
