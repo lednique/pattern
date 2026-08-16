@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#050708">
+<meta name="description" content="Patternique — плагин Figma для создания бесшовных узоров. Лицензия на год 690 ₽, бессрочная 1 790 ₽.">
+<title>Patternique — бесшовные узоры в Figma</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --accent:#DEDD74; --accent2:#EFEEA2; --pink:#A9A84C; --bg:#050708; --card:#111415; --text:#f4f7f8; --muted:#89959b; --line:rgba(255,255,255,.1); --ok:#37d98a; --err:#ff6c78; --font:Montserrat,system-ui,sans-serif; }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { margin:0; min-height:100vh; color:var(--text); background:var(--bg); font:14px/1.55 var(--font); -webkit-font-smoothing:antialiased; overflow-x:hidden; }
+  button,input { font:inherit; }
+  a { color:inherit; }
+  .glow { position:fixed; z-index:0; inset:0 0 auto; height:520px; background:radial-gradient(circle at 50% -20%,rgba(222,221,116,.55),rgba(222,221,116,.14) 37%,transparent 68%); pointer-events:none; }
+  .noise { position:fixed; z-index:0; inset:0; opacity:.025; pointer-events:none; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 140 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  .wrap { width:min(880px,calc(100% - 32px)); margin:0 auto; position:relative; z-index:1; }
+  header { height:92px; display:flex; align-items:center; gap:12px; }
+  .logoMark { width:42px; height:42px; flex:none; filter:drop-shadow(0 6px 16px rgba(222,221,116,.3)); }
+  .brand { font-size:19px; font-weight:650; letter-spacing:.02em; }
+  .productTag { margin-left:8px; color:rgba(255,255,255,.45); font-size:10px; text-transform:uppercase; letter-spacing:.14em; }
+  .langWrap { margin-left:auto; position:relative; }
+  .lang { display:flex; align-items:center; gap:5px; min-width:64px; height:31px; padding:0 9px; border:0; border-radius:999px; color:#fff; background:rgba(255,255,255,.08); cursor:pointer; font-weight:800; box-shadow:inset 0 1px rgba(255,255,255,.2); }
+  .langMenu { position:absolute; z-index:30; top:37px; right:0; width:190px; padding:5px; border:1px solid rgba(255,255,255,.1); border-radius:15px; background:#151817; box-shadow:0 14px 34px rgba(0,0,0,.45); }
+  .langMenu.hidden { display:none; }
+  .langMenu button { display:flex; align-items:center; gap:8px; width:100%; padding:7px 9px; border:0; border-radius:9px; background:transparent; color:#fff; cursor:pointer; text-align:left; font-size:11px; }
+  .langMenu button:hover,.langMenu button.active { background:rgba(222,221,116,.14); }
+  .hero { display:grid; grid-template-columns:1.1fr .9fr; gap:46px; align-items:center; padding:54px 0 58px; }
+  .eyebrow { display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; color:#F4F3AE; background:rgba(222,221,116,.12); border:1px solid rgba(222,221,116,.22); text-transform:uppercase; letter-spacing:.11em; font-size:10px; font-weight:700; }
+  .eyebrow:before { content:''; width:6px; height:6px; border-radius:50%; background:var(--accent2); box-shadow:0 0 12px var(--accent2); }
+  h1 { margin:18px 0 14px; font-size:clamp(36px,6vw,61px); line-height:.99; letter-spacing:-.055em; font-weight:550; }
+  h1 em { color:var(--accent2); font-style:normal; }
+  .lead { max-width:520px; color:#b5c0c5; font-size:15px; margin:0 0 23px; }
+  .heroPrice { display:flex; gap:14px; flex-wrap:wrap; }
+  .heroPrice span { color:var(--muted); font-size:12px; }
+  .heroPrice b { color:#fff; font-size:14px; }
+  .patternDemo { aspect-ratio:1; border-radius:38px; position:relative; overflow:hidden; background:#eaf6f8; box-shadow:0 22px 80px rgba(0,0,0,.45),inset 0 2px 2px rgba(255,255,255,.9); transform:rotate(2deg); }
+  .patternGrid { position:absolute; inset:-16%; display:grid; grid-template-columns:repeat(5,1fr); grid-template-rows:repeat(5,1fr); transform:rotate(-8deg); }
+  .shape { display:grid; place-items:center; position:relative; }
+  .shape:before,.shape:after { content:''; position:absolute; width:38%; height:72%; border-radius:999px; background:var(--accent); }
+  .shape:after { transform:rotate(90deg); }
+  .shape:nth-child(even):before,.shape:nth-child(even):after { background:var(--pink); width:24%; height:56%; }
+  .shape:nth-child(3n) { transform:rotate(45deg); }
+  .demoBadge { position:absolute; left:20px; bottom:20px; right:20px; display:flex; align-items:center; justify-content:space-between; padding:13px 16px; border-radius:999px; color:#12222a; background:rgba(255,255,255,.8); backdrop-filter:blur(10px); box-shadow:0 8px 22px rgba(0,0,0,.12); font-size:11px; font-weight:700; }
+  .demoBadge i { width:9px; height:9px; border-radius:50%; background:var(--ok); box-shadow:0 0 0 4px rgba(55,217,138,.16); }
+  .features { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:58px; }
+  .feature { background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.07); border-radius:26px; padding:18px; }
+  .featureIcon { width:35px; height:35px; display:grid; place-items:center; border-radius:12px; background:rgba(222,221,116,.13); color:var(--accent2); font-size:18px; }
+  .feature h3 { font-size:13px; margin:12px 0 4px; }
+  .feature p { color:var(--muted); font-size:11.5px; margin:0; }
+  .checkout { padding:32px; border-radius:38px; background:rgba(17,20,21,.96); border:1px solid rgba(255,255,255,.08); box-shadow:0 26px 80px rgba(0,0,0,.34),inset 0 1px rgba(255,255,255,.06); }
+  .checkoutHead { display:flex; align-items:flex-end; justify-content:space-between; gap:15px; margin-bottom:22px; }
+  .checkout h2 { margin:0; font-size:25px; font-weight:550; letter-spacing:-.025em; }
+  .checkoutHead p { margin:3px 0 0; color:var(--muted); font-size:12px; }
+  .secure { color:#DEDD74; font-size:10px; font-weight:700; letter-spacing:.06em; white-space:nowrap; }
+  .plans { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .plan { min-height:165px; padding:20px; border:1px solid var(--line); border-radius:28px; color:var(--text); background:rgba(255,255,255,.025); text-align:left; cursor:pointer; position:relative; overflow:hidden; transition:.18s ease; }
+  .plan:hover { transform:translateY(-2px); border-color:rgba(222,221,116,.35); }
+  .plan.selected { border-color:rgba(222,221,116,.62); background:linear-gradient(145deg,rgba(222,221,116,.17),rgba(222,221,116,.05)); box-shadow:0 12px 35px rgba(222,221,116,.1),inset 0 1px rgba(255,255,255,.08); }
+  .planTop { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .planName { font-size:14px; font-weight:750; }
+  .check { width:19px; height:19px; border-radius:50%; border:1px solid rgba(255,255,255,.22); display:grid; place-items:center; color:transparent; font-size:10px; }
+  .selected .check { background:var(--accent); border-color:var(--accent); color:#35351f; }
+  .price { margin:13px 0 7px; color:var(--accent2); font-size:30px; line-height:1; font-weight:500; letter-spacing:-.04em; }
+  .price small { color:#aab5ba; font-size:15px; font-weight:650; }
+  .planDesc { color:var(--muted); font-size:11px; }
+  .popular { position:absolute; top:0; right:25px; padding:4px 9px; border-radius:0 0 9px 9px; background:var(--pink); font-size:8.5px; text-transform:uppercase; letter-spacing:.08em; font-weight:800; }
+  .fullAccess { margin:14px 2px 19px; display:flex; flex-wrap:wrap; gap:8px 18px; color:#b8c3c8; font-size:11px; }
+  .fullAccess span:before { content:'✓'; margin-right:6px; color:var(--ok); font-weight:800; }
+  .fields { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .field label { display:block; margin:0 0 6px 7px; color:rgba(255,255,255,.55); text-transform:uppercase; letter-spacing:.08em; font-size:9px; font-weight:700; }
+  .field input { width:100%; height:46px; padding:0 18px; border:1px solid transparent; outline:0; border-radius:999px; color:#fff; background:rgba(255,255,255,.055); }
+  .field input:focus { border-color:rgba(222,221,116,.55); background:rgba(255,255,255,.075); }
+  .field input::placeholder { color:#596268; }
+  .couponBox { display:flex; gap:7px; }
+  .couponBox input { min-width:0; text-transform:uppercase; }
+  .apply { flex:none; border:0; border-radius:999px; padding:0 17px; color:#fff; background:rgba(255,255,255,.11); cursor:pointer; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; }
+  .couponMsg { min-height:17px; margin:5px 8px 0; color:var(--ok); font-size:10px; }
+  .pay { width:100%; margin-top:7px; height:50px; border:0; border-radius:999px; color:#282c2e; cursor:pointer; background:linear-gradient(90deg,#838383,#dedede,#fff,#c5c5c5,#838383); background-size:200%; font-weight:800; }
+  .pay:hover:not(:disabled) { animation:silver 1.8s linear infinite; }
+  .pay:disabled { color:#626a6d; background:#252a2c; cursor:not-allowed; }
+  @keyframes silver { to { background-position:200% 0; } }
+  .message { min-height:19px; margin-top:7px; text-align:center; color:var(--err); font-size:11px; }
+  .agreement { margin:6px auto 0; max-width:590px; text-align:center; color:#626e73; font-size:9.5px; }
+  .agreement a { text-decoration:underline; text-underline-offset:2px; }
+  .steps { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:22px 0 58px; }
+  .step { padding:15px 18px; border-radius:23px; border:1px solid rgba(255,255,255,.07); color:var(--muted); font-size:10.5px; }
+  .step b { display:block; margin-bottom:3px; color:#fff; font-size:11px; }
+  .step b span { color:var(--accent2); margin-right:5px; }
+  footer { min-height:110px; display:flex; align-items:center; gap:18px; border-top:1px solid rgba(255,255,255,.07); color:#626d72; font-size:10px; }
+  footer img { height:26px; opacity:.55; }
+  footer nav { margin-left:auto; display:flex; gap:15px; }
+  @media(max-width:720px) {
+    .hero { grid-template-columns:1fr; padding-top:24px; gap:28px; }
+    .patternDemo { width:min(400px,100%); justify-self:center; }
+    .features { grid-template-columns:1fr; }
+    .plans,.fields { grid-template-columns:1fr; }
+    .checkout { padding:20px; }
+    .steps { grid-template-columns:1fr; }
+    .productTag,.secure { display:none; }
+    footer { flex-wrap:wrap; padding:25px 0; }
+    footer nav { width:100%; margin:0; }
+  }
+</style>
+</head>
+<body>
+<div class="glow"></div><div class="noise"></div>
+<div class="wrap">
+  <header>
+    <svg class="logoMark" viewBox="0 0 42 42" fill="none"><rect x="1" y="1" width="40" height="40" rx="13" fill="white"/><path d="M11 11h8v8h-8zm12 0h8v8h-8zM11 23h8v8h-8zm12 0h8v8h-8z" fill="#DEDD74"/><path d="M21 18l3 3-3 3-3-3z" fill="#A9A84C"/></svg>
+    <span class="brand">Patternique</span><span class="productTag" data-i18n="tag">Плагин для Figma</span>
+    <div class="langWrap"><button class="lang" id="langBtn"><span id="langFlag">🇷🇺</span><span id="langCode">RU</span><span>▾</span></button><div class="langMenu hidden" id="langMenu"></div></div>
+  </header>
+
+  <section class="hero">
+    <div>
+      <span class="eyebrow" data-i18n="eyebrow">Генератор бесшовных узоров</span>
+      <h1 data-i18n-html="hero">Один объект.<br><em>Бесконечный</em> узор.</h1>
+      <p class="lead" data-i18n="lead">Создавайте в Figma редактируемые паттерны: сетка, повороты, шахматное чередование двух фигур, сдвиги и элементы на пересечениях.</p>
+      <div class="heroPrice"><span><b>690 ₽</b> <i data-i18n="perYear">на 1 год</i></span><span><b>1 790 ₽</b> <i data-i18n="foreverPrice">навсегда</i></span></div>
+    </div>
+    <div class="patternDemo" aria-label="Пример бесшовного узора">
+      <div class="patternGrid">
+        <i class="shape"></i><i class="shape"></i><i class="shape"></i><i class="shape"></i><i class="shape"></i>
+        <i class="shape"></i><i class="shape"></i><i class="shape"></i><i class="shape"></i><i class="shape"></i>
+        <i class="shape"></i><i class="shape"></i><i class="shape"></i><i class="shape"></i><i class="shape"></i>
+        <i class="shape"></i><i class="shape"></i><i class="shape"></i><i class="shape"></i><i class="shape"></i>
+        <i class="shape"></i><i class="shape"></i><i class="shape"></i><i class="shape"></i><i class="shape"></i>
+      </div>
+      <div class="demoBadge"><span data-i18n="editable">Все копии остаются редактируемыми</span><i></i></div>
+    </div>
+  </section>
+
+  <section class="features">
+    <article class="feature"><div class="featureIcon">◩</div><h3 data-i18n="f1t">Две фигуры</h3><p data-i18n="f1d">Выделите два объекта — Patternique расставит их шахматным узором.</p></article>
+    <article class="feature"><div class="featureIcon">↔</div><h3 data-i18n="f2t">Ритм и сдвиги</h3><p data-i18n="f2d">Сдвигайте каждую вторую строку или колонку по горизонтали и вертикали.</p></article>
+    <article class="feature"><div class="featureIcon">✦</div><h3 data-i18n="f3t">Детали между ячейками</h3><p data-i18n="f3d">Добавляйте крест, звезду, круг, символ или линию на пересечениях.</p></article>
+  </section>
+
+  <section class="checkout" id="buy">
+    <div class="checkoutHead"><div><h2 data-i18n="choose">Выберите лицензию</h2><p data-i18n="sameFeatures">Обе лицензии открывают все возможности плагина.</p></div><span class="secure" data-i18n="secure">● БЕЗОПАСНАЯ ОПЛАТА</span></div>
+    <div class="plans" id="plans">
+      <button class="plan selected" data-plan="annual">
+        <div class="planTop"><span class="planName" data-i18n="annual">1 год</span><span class="check">✓</span></div>
+        <div class="price"><span id="annualPrice">690</span> <small>₽</small></div>
+        <div class="planDesc" data-i18n="annualDesc">Полный доступ на 365 дней с момента активации ключа.</div>
+      </button>
+      <button class="plan" data-plan="lifetime">
+        <span class="popular" data-i18n="best">Выгоднее</span>
+        <div class="planTop"><span class="planName" data-i18n="lifetime">Бессрочно</span><span class="check">✓</span></div>
+        <div class="price"><span id="lifetimePrice">1 790</span> <small>₽</small></div>
+        <div class="planDesc" data-i18n="lifetimeDesc">Один платёж — доступ к Patternique без ограничения по времени.</div>
+      </button>
+    </div>
+    <div class="fullAccess"><span data-i18n="allModes">Все режимы узора</span><span data-i18n="twoObjects">Два объекта и цвета</span><span data-i18n="unlimited">Без лимита созданий</span><span data-i18n="oneAccount">Для одного Figma-аккаунта</span></div>
+    <div class="fields">
+      <div class="field"><label for="email" data-i18n="email">Email для получения ключа</label><input id="email" type="email" autocomplete="email" placeholder="name@example.com"></div>
+      <div class="field"><label for="coupon" data-i18n="coupon">Промокод</label><div class="couponBox"><input id="coupon" placeholder="PATTERN"><button class="apply" id="applyCoupon" data-i18n="apply">Применить</button></div><div class="couponMsg" id="couponMsg"></div></div>
+    </div>
+    <button class="pay" id="payBtn" disabled data-i18n="pay">Оплатить и получить ключ</button>
+    <div class="message" id="message"></div>
+    <p class="agreement" data-i18n-html="agreement">Нажимая кнопку, вы соглашаетесь с <a href="/terms.html">условиями использования</a> и <a href="/privacy.html">политикой конфиденциальности</a>.</p>
+  </section>
+
+  <section class="steps">
+    <div class="step"><b><span>01</span><i data-i18n="step1">Оплатите</i></b><span data-i18n="step1d">Выберите срок и завершите оплату через Robokassa.</span></div>
+    <div class="step"><b><span>02</span><i data-i18n="step2">Получите ключ</i></b><span data-i18n="step2d">Ключ появится на экране после оплаты.</span></div>
+    <div class="step"><b><span>03</span><i data-i18n="step3">Активируйте</i></b><span data-i18n="step3d">Вставьте ключ в Patternique. Он привяжется к Figma.</span></div>
+  </section>
+
+  <footer><img alt="LEDNIQUE" src="data:image/png;base64,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"><span>© 2026 LEDNIQUE · Patternique</span><nav><a href="/terms.html" data-i18n="terms">Условия</a><a href="/privacy.html" data-i18n="privacy">Конфиденциальность</a><a href="/manage.html" data-i18n="manage">Управление</a></nav></footer>
+</div>
+<script>
+(function(){
+  var LANGS={"en":{"flag":"🇬🇧","label":"English"},"ru":{"flag":"🇷🇺","label":"Русский"},"it":{"flag":"🇮🇹","label":"Italiano"},"pt":{"flag":"🇵🇹","label":"Português"},"fr":{"flag":"🇫🇷","label":"Français"},"zh":{"flag":"🇨🇳","label":"中文"},"ja":{"flag":"🇯🇵","label":"日本語"}};
+  var language=(function(){var code=(navigator.language||'en').toLowerCase().slice(0,2);return LANGS[code]?code:'en';})();
+  var selectedPlan='annual';
+  var prices={annual:690,lifetime:1790};
+  var couponPercent=0;
+  var TEXT={"ru":{"tag":"Плагин для Figma","eyebrow":"Генератор бесшовных узоров","hero":"Один объект.<br><em>Бесконечный</em> узор.","lead":"Создавайте в Figma редактируемые паттерны: сетка, повороты, шахматное чередование двух фигур, сдвиги и элементы на пересечениях.","perYear":"на 1 год","foreverPrice":"навсегда","editable":"Все копии остаются редактируемыми","f1t":"Две фигуры","f1d":"Выделите два объекта — Patternique расставит их шахматным узором.","f2t":"Ритм и сдвиги","f2d":"Сдвигайте каждую вторую строку или колонку по горизонтали и вертикали.","f3t":"Детали между ячейками","f3d":"Добавляйте крест, звезду, круг, символ или линию на пересечениях.","choose":"Выберите лицензию","sameFeatures":"Обе лицензии открывают все возможности плагина.","secure":"● БЕЗОПАСНАЯ ОПЛАТА","annual":"1 год","annualDesc":"Полный доступ на 365 дней с момента активации ключа.","best":"Выгоднее","lifetime":"Бессрочно","lifetimeDesc":"Один платёж — доступ к Patternique без ограничения по времени.","allModes":"Все режимы узора","twoObjects":"Два объекта и цвета","unlimited":"Без лимита созданий","oneAccount":"Для одного Figma-аккаунта","email":"Email для получения ключа","coupon":"Промокод","apply":"Применить","pay":"Оплатить и получить ключ","agreement":"Нажимая кнопку, вы соглашаетесь с <a href=\"/terms.html\">условиями использования</a> и <a href=\"/privacy.html\">политикой конфиденциальности</a>.","step1":"Оплатите","step1d":"Выберите срок и завершите оплату через Robokassa.","step2":"Получите ключ","step2d":"Ключ появится на экране после оплаты.","step3":"Активируйте","step3d":"Вставьте ключ в Patternique. Он привяжется к Figma.","terms":"Условия","privacy":"Конфиденциальность","manage":"Управление","couponOk":"Промокод применён: −{p}%","couponBad":"Промокод не найден","couponFree":"Скидка 100% — ключ будет выдан сразу","network":"Ошибка сети. Попробуйте ещё раз.","processing":"Переходим к оплате…","badEmail":"Введите корректный email"},"en":{"tag":"Figma plugin","eyebrow":"Seamless pattern generator","hero":"One object.<br>An <em>endless</em> pattern.","lead":"Create editable patterns in Figma: grids, rotations, two-object checkerboards, offsets, and intersection details.","perYear":"for 1 year","foreverPrice":"forever","editable":"Every copy remains editable","f1t":"Two shapes","f1d":"Select two objects and Patternique alternates them in a checkerboard.","f2t":"Rhythm and offsets","f2d":"Offset every second row or column horizontally and vertically.","f3t":"Intersection details","f3d":"Add a cross, star, circle, symbol, or line between cells.","choose":"Choose a license","sameFeatures":"Both licenses unlock every plugin feature.","secure":"● SECURE PAYMENT","annual":"1 year","annualDesc":"Full access for 365 days starting when the key is activated.","best":"Best value","lifetime":"Lifetime","lifetimeDesc":"One payment for Patternique access with no time limit.","allModes":"Every pattern mode","twoObjects":"Two objects and colors","unlimited":"Unlimited creations","oneAccount":"For one Figma account","email":"Email for your key","coupon":"Promo code","apply":"Apply","pay":"Pay and get the key","agreement":"By clicking the button you agree to the <a href=\"/terms.html\">terms</a> and <a href=\"/privacy.html\">privacy policy</a>.","step1":"Pay","step1d":"Choose a term and complete payment with Robokassa.","step2":"Get the key","step2d":"Your key appears on screen after payment.","step3":"Activate","step3d":"Paste the key into Patternique to bind it to Figma.","terms":"Terms","privacy":"Privacy","manage":"Manage","couponOk":"Promo code applied: −{p}%","couponBad":"Promo code not found","couponFree":"100% discount — your key will be issued now","network":"Network error. Please try again.","processing":"Opening payment…","badEmail":"Enter a valid email"},"it":{"tag":"Plugin per Figma","eyebrow":"Generatore di pattern continui","hero":"Un oggetto.<br>Un pattern <em>infinito</em>.","lead":"Crea pattern modificabili in Figma: griglie, rotazioni, scacchiere con due oggetti, spostamenti e dettagli alle intersezioni.","perYear":"per 1 anno","foreverPrice":"per sempre","editable":"Ogni copia resta modificabile","f1t":"Due forme","f1d":"Seleziona due oggetti e Patternique li alterna a scacchiera.","f2t":"Ritmo e spostamenti","f2d":"Sposta ogni seconda riga o colonna in orizzontale e verticale.","f3t":"Dettagli alle intersezioni","f3d":"Aggiungi croce, stella, cerchio, simbolo o linea tra le celle.","choose":"Scegli una licenza","sameFeatures":"Entrambe le licenze sbloccano tutte le funzioni.","secure":"● PAGAMENTO SICURO","annual":"1 anno","annualDesc":"Accesso completo per 365 giorni dalla prima attivazione.","best":"Più conveniente","lifetime":"Per sempre","lifetimeDesc":"Un solo pagamento, senza limiti di tempo.","allModes":"Tutte le modalità","twoObjects":"Due oggetti e colori","unlimited":"Creazioni illimitate","oneAccount":"Per un account Figma","email":"Email per ricevere la chiave","coupon":"Codice promozionale","apply":"Applica","pay":"Paga e ricevi la chiave","agreement":"Facendo clic accetti i <a href=\"/terms.html\">termini</a> e la <a href=\"/privacy.html\">privacy policy</a>.","step1":"Paga","step1d":"Scegli la durata e completa il pagamento con Robokassa.","step2":"Ricevi la chiave","step2d":"La chiave appare dopo il pagamento.","step3":"Attiva","step3d":"Inserisci la chiave in Patternique per associarla a Figma.","terms":"Termini","privacy":"Privacy","manage":"Gestione","couponOk":"Codice applicato: −{p}%","couponBad":"Codice non trovato","couponFree":"Sconto 100% — chiave emessa subito","network":"Errore di rete. Riprova.","processing":"Apertura pagamento…","badEmail":"Inserisci una email valida"},"pt":{"tag":"Plugin para Figma","eyebrow":"Gerador de padrões contínuos","hero":"Um objeto.<br>Um padrão <em>infinito</em>.","lead":"Crie padrões editáveis no Figma: grades, rotações, xadrez com dois objetos, deslocamentos e detalhes nas interseções.","perYear":"por 1 ano","foreverPrice":"para sempre","editable":"Todas as cópias continuam editáveis","f1t":"Duas formas","f1d":"Selecione dois objetos e o Patternique os alterna em xadrez.","f2t":"Ritmo e deslocamentos","f2d":"Desloque cada segunda linha ou coluna na horizontal e vertical.","f3t":"Detalhes nas interseções","f3d":"Adicione cruz, estrela, círculo, símbolo ou linha entre células.","choose":"Escolha uma licença","sameFeatures":"As duas licenças liberam todos os recursos.","secure":"● PAGAMENTO SEGURO","annual":"1 ano","annualDesc":"Acesso completo por 365 dias desde a primeira ativação.","best":"Mais vantajoso","lifetime":"Vitalícia","lifetimeDesc":"Um pagamento, sem limite de tempo.","allModes":"Todos os modos","twoObjects":"Dois objetos e cores","unlimited":"Criações ilimitadas","oneAccount":"Para uma conta Figma","email":"Email para receber a chave","coupon":"Cupom","apply":"Aplicar","pay":"Pagar e receber a chave","agreement":"Ao clicar, você aceita os <a href=\"/terms.html\">termos</a> e a <a href=\"/privacy.html\">política de privacidade</a>.","step1":"Pague","step1d":"Escolha o prazo e pague com Robokassa.","step2":"Receba a chave","step2d":"A chave aparece após o pagamento.","step3":"Ative","step3d":"Cole a chave no Patternique para vinculá-la ao Figma.","terms":"Termos","privacy":"Privacidade","manage":"Gerenciar","couponOk":"Cupom aplicado: −{p}%","couponBad":"Cupom não encontrado","couponFree":"100% de desconto — chave emitida agora","network":"Erro de rede. Tente novamente.","processing":"Abrindo pagamento…","badEmail":"Digite um email válido"},"fr":{"tag":"Plugin pour Figma","eyebrow":"Générateur de motifs continus","hero":"Un objet.<br>Un motif <em>infini</em>.","lead":"Créez des motifs modifiables dans Figma : grilles, rotations, damiers à deux objets, décalages et détails aux intersections.","perYear":"pour 1 an","foreverPrice":"à vie","editable":"Chaque copie reste modifiable","f1t":"Deux formes","f1d":"Sélectionnez deux objets et Patternique les alterne en damier.","f2t":"Rythme et décalages","f2d":"Décalez une ligne ou colonne sur deux horizontalement et verticalement.","f3t":"Détails aux intersections","f3d":"Ajoutez croix, étoile, cercle, symbole ou ligne entre les cellules.","choose":"Choisissez une licence","sameFeatures":"Les deux licences donnent accès à toutes les fonctions.","secure":"● PAIEMENT SÉCURISÉ","annual":"1 an","annualDesc":"Accès complet pendant 365 jours dès la première activation.","best":"Plus avantageux","lifetime":"À vie","lifetimeDesc":"Un paiement, sans limite de durée.","allModes":"Tous les modes","twoObjects":"Deux objets et couleurs","unlimited":"Créations illimitées","oneAccount":"Pour un compte Figma","email":"Email pour recevoir la clé","coupon":"Code promo","apply":"Appliquer","pay":"Payer et recevoir la clé","agreement":"En cliquant, vous acceptez les <a href=\"/terms.html\">conditions</a> et la <a href=\"/privacy.html\">politique de confidentialité</a>.","step1":"Payez","step1d":"Choisissez la durée et payez via Robokassa.","step2":"Recevez la clé","step2d":"La clé apparaît après le paiement.","step3":"Activez","step3d":"Collez la clé dans Patternique pour la lier à Figma.","terms":"Conditions","privacy":"Confidentialité","manage":"Gestion","couponOk":"Code appliqué : −{p}%","couponBad":"Code introuvable","couponFree":"Remise de 100 % — clé délivrée maintenant","network":"Erreur réseau. Réessayez.","processing":"Ouverture du paiement…","badEmail":"Saisissez un email valide"},"zh":{"tag":"Figma 插件","eyebrow":"无缝图案生成器","hero":"一个对象。<br>一个<em>无限</em>图案。","lead":"在 Figma 中创建可编辑图案：网格、旋转、双对象棋盘、偏移和交点细节。","perYear":"1 年","foreverPrice":"永久","editable":"所有副本均可编辑","f1t":"两种形状","f1d":"选择两个对象，Patternique 会以棋盘方式交替排列。","f2t":"节奏与偏移","f2d":"水平和垂直偏移每第二行或列。","f3t":"交点细节","f3d":"在单元格之间添加十字、星形、圆、符号或线。","choose":"选择许可证","sameFeatures":"两种许可证均解锁全部功能。","secure":"● 安全支付","annual":"1 年","annualDesc":"从首次激活起完整使用 365 天。","best":"更划算","lifetime":"永久","lifetimeDesc":"一次付款，无时间限制。","allModes":"所有图案模式","twoObjects":"两个对象和颜色","unlimited":"无限创建","oneAccount":"适用于一个 Figma 账户","email":"接收密钥的邮箱","coupon":"优惠码","apply":"应用","pay":"支付并获取密钥","agreement":"点击即表示同意<a href=\"/terms.html\">条款</a>和<a href=\"/privacy.html\">隐私政策</a>。","step1":"支付","step1d":"选择期限并通过 Robokassa 完成支付。","step2":"获取密钥","step2d":"付款后密钥会显示在屏幕上。","step3":"激活","step3d":"将密钥粘贴到 Patternique 并绑定 Figma。","terms":"条款","privacy":"隐私","manage":"管理","couponOk":"优惠码已应用：−{p}%","couponBad":"未找到优惠码","couponFree":"100% 折扣 — 立即发放密钥","network":"网络错误，请重试。","processing":"正在打开支付…","badEmail":"请输入有效邮箱"},"ja":{"tag":"Figma プラグイン","eyebrow":"シームレスパターン生成","hero":"ひとつのオブジェクト。<br><em>無限</em>のパターン。","lead":"Figmaで編集可能なパターンを作成：グリッド、回転、2オブジェクトの市松模様、オフセット、交点の装飾。","perYear":"1年間","foreverPrice":"永久","editable":"すべてのコピーを編集可能","f1t":"2つの形","f1d":"2つのオブジェクトを選ぶと市松模様に交互配置します。","f2t":"リズムとオフセット","f2d":"1行または1列おきに水平・垂直方向へずらします。","f3t":"交点のディテール","f3d":"セルの間に十字、星、円、記号、線を追加します。","choose":"ライセンスを選択","sameFeatures":"どちらも全機能を利用できます。","secure":"● 安全な支払い","annual":"1年","annualDesc":"初回有効化から365日間フルアクセス。","best":"お得","lifetime":"永久","lifetimeDesc":"一度の支払いで期限なく利用できます。","allModes":"すべてのモード","twoObjects":"2つのオブジェクトと色","unlimited":"作成数無制限","oneAccount":"Figma 1アカウント用","email":"キー受信用メール","coupon":"プロモコード","apply":"適用","pay":"支払ってキーを取得","agreement":"クリックすると<a href=\"/terms.html\">利用規約</a>と<a href=\"/privacy.html\">プライバシーポリシー</a>に同意します。","step1":"支払う","step1d":"期間を選びRobokassaで支払います。","step2":"キーを取得","step2d":"支払い後にキーが表示されます。","step3":"有効化","step3d":"Patterniqueにキーを貼り付けFigmaに紐付けます。","terms":"利用規約","privacy":"プライバシー","manage":"管理","couponOk":"コード適用：−{p}%","couponBad":"コードが見つかりません","couponFree":"100%割引 — キーを即時発行","network":"ネットワークエラー。再試行してください。","processing":"支払いを開いています…","badEmail":"有効なメールを入力してください"}};
+  function t(key,vars){var text=(TEXT[language]&&TEXT[language][key])||TEXT.ru[key]||key;Object.keys(vars||{}).forEach(function(k){text=text.split('{'+k+'}').join(vars[k]);});return text;}
+  function applyLanguage(){document.documentElement.lang=language;document.querySelectorAll('[data-i18n]').forEach(function(el){el.textContent=t(el.dataset.i18n);});document.querySelectorAll('[data-i18n-html]').forEach(function(el){el.innerHTML=t(el.dataset.i18nHtml);});document.getElementById('langFlag').textContent=LANGS[language].flag;document.getElementById('langCode').textContent=language.toUpperCase();document.querySelectorAll('#langMenu button').forEach(function(b){b.classList.toggle('active',b.dataset.lang===language);});renderPrices();}
+  function buildLangMenu(){var menu=document.getElementById('langMenu');Object.keys(LANGS).forEach(function(code){var b=document.createElement('button');b.dataset.lang=code;b.innerHTML='<span>'+LANGS[code].flag+'</span>'+LANGS[code].label;b.addEventListener('click',function(){language=code;applyLanguage();renderCoupon();menu.classList.add('hidden');});menu.appendChild(b);});}
+  document.getElementById('langBtn').addEventListener('click',function(e){e.stopPropagation();document.getElementById('langMenu').classList.toggle('hidden');});document.addEventListener('click',function(){document.getElementById('langMenu').classList.add('hidden');});buildLangMenu();
+  function format(value){return new Intl.NumberFormat(language==='ru'?'ru-RU':'en-US').format(value);}
+  function renderPrices(){document.getElementById('annualPrice').textContent=format(prices.annual);document.getElementById('lifetimePrice').textContent=format(prices.lifetime);}
+  fetch('/api/prices').then(function(r){return r.json();}).then(function(data){if(data&&Number(data.annual)>0&&Number(data.lifetime)>0){prices=data;renderPrices();}}).catch(function(){});
+  document.getElementById('plans').addEventListener('click',function(event){var card=event.target.closest('[data-plan]');if(!card)return;selectedPlan=card.dataset.plan;document.querySelectorAll('[data-plan]').forEach(function(el){el.classList.toggle('selected',el===card);});check();});
+  function check(){var email=document.getElementById('email').value.trim();document.getElementById('payBtn').disabled=!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);}
+  document.getElementById('email').addEventListener('input',check);
+  function renderCoupon(){var el=document.getElementById('couponMsg');if(couponPercent){el.textContent=couponPercent>=100?t('couponFree'):t('couponOk',{p:couponPercent});}else el.textContent='';}
+  function applyCoupon(){var code=document.getElementById('coupon').value.trim().toUpperCase();if(!code)return;fetch('/api/check-coupon',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:code})}).then(function(r){return r.json();}).then(function(data){couponPercent=data.ok?data.percent:0;renderCoupon();if(!data.ok)document.getElementById('couponMsg').textContent=t('couponBad');}).catch(function(){couponPercent=0;document.getElementById('couponMsg').textContent=t('network');});}
+  document.getElementById('applyCoupon').addEventListener('click',applyCoupon);document.getElementById('coupon').addEventListener('keydown',function(event){if(event.key==='Enter'){event.preventDefault();applyCoupon();}});
+  document.getElementById('payBtn').addEventListener('click',function(){
+    var email=document.getElementById('email').value.trim(),button=this,message=document.getElementById('message');
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){message.textContent=t('badEmail');return;}
+    button.disabled=true;message.textContent=t('processing');
+    fetch('/api/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({plan:selectedPlan,email:email,coupon:document.getElementById('coupon').value.trim().toUpperCase()||undefined})}).then(function(r){return r.json();}).then(function(data){
+      if(data.ok&&data.coupon_100&&data.key){location.href='/success.html?key='+encodeURIComponent(data.key)+'&plan='+encodeURIComponent(data.plan);return;}
+      if(data.ok&&data.action&&data.form){try{localStorage.setItem('patternique_payment_id',data.payment_id);localStorage.setItem('patternique_inv_id',data.inv_id);}catch(error){}var form=document.createElement('form');form.method='POST';form.action=data.action;Object.keys(data.form).forEach(function(key){var input=document.createElement('input');input.type='hidden';input.name=key;input.value=data.form[key];form.appendChild(input);});document.body.appendChild(form);form.submit();return;}
+      message.textContent=data.error||t('network');button.disabled=false;check();
+    }).catch(function(){message.textContent=t('network');button.disabled=false;check();});
+  });
+  applyLanguage();renderPrices();check();
+})();
+</script>
+</body>
+</html>

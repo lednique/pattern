@@ -1,0 +1,12 @@
+{
+  "name": "Patternique — seamless pattern maker",
+  "id": "1684202608160000001",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "documentAccess": "dynamic-page",
+  "editorType": ["figma"],
+  "networkAccess": {
+    "allowedDomains": ["https://pattern.lednique.ru"]
+  }
+}
