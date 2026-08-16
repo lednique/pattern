@@ -27,6 +27,29 @@ function absolutePosition(node) {
   }
 }
 
+function rgbToHex(color) {
+  function part(value) { return Math.max(0, Math.min(255, Math.round((Number(value) || 0) * 255))).toString(16).padStart(2, '0'); }
+  return '#' + part(color.r) + part(color.g) + part(color.b);
+}
+
+function representativeColor(node) {
+  try {
+    if ('fills' in node && node.fills !== figma.mixed && Array.isArray(node.fills)) {
+      for (var index = 0; index < node.fills.length; index++) {
+        var paint = node.fills[index];
+        if (paint && paint.type === 'SOLID' && paint.visible !== false) return rgbToHex(paint.color).toUpperCase();
+      }
+    }
+  } catch (error) { /* readonly/mixed paints */ }
+  if ('children' in node && node.children) {
+    for (var childIndex = 0; childIndex < node.children.length; childIndex++) {
+      var found = representativeColor(node.children[childIndex]);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
 async function exportThumb(node) {
   try {
     return await node.exportAsync({
@@ -60,7 +83,7 @@ async function sendSelection() {
   figma.ui.postMessage({
     type: 'selection', valid: true,
     items: selected.map(function (node) {
-      return { id: node.id, name: node.name, type: node.type, width: node.width, height: node.height };
+      return { id: node.id, name: node.name, type: node.type, width: node.width, height: node.height, color: representativeColor(node) };
     })
   });
 
@@ -88,23 +111,26 @@ function getUserId() {
   })();
 }
 
-function copyPaintAsSolid(paints, rgb) {
+function recolorSolidPaints(paints, rgb) {
   if (!Array.isArray(paints) || paints.length === 0) return paints;
   return paints.map(function (paint) {
-    if (paint.visible === false) return paint;
-    return { type: 'SOLID', color: rgb, opacity: paint.opacity === undefined ? 1 : paint.opacity, visible: true };
+    if (paint.visible === false || paint.type !== 'SOLID') return paint;
+    var updated = {};
+    Object.keys(paint).forEach(function (key) { updated[key] = paint[key]; });
+    updated.color = rgb;
+    return updated;
   });
 }
 
 function recolorTree(node, rgb) {
   try {
     if ('fills' in node && node.fills !== figma.mixed && Array.isArray(node.fills) && node.fills.length) {
-      node.fills = copyPaintAsSolid(node.fills, rgb);
+      node.fills = recolorSolidPaints(node.fills, rgb);
     }
   } catch (error) { /* readonly child in an instance */ }
   try {
     if ('strokes' in node && node.strokes !== figma.mixed && Array.isArray(node.strokes) && node.strokes.length) {
-      node.strokes = copyPaintAsSolid(node.strokes, rgb);
+      node.strokes = recolorSolidPaints(node.strokes, rgb);
     }
   } catch (error) { /* readonly child in an instance */ }
   if ('children' in node && node.children) {
@@ -218,7 +244,7 @@ async function loadDecorationFont() {
   }
 }
 
-async function createPattern(rawSettings) {
+async function createPattern(rawSettings, dropPosition) {
   await ensurePage();
   if (!selectionSnapshot.length || selectionSnapshot.length > 2 || !selectionSnapshot.every(eligible)) {
     throw new Error('selection-changed');
@@ -244,15 +270,23 @@ async function createPattern(rawSettings) {
     var pos = absolutePosition(node);
     return Math.max(max, pos.x + node.width);
   }, sourcePosition.x + sourceNodes[0].width);
-  frame.x = right + 80;
-  frame.y = sourcePosition.y;
+  if (dropPosition && Number.isFinite(dropPosition.x) && Number.isFinite(dropPosition.y)) {
+    frame.x = dropPosition.x - width / 2;
+    frame.y = dropPosition.y - height / 2;
+  } else {
+    frame.x = right + 80;
+    frame.y = sourcePosition.y;
+  }
 
   try {
     built.placements.forEach(function (placement) {
       var source = sourceNodes[Math.min(placement.sourceIndex, sourceNodes.length - 1)];
       var clone = cloneForPattern(source, frame);
       clone.name = source.name + ' · repeat';
-      recolorTree(clone, PatternCore.hexToRgb(placement.color));
+      var originalColor = representativeColor(source);
+      if (!originalColor || originalColor.toUpperCase() !== String(placement.color).toUpperCase()) {
+        recolorTree(clone, PatternCore.hexToRgb(placement.color));
+      }
       var dimensions = resizeProportionally(clone, source, settings, placement.size);
       placeAroundCenter(clone, placement.x, placement.y, dimensions.width, dimensions.height, placement.angle);
     });
@@ -279,6 +313,32 @@ async function createPattern(rawSettings) {
 }
 
 figma.on('selectionchange', sendSelection);
+
+/* Figma forwards a drag that starts on the central preview square here. */
+figma.on('drop', function (event) {
+  var items = event && event.items ? Array.prototype.slice.call(event.items) : [];
+  var payload = null;
+  for (var index = 0; index < items.length; index++) {
+    if (items[index].type !== 'application/json') continue;
+    try {
+      var parsed = JSON.parse(items[index].data);
+      if (parsed && parsed.source === 'patternique') { payload = parsed; break; }
+    } catch (error) { /* another plugin's JSON item */ }
+  }
+  if (!payload) return true;
+  var dropX = Number.isFinite(event.absoluteX) ? event.absoluteX : event.x;
+  var dropY = Number.isFinite(event.absoluteY) ? event.absoluteY : event.y;
+  (async function () {
+    try {
+      var result = await createPattern(payload.settings || {}, { x: dropX, y: dropY });
+      figma.ui.postMessage({ type: 'pattern-created', result: result, dropped: true });
+      figma.notify('Patternique: узор добавлен в сцену');
+    } catch (error) {
+      figma.ui.postMessage({ type: 'pattern-error', error: String(error && error.message || error) });
+    }
+  })();
+  return false;
+});
 
 figma.ui.onmessage = async function (message) {
   if (!message || !message.type) return;
