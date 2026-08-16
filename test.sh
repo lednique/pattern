@@ -6,6 +6,7 @@ cd "$(dirname "$0")"
   bash build.sh
   node test/core.test.js
   node test/sandbox.test.js
+  node test/ui.test.js
 )
 (
   cd pattern-backend

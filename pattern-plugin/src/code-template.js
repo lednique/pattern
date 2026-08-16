@@ -121,18 +121,14 @@ function cloneForPattern(source, parent) {
   return clone;
 }
 
-function resizeProportionally(node, source, cellWidth, cellHeight, percent) {
-  var available = Math.min(cellWidth, cellHeight) * percent / 100;
-  var longest = Math.max(source.width, source.height);
-  var factor = longest > 0 ? available / longest : 1;
-  var width = Math.max(0.5, source.width * factor);
-  var height = Math.max(0.5, source.height * factor);
+function resizeProportionally(node, source, settings, percent) {
+  var fitted = PatternCore.fitDimensions(source.width, source.height, settings, percent);
   try {
-    node.resizeWithoutConstraints(width, height);
+    node.resizeWithoutConstraints(fitted.width, fitted.height);
   } catch (error) {
-    try { node.resize(width, height); } catch (nested) { /* non-resizable nodes are filtered earlier */ }
+    try { node.resize(fitted.width, fitted.height); } catch (nested) { /* non-resizable nodes are filtered earlier */ }
   }
-  return { width: Number(node.width) || width, height: Number(node.height) || height };
+  return { width: Number(node.width) || fitted.width, height: Number(node.height) || fitted.height };
 }
 
 function placeAroundCenter(node, centerX, centerY, width, height, angle) {
@@ -231,8 +227,8 @@ async function createPattern(rawSettings) {
   var sourceNodes = selectionSnapshot.slice();
   var built = PatternCore.buildPlacements(rawSettings, sourceNodes.length);
   var settings = built.settings;
-  var width = settings.columns * settings.cellWidth;
-  var height = settings.rows * settings.cellHeight;
+  var width = PatternCore.TILE_SIZE;
+  var height = PatternCore.TILE_SIZE;
   var frame = figma.createFrame();
   frame.name = 'Patternique · ' + (settings.mode === 'checker' ? 'checkerboard' : settings.mode === 'rotate' ? 'rotation' : 'grid');
   frame.resize(width, height);
@@ -257,7 +253,7 @@ async function createPattern(rawSettings) {
       var clone = cloneForPattern(source, frame);
       clone.name = source.name + ' · repeat';
       recolorTree(clone, PatternCore.hexToRgb(placement.color));
-      var dimensions = resizeProportionally(clone, source, settings.cellWidth, settings.cellHeight, placement.size);
+      var dimensions = resizeProportionally(clone, source, settings, placement.size);
       placeAroundCenter(clone, placement.x, placement.y, dimensions.width, dimensions.height, placement.angle);
     });
 

@@ -16,5 +16,8 @@ test(index.includes('двух фигур')&&index.includes('сдвиги')&&inde
 test(index.includes('/terms.html')&&index.includes('/privacy.html'),'legal links are present');
 test(index.includes('data:image/png;base64,')&&!index.includes('__LED_FOOTER_B64__'),'footer logo is embedded');
 test(success.includes("fetch('/api/get-key?'+query)"),'success page retrieves paid license key');
+test(index.includes('--accent:#DEDD74')&&index.includes('rgba(222,221,116'),'purchase site uses the #DEDD74 theme');
+['en','ru','it','pt','fr','zh','ja'].forEach((code)=>test(index.includes('"'+code+'":{'),code+' purchase-site localization exists'));
+test(index.includes('id="langMenu"')&&index.includes('buildLangMenu'),'seven-language dropdown is rendered');
 ['terms.html','privacy.html','manage.html','404.html'].forEach((name)=>test(fs.existsSync(path.join(site,name)),name+' exists'));
 console.log('\nSite: '+passed+' checks passed.');

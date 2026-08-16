@@ -1,6 +1,6 @@
 # Patternique licensing site
 
-Статический сайт покупки + serverless API для Vercel, Robokassa и Supabase.
+Статический сайт покупки в теме `#DEDD74` с локализацией на 7 языков + serverless API для Vercel, Robokassa и Supabase.
 
 ## Тарифы
 

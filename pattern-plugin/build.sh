@@ -8,6 +8,8 @@ core = (root / 'src/pattern-core.js').read_text(encoding='utf-8')
 code = (root / 'src/code-template.js').read_text(encoding='utf-8')
 ui = (root / 'src/ui-template.html').read_text(encoding='utf-8')
 led = (root / 'src/assets/LEDNIQUE.b64').read_text(encoding='utf-8').strip()
+logo = (root / 'src/assets/tracebase-logo.b64').read_text(encoding='utf-8').strip()
+mont = (root / 'src/assets/mont.css').read_text(encoding='utf-8')
 for target, placeholder, value in [
     ('code.js', '/*__PATTERN_CORE__*/', core),
 ]:
@@ -17,6 +19,8 @@ for target, placeholder, value in [
 (root / 'code.js').write_text(code, encoding='utf-8')
 for placeholder, value in [
     ('/*__PATTERN_CORE__*/', core),
+    ('/*__MONT_CSS__*/', mont),
+    ('__TRACEBASE_LOGO_B64__', logo),
     ('__LEDNIQUE_B64__', led),
 ]:
     if placeholder not in ui:

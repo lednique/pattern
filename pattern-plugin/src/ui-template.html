@@ -5,497 +5,219 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Patternique</title>
 <style>
-  :root {
-    --accent:#11A5CA; --accent-hi:#35B8DB; --grad:#0E8FB0;
-    --bg:#f7fafc; --card:#fff; --soft:#eef4f8; --border:#dce7ef;
-    --text:#182633; --muted:#718191; --danger:#d94e59; --ok:#16965f;
-  }
-  * { box-sizing:border-box; }
-  html,body { margin:0; min-height:100%; }
-  body { background:var(--bg); color:var(--text); font:12px/1.45 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; user-select:none; }
-  button,input,select { font:inherit; }
-  button { color:inherit; }
-  .topGlow { position:fixed; inset:0 0 auto; height:210px; background:linear-gradient(180deg,var(--grad),rgba(14,143,176,0)); pointer-events:none; }
-  .page { position:relative; padding:12px 12px 88px; }
-  .header { height:48px; display:flex; align-items:center; gap:9px; margin-bottom:9px; color:#fff; }
-  .mark { width:38px; height:38px; flex:none; filter:drop-shadow(0 4px 10px rgba(0,0,0,.16)); }
-  .headText { min-width:0; flex:1; }
-  .headText h1 { margin:0; font-size:18px; line-height:1.15; font-weight:650; letter-spacing:.1px; }
-  .headText p { margin:2px 0 0; font-size:10.5px; opacity:.9; }
-  .lang { border:1px solid rgba(255,255,255,.25); background:rgba(255,255,255,.16); color:#fff; height:29px; min-width:42px; border-radius:999px; cursor:pointer; font-weight:750; }
-  .badge { min-width:54px; text-align:center; border-radius:999px; padding:4px 8px; background:rgba(255,255,255,.18); font-size:9px; line-height:1.1; }
-  .badge b { display:block; font-size:11px; }
-  .badge.licensed { background:#fff; color:var(--grad); }
-  .card { background:var(--card); border:1px solid var(--border); border-radius:25px; padding:12px; margin-bottom:9px; box-shadow:0 4px 18px rgba(33,63,86,.045); }
-  .selectionCard { padding:0; overflow:hidden; }
-  .selectionRow { min-height:52px; display:flex; align-items:center; gap:9px; padding:9px 12px; }
-  .selectionIcon { width:34px; height:34px; border-radius:11px; background:var(--soft); display:grid; place-items:center; color:var(--accent); flex:none; }
-  .selectionIcon svg { width:18px; height:18px; }
-  .selectionCopy { min-width:0; flex:1; }
-  .selectionTitle { font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .selectionMeta { color:var(--muted); margin-top:1px; font-size:10.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .countPill { flex:none; background:var(--soft); color:var(--accent); font-weight:800; padding:4px 8px; border-radius:999px; }
-  .previewWrap { height:172px; position:relative; overflow:hidden; border-top:1px solid var(--border); background:repeating-conic-gradient(#edf3f7 0 25%,#fff 0 50%) 0/16px 16px; }
-  #preview { display:block; width:100%; height:100%; }
-  .previewHint { position:absolute; inset:0; display:grid; place-items:center; padding:35px; color:var(--muted); text-align:center; pointer-events:none; }
-  .sectionTitle { margin:0 0 8px; font-size:10px; color:var(--muted); font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
-  .segment { display:flex; gap:3px; padding:3px; background:var(--soft); border-radius:999px; }
-  .segment button { flex:1; border:0; background:transparent; color:var(--muted); border-radius:999px; padding:7px 4px; cursor:pointer; font-size:11px; font-weight:700; }
-  .segment button.active { background:var(--accent); color:#fff; box-shadow:0 3px 9px rgba(17,165,202,.24); }
-  .modeSegment button { padding:8px 4px; }
-  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-  .field label,.miniLabel { display:block; color:var(--muted); font-size:10px; margin:0 0 4px 3px; font-weight:650; }
-  .number { width:100%; height:34px; background:var(--soft); border:1px solid transparent; border-radius:12px; color:var(--text); padding:0 10px; outline:0; }
-  .number:focus,.symbolInput:focus { border-color:var(--accent); background:#fff; }
-  .controlRow { display:grid; grid-template-columns:86px 1fr 38px; gap:8px; align-items:center; min-height:33px; }
-  .controlRow + .controlRow { margin-top:4px; }
-  .controlRow .name { font-weight:600; }
-  output { text-align:right; color:var(--accent); font-size:10.5px; font-weight:800; font-variant-numeric:tabular-nums; }
-  input[type="range"] { -webkit-appearance:none; width:100%; height:24px; margin:0; background:transparent; cursor:pointer; }
-  input[type="range"]::-webkit-slider-runnable-track { height:5px; border-radius:999px; background:linear-gradient(to right,var(--accent) 0,var(--accent) var(--fill,50%),#d7e3eb var(--fill,50%),#d7e3eb 100%); }
-  input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; width:15px; height:15px; border-radius:50%; background:#fff; border:3px solid var(--accent); margin-top:-5px; box-shadow:0 1px 4px rgba(0,0,0,.18); }
-  .colorRow { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
-  .colorRow label { flex:1; font-weight:650; }
-  input[type="color"] { width:48px; height:28px; border:0; padding:2px; background:var(--soft); border-radius:9px; cursor:pointer; }
-  input[type="color"]::-webkit-color-swatch-wrapper { padding:0; }
-  input[type="color"]::-webkit-color-swatch { border:0; border-radius:7px; }
-  .subCard { margin-top:10px; padding-top:10px; border-top:1px solid var(--border); }
-  .subHead { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:7px; }
-  .subHead b { font-size:11.5px; }
-  .objectTag { color:var(--accent); background:rgba(17,165,202,.1); border-radius:999px; padding:3px 7px; font-size:9.5px; font-weight:800; }
-  .help { color:var(--muted); font-size:10.5px; margin:7px 2px 0; }
-  .notice { margin-top:8px; border-radius:12px; background:#edf8fb; color:#34768a; padding:7px 9px; font-size:10px; }
-  .decorTypes { display:grid; grid-template-columns:repeat(6,1fr); gap:4px; }
-  .decorTypes button { border:0; height:35px; border-radius:11px; background:var(--soft); color:var(--muted); cursor:pointer; font-size:15px; }
-  .decorTypes button.active { color:#fff; background:var(--accent); }
-  .symbolInput { width:100%; height:32px; padding:0 10px; border:1px solid transparent; outline:0; border-radius:11px; background:var(--soft); }
-  .disabledPanel { opacity:.48; pointer-events:none; }
-  .sticky { position:fixed; z-index:5; left:0; right:0; bottom:0; padding:10px 12px 12px; background:linear-gradient(0deg,#f7fafc 70%,rgba(247,250,252,0)); }
-  .createBtn,.buyBtn,.activateBtn { width:100%; border:0; border-radius:999px; cursor:pointer; padding:13px; font-weight:850; letter-spacing:.02em; }
-  .createBtn { color:#333; background:linear-gradient(90deg,#858585,#e7e7e7,#929292); background-size:200% 100%; }
-  .createBtn:hover:not(:disabled) { animation:shine 1.7s linear infinite; }
-  .createBtn:disabled { background:#d8e2e9; color:#fff; cursor:not-allowed; }
-  @keyframes shine { to { background-position:200% 0; } }
-  .status { min-height:14px; margin:4px 10px 0; text-align:center; font-size:10px; color:var(--muted); }
-  .status.error { color:var(--danger); }
-  .status.ok { color:var(--ok); }
-  .lockCard { text-align:center; padding:25px 18px; }
-  .lockIcon { width:54px; height:54px; margin:0 auto 12px; border-radius:18px; display:grid; place-items:center; color:#fff; background:var(--accent); box-shadow:0 8px 24px rgba(17,165,202,.25); }
-  .lockCard h2 { font-size:16px; margin:0 0 5px; }
-  .lockCard p { color:var(--muted); margin:0 auto 13px; max-width:280px; }
-  .keyInput { width:100%; height:41px; border:1.5px solid var(--border); border-radius:999px; outline:0; text-align:center; text-transform:uppercase; letter-spacing:.11em; font-family:ui-monospace,monospace; font-weight:750; }
-  .keyInput:focus { border-color:var(--accent); }
-  .activateBtn { margin-top:8px; background:var(--accent); color:#fff; }
-  .buyBtn { margin-top:8px; background:var(--soft); color:var(--text); }
-  .licenseMessage { min-height:17px; margin-top:7px; font-size:10.5px; }
-  .licenseMessage.error { color:var(--danger); }
-  .licenseMessage.ok { color:var(--ok); }
-  .footer { display:flex; justify-content:center; margin:12px 0 2px; }
-  .footer img { height:22px; opacity:.65; cursor:pointer; }
-  .hidden { display:none !important; }
+/*__MONT_CSS__*/
+:root{
+  --accent:#DEDD74;--accent-hi:#EFEEA2;--accent-deep:#9F9E3E;--grad:#A6A548;
+  --bg:#f7f7f2;--card:#fff;--soft:#f0f0e7;--border:#e5e5d8;
+  --text:#25251f;--muted:#77776c;--danger:#d64f5c;--ok:#4e8d55;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--text);font:13px/1.45 'Montserrat',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;user-select:none;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+button,input,select{font:inherit}button{color:inherit}.hidden{display:none!important}
+.topGlow{position:fixed;inset:0 0 auto;height:200px;background:linear-gradient(180deg,var(--grad),rgba(166,165,72,0));pointer-events:none;z-index:0}
+.page{position:relative;z-index:1;padding:12px 12px 90px}
+.header{height:48px;display:flex;align-items:center;gap:10px;margin-bottom:8px;color:#fff}
+.brandLogo{width:42px;height:42px;object-fit:contain;flex:none;filter:drop-shadow(0 3px 8px rgba(0,0,0,.16))}
+.headText{min-width:0;flex:1}.headText h1{margin:0;font-size:19px;line-height:1.15;font-weight:400;letter-spacing:.3px}.headText p{margin:2px 0 0;font-size:11.5px;white-space:nowrap}
+.langWrap{position:relative}.langBtn{display:flex;align-items:center;gap:4px;height:29px;border:1px solid rgba(255,255,255,.28);border-radius:999px;background:rgba(255,255,255,.18);color:#fff;padding:0 8px;cursor:pointer;font-size:11px;font-weight:700}
+.langMenu{position:absolute;right:0;top:35px;width:184px;padding:4px;border:1px solid var(--border);border-radius:13px;background:#fff;box-shadow:0 12px 28px rgba(43,43,28,.18);z-index:30}
+.langMenu button{display:flex;width:100%;align-items:center;gap:8px;border:0;border-radius:9px;background:transparent;padding:7px 9px;text-align:left;cursor:pointer;font-size:11.5px}.langMenu button:hover,.langMenu button.active{background:var(--soft)}
+.badge{min-width:54px;text-align:center;border-radius:999px;padding:4px 8px;background:rgba(255,255,255,.2);font-size:9px;line-height:1.1}.badge b{display:block;font-size:11px}.badge.licensed{background:#fff;color:var(--accent-deep)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:36px;padding:12px 14px;margin-bottom:10px;box-shadow:0 4px 16px rgba(52,52,28,.04)}
+.sectionTitle{margin:0 0 8px;font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.07em;text-transform:uppercase}
+
+/* Sticky preview: expanded artwork first, only the centered square while scrolling. */
+.previewDock{position:sticky;top:5px;z-index:15;height:356px;margin:0 0 10px;display:flex;justify-content:center;pointer-events:none;transition:height .2s ease}
+.previewStage{position:relative;width:100%;height:356px;overflow:hidden;border-radius:30px;background:transparent;transition:width .2s ease,height .2s ease,border-radius .2s ease,box-shadow .2s ease}
+.previewDock.compact{height:172px}.previewDock.compact .previewStage{width:172px;height:172px;border-radius:22px;box-shadow:0 8px 28px rgba(70,70,35,.18),0 0 0 1px var(--border);background:#fff}
+#preview{display:block;width:100%;height:100%}.previewHint{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:156px;height:156px;display:grid;place-items:center;padding:18px;border:1px solid var(--border);border-radius:18px;background:rgba(255,255,255,.92);color:var(--muted);font-size:11px;text-align:center}
+
+.segment{display:flex;gap:2px;padding:3px;border-radius:999px;background:var(--soft)}
+.segment>button{position:relative;flex:1;min-width:0;border:0;border-radius:999px;background:transparent;color:var(--muted);padding:7px 5px;cursor:pointer;font-size:12.5px;font-weight:700}
+.segment>button.active{background:var(--accent);color:#303022;box-shadow:0 3px 9px rgba(159,158,62,.22)}
+.modeSegment>button{height:36px}.checkerInline{display:none;align-items:center;justify-content:center;gap:3px}.checkerMode.active .checkerLabel{display:none}.checkerMode.active .checkerInline{display:flex}.checkerOption{display:grid;place-items:center;width:27px;height:24px;border-radius:999px;background:rgba(255,255,255,.38);font-size:11px}.checkerOption.selected{background:#fff;color:#555421;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.subCard{margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.field label,.miniLabel{display:block;margin:0 0 4px 3px;color:var(--muted);font-size:11px;font-weight:700}.number,.symbolInput{width:100%;height:34px;border:1px solid transparent;border-radius:13px;outline:0;background:var(--soft);color:var(--text);padding:0 11px}.number:focus,.symbolInput:focus{border-color:var(--accent-deep);background:#fff}
+.toggleLine{display:flex;align-items:center;gap:9px;min-height:30px;cursor:pointer}.toggleLine.disabled{opacity:.4;pointer-events:none}.toggleLine input{display:none}.checkBox{width:18px;height:18px;border:1.5px solid #c9c9b9;border-radius:6px;background:#fff;display:grid;place-items:center;flex:none}.toggleLine input:checked+.checkBox{background:var(--accent);border-color:var(--accent-deep)}.toggleLine input:checked+.checkBox:after{content:'✓';font-size:12px;font-weight:800;color:#3a3a20}.toggleLabel{font-size:12px;font-weight:600}.axes{display:flex;gap:14px;margin:5px 0 0 27px}.axes .toggleLine{min-height:24px}.axes .checkBox{width:16px;height:16px}
+.controlRow{display:grid;grid-template-columns:106px 1fr 38px;gap:8px;align-items:center;min-height:32px}.controlRow+.controlRow{margin-top:3px}.controlRow .name{font-size:12px;font-weight:600}output{text-align:right;color:var(--accent-deep);font-size:11px;font-weight:700;font-variant-numeric:tabular-nums}
+input[type=range]{-webkit-appearance:none;width:100%;height:21px;margin:0;padding:3px 0;background:transparent;cursor:default;touch-action:none}
+input[type=range]::-webkit-slider-runnable-track{height:5px;border-radius:999px;background:linear-gradient(to right,var(--accent) 0,var(--accent) var(--fill,50%),#dcdccc var(--fill,50%),#dcdccc 100%)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;margin-top:-5px;border:3px solid var(--accent-deep);border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.2);cursor:grab}
+input[type=range].dragging::-webkit-slider-thumb{cursor:grabbing}
+.notice{margin-top:7px;padding:7px 9px;border-radius:12px;background:#f5f5dc;color:#777629;font-size:10px}.disabledPanel{opacity:.42;pointer-events:none}
+
+.objectGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.objectPanel{min-width:0;padding:10px;border:1px solid var(--border);border-radius:22px;background:#fff}.objectPanel.inactive{opacity:.38;background:var(--soft)}.objectHead{display:flex;align-items:baseline;gap:6px;margin-bottom:9px}.objectHead span{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.06em}.objectHead b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:700}.objectPanel .colorLine{display:flex;align-items:center;justify-content:space-between;gap:5px;margin-bottom:7px;font-size:10px}.objectPanel .controlStack{margin-top:6px}.objectPanel .controlStack label{display:flex;justify-content:space-between;align-items:center;margin-bottom:0;font-size:10px}.objectPanel .controlStack output{font-size:10px}.objectPanel input[type=color]{width:43px;height:27px}
+input[type=color]{border:0;padding:2px;border-radius:9px;background:var(--soft);cursor:pointer}input[type=color]::-webkit-color-swatch-wrapper{padding:0}input[type=color]::-webkit-color-swatch{border:0;border-radius:7px}
+.backgroundLine{display:flex;align-items:center;justify-content:space-between;margin-top:9px;padding:0 3px;font-size:12px;font-weight:600}.backgroundLine input{width:48px;height:28px}
+
+.decorTypes{display:grid;grid-template-columns:repeat(6,1fr);gap:4px}.decorTypes button{height:34px;border:0;border-radius:11px;background:var(--soft);color:var(--muted);cursor:pointer;font-size:15px}.decorTypes button.active{background:var(--accent);color:#36361f}.decorDetails{margin-top:8px}.decorColor{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;font-size:12px}.decorColor input{width:48px;height:28px}.decorUnavailable{margin:6px 1px 0;color:var(--muted);font-size:10px}
+.checkerSlot .decorationPanel{margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.footer{display:flex;justify-content:center;margin:13px 0 2px}.footer img{height:30px;opacity:.7;cursor:pointer}
+.stickyBottom{position:fixed;z-index:20;left:0;right:0;bottom:0;padding:10px 12px 12px;background:linear-gradient(0deg,var(--bg) 72%,rgba(247,247,242,0))}.createBtn,.buyBtn,.activateBtn{width:100%;border:0;border-radius:999px;cursor:pointer;padding:13px;font-weight:800}.createBtn{color:#333;background:linear-gradient(90deg,#858585,#e7e7e7,#929292);background-size:200% 100%}.createBtn:hover:not(:disabled){animation:shine 1.8s linear infinite}.createBtn:disabled{background:#dddcd0;color:#fff;cursor:not-allowed}@keyframes shine{to{background-position:200% 0}}.status{min-height:14px;margin:4px 10px 0;text-align:center;font-size:10px;color:var(--muted)}.status.error{color:var(--danger)}.status.ok{color:var(--ok)}
+.lockCard{text-align:center;padding:25px 18px}.lockIcon{width:54px;height:54px;margin:0 auto 12px;border-radius:18px;display:grid;place-items:center;background:var(--accent);color:#3b3b22}.lockCard h2{font-size:16px;margin:0 0 5px}.lockCard p{color:var(--muted);margin:0 auto 13px;max-width:280px}.keyInput{width:100%;height:41px;border:1.5px solid var(--border);border-radius:999px;outline:0;text-align:center;text-transform:uppercase;letter-spacing:.11em;font-family:ui-monospace,monospace;font-weight:700}.keyInput:focus{border-color:var(--accent-deep)}.activateBtn{margin-top:8px;background:var(--accent);color:#35351f}.buyBtn{margin-top:8px;background:var(--soft)}.licenseMessage{min-height:17px;margin-top:7px;font-size:10.5px}.licenseMessage.error{color:var(--danger)}.licenseMessage.ok{color:var(--ok)}
 </style>
 </head>
 <body>
 <div class="topGlow"></div>
 <div class="page">
-  <div class="header">
-    <svg class="mark" viewBox="0 0 40 40" fill="none" aria-hidden="true">
-      <rect x="2" y="2" width="36" height="36" rx="12" fill="white" fill-opacity=".96"/>
-      <path d="M11 11h7v7h-7zm11 0h7v7h-7zM11 22h7v7h-7zm11 0h7v7h-7z" fill="#11A5CA"/>
-      <path d="M20 17.5l2.5 2.5L20 22.5 17.5 20z" fill="#FF4F9A"/>
-    </svg>
-    <div class="headText"><h1>Patternique</h1><p data-i18n="subtitle">Бесшовные узоры из слоёв Figma</p></div>
-    <button class="lang" id="langBtn">RU</button>
+  <header class="header">
+    <img class="brandLogo" alt="" src="data:image/png;base64,__TRACEBASE_LOGO_B64__">
+    <div class="headText"><h1>Patternique</h1><p data-i18n="subtitle">Seamless pattern maker</p></div>
+    <div class="langWrap"><button class="langBtn" id="langBtn"><span id="langFlag">🇷🇺</span><span id="langCode">RU</span><span>▾</span></button><div class="langMenu hidden" id="langMenu"></div></div>
     <div class="badge" id="licenseBadge"><b>…</b></div>
-  </div>
+  </header>
 
   <div id="lockScreen" class="card lockCard hidden">
-    <div class="lockIcon">
-      <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 018 0v3"/></svg>
-    </div>
-    <h2 data-i18n="trialEnded">Пробные создания закончились</h2>
-    <p data-i18n="trialEndedText">Активируйте ключ, чтобы создавать неограниченное количество узоров.</p>
+    <div class="lockIcon"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 018 0v3"/></svg></div>
+    <h2 data-i18n="trialEnded">Free creations used up</h2><p data-i18n="trialEndedText">Activate a key to create unlimited patterns.</p>
     <input class="keyInput" id="licenseKey" placeholder="XXXX-XXXX-XXXX-XXXX" maxlength="19" spellcheck="false">
-    <button class="activateBtn" id="activateBtn" data-i18n="activate">Активировать</button>
-    <div class="licenseMessage" id="licenseMessage"></div>
-    <button class="buyBtn" id="buyBtn" data-i18n="buy">Купить лицензию</button>
+    <button class="activateBtn" id="activateBtn" data-i18n="activate">Activate</button><div class="licenseMessage" id="licenseMessage"></div>
+    <button class="buyBtn" id="buyBtn" data-i18n="buy">Buy a license</button>
   </div>
 
   <main id="editor">
-    <section class="card selectionCard">
-      <div class="selectionRow">
-        <div class="selectionIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg></div>
-        <div class="selectionCopy"><div class="selectionTitle" id="selectionTitle" data-i18n="selectPrompt">Выберите 1 или 2 объекта</div><div class="selectionMeta" id="selectionMeta" data-i18n="selectHint">Фигура, вектор, группа или текст в Figma</div></div>
-        <div class="countPill" id="selectionCount">0</div>
-      </div>
-      <div class="previewWrap">
-        <canvas id="preview"></canvas>
-        <div class="previewHint" id="previewHint" data-i18n="previewHint">Здесь появится живой предпросмотр узора</div>
-      </div>
-    </section>
+    <div class="previewDock" id="previewDock"><div class="previewStage" id="previewStage"><canvas id="preview"></canvas><div class="previewHint" id="previewHint" data-i18n="previewHint">Select 1 or 2 objects in Figma</div></div></div>
 
     <section class="card">
-      <div class="sectionTitle" data-i18n="repeatMode">Режим повторения</div>
+      <div class="sectionTitle" data-i18n="repeatMode">Repeat mode</div>
       <div class="segment modeSegment" id="modeSegment">
-        <button class="active" data-value="grid" data-i18n="modeGrid">▦ Сетка</button>
-        <button data-value="rotate" data-i18n="modeRotate">⟳ Поворот</button>
-        <button data-value="checker" data-i18n="modeChecker">◩ Шахматы</button>
+        <button class="active" data-value="grid" data-i18n="modeGrid">Grid</button>
+        <button data-value="rotate" data-i18n="modeRotate">Rotation</button>
+        <button class="checkerMode" data-value="checker"><span class="checkerLabel" data-i18n="modeChecker">Checker</span><span class="checkerInline"><i class="checkerOption selected" data-checker="1">1</i><i class="checkerOption" data-checker="2">2</i></span></button>
       </div>
-      <div id="rotateOptions" class="subCard hidden">
-        <div class="controlRow"><span class="name" data-i18n="rotationStep">Шаг поворота</span><input id="rotationStep" type="range" min="-180" max="180" step="15" value="90"><output id="rotationStepOut">90°</output></div>
-      </div>
-      <div id="checkerOptions" class="subCard hidden">
-        <div class="miniLabel" data-i18n="oneObjectMode">Если выбран один объект</div>
-        <div class="segment" id="checkerBehavior"><button class="active" data-value="skip" data-i18n="checkerSkip">Через ячейку</button><button data-value="variant" data-i18n="checkerVariant">Другой вариант</button></div>
-        <div class="help" id="checkerHelp" data-i18n="twoObjectHelp">При выборе двух объектов они автоматически чередуются.</div>
-      </div>
+      <div id="rotateOptions" class="subCard hidden"><div class="controlRow"><span class="name" data-i18n="rotationStep">Rotation step</span><input id="rotationStep" type="range" min="-180" max="180" step="15" value="90"><output id="rotationStepOut">90°</output></div></div>
+      <div class="checkerSlot hidden" id="checkerSlot"></div>
     </section>
 
     <section class="card">
-      <div class="sectionTitle" data-i18n="gridSettings">Сетка и ячейка</div>
+      <div class="sectionTitle" data-i18n="gridSettings">Grid</div>
       <div class="grid2">
-        <div class="field"><label data-i18n="columns">Столбцы</label><input class="number" id="columns" type="number" min="2" max="20" value="6"></div>
-        <div class="field"><label data-i18n="rows">Строки</label><input class="number" id="rows" type="number" min="2" max="20" value="4"></div>
-        <div class="field"><label data-i18n="cellWidth">Ширина ячейки</label><input class="number" id="cellWidth" type="number" min="32" max="400" value="120"></div>
-        <div class="field"><label data-i18n="cellHeight">Высота ячейки</label><input class="number" id="cellHeight" type="number" min="32" max="400" value="120"></div>
+        <div class="field"><label data-i18n="columns">Columns</label><input class="number" id="columns" type="number" min="1" max="20" value="4"></div>
+        <div class="field"><label data-i18n="rows">Rows</label><input class="number" id="rows" type="number" min="1" max="20" value="4"></div>
       </div>
       <div class="subCard">
-        <div class="miniLabel" data-i18n="alternateShift">Сдвиг через один</div>
-        <div class="segment" id="shiftMode"><button class="active" data-value="none" data-i18n="shiftNone">Нет</button><button data-value="rows" data-i18n="shiftRows">Строки</button><button data-value="columns" data-i18n="shiftColumns">Колонки</button><button data-value="both" data-i18n="shiftBoth">Оба</button></div>
-        <div id="shiftXRow" class="controlRow hidden"><span class="name" data-i18n="horizontal">По горизонтали</span><input id="shiftX" type="range" min="-100" max="100" value="50"><output id="shiftXOut">50%</output></div>
-        <div id="shiftYRow" class="controlRow hidden"><span class="name" data-i18n="vertical">По вертикали</span><input id="shiftY" type="range" min="-100" max="100" value="50"><output id="shiftYOut">50%</output></div>
+        <label class="toggleLine" id="halfGridLine"><input id="halfGrid" type="checkbox"><span class="checkBox"></span><span class="toggleLabel" data-i18n="halfGrid">Half-size grid</span></label>
+        <div class="axes hidden" id="halfAxes">
+          <label class="toggleLine"><input id="halfHorizontal" type="checkbox" checked><span class="checkBox"></span><span data-i18n="horizontal">Horizontal</span></label>
+          <label class="toggleLine"><input id="halfVertical" type="checkbox" checked><span class="checkBox"></span><span data-i18n="vertical">Vertical</span></label>
+        </div>
       </div>
-      <div class="notice hidden" id="evenNotice" data-i18n="evenNotice">Для бесшовного чередования нечётное значение будет округлено вверх.</div>
+      <div class="subCard">
+        <label class="toggleLine"><input id="shiftEnabled" type="checkbox"><span class="checkBox"></span><span class="toggleLabel" data-i18n="alternateShift">Alternate offset: both</span></label>
+        <div id="shiftControls" class="hidden">
+          <div class="controlRow"><span class="name" data-i18n="horizontal">Horizontal</span><input id="shiftX" type="range" min="-100" max="100" value="0"><output id="shiftXOut">0%</output></div>
+          <div class="controlRow"><span class="name" data-i18n="vertical">Vertical</span><input id="shiftY" type="range" min="-100" max="100" value="0"><output id="shiftYOut">0%</output></div>
+        </div>
+      </div>
+      <div class="notice" data-i18n="fixedSize">The generated pattern is always 256 × 256 px.</div>
     </section>
 
     <section class="card">
-      <div class="sectionTitle" data-i18n="objectSettings">Объекты и фон</div>
-      <div class="subHead"><b data-i18n="objectOne">Объект 1</b><span class="objectTag" id="objectOneTag">A</span></div>
-      <div class="colorRow"><label data-i18n="objectColor">Цвет фигуры</label><input id="color1" type="color" value="#11A5CA"></div>
-      <div class="controlRow"><span class="name" data-i18n="objectSize">Размер</span><input id="size1" type="range" min="10" max="180" value="68"><output id="size1Out">68%</output></div>
-      <div class="controlRow"><span class="name" data-i18n="baseRotation">Поворот</span><input id="rotation1" type="range" min="-180" max="180" step="5" value="0"><output id="rotation1Out">0°</output></div>
-
-      <div class="subCard hidden" id="secondObjectPanel">
-        <div class="subHead"><b id="secondTitle" data-i18n="objectTwo">Объект 2 / вариант</b><span class="objectTag" id="objectTwoTag">B</span></div>
-        <div class="colorRow"><label data-i18n="objectColor">Цвет фигуры</label><input id="color2" type="color" value="#FF4F9A"></div>
-        <div class="controlRow"><span class="name" data-i18n="objectSize">Размер</span><input id="size2" type="range" min="10" max="180" value="48"><output id="size2Out">48%</output></div>
-        <div class="controlRow"><span class="name" data-i18n="baseRotation">Поворот</span><input id="rotation2" type="range" min="-180" max="180" step="5" value="45"><output id="rotation2Out">45°</output></div>
-      </div>
-      <div class="subCard"><div class="colorRow" style="margin:0"><label data-i18n="background">Цвет фона</label><input id="background" type="color" value="#F4F8FB"></div></div>
-    </section>
-
-    <section class="card" id="decorationCard">
-      <div class="sectionTitle" data-i18n="intersections">Фигура на пересечениях</div>
-      <div class="help" style="margin:-3px 2px 8px" data-i18n="intersectionHint">Доступно для обычной сетки без сдвигов.</div>
-      <div id="decorationControls">
-        <div class="decorTypes" id="decorTypes">
-          <button class="active" data-value="none" title="Нет">—</button>
-          <button data-value="cross" title="Перекрестие">×</button>
-          <button data-value="star" title="4-гранная звезда">✦</button>
-          <button data-value="circle" title="Круг">●</button>
-          <button data-value="symbol" title="Символ">Aa</button>
-          <button data-value="line" title="Линия">╱</button>
+      <div class="sectionTitle" data-i18n="objectSettings">Objects and background</div>
+      <div class="objectGrid">
+        <div class="objectPanel" id="objectPanel1">
+          <div class="objectHead"><span data-i18n="object">Object</span><b id="objectName1">—</b></div>
+          <div class="colorLine"><span data-i18n="color">Color</span><input id="color1" type="color" value="#DEDD74"></div>
+          <div class="controlStack"><label><span data-i18n="size">Size</span><output id="size1Out">68%</output></label><input id="size1" type="range" min="10" max="180" value="68"></div>
+          <div class="controlStack"><label><span data-i18n="rotation">Rotation</span><output id="rotation1Out">0°</output></label><input id="rotation1" type="range" min="-180" max="180" step="5" value="0"></div>
         </div>
-        <div id="decorDetails" class="subCard hidden">
-          <div class="colorRow"><label data-i18n="decorColor">Цвет элемента</label><input id="decorationColor" type="color" value="#12202D"></div>
-          <div class="controlRow"><span class="name" data-i18n="decorSize">Размер</span><input id="decorationSize" type="range" min="4" max="100" value="20"><output id="decorationSizeOut">20</output></div>
-          <div class="field hidden" id="symbolField"><label data-i18n="symbolLabel">Символ</label><input class="symbolInput" id="symbol" value="✦" maxlength="8"></div>
+        <div class="objectPanel inactive" id="objectPanel2">
+          <div class="objectHead"><span data-i18n="object">Object</span><b id="objectName2">—</b></div>
+          <div class="colorLine"><span data-i18n="color">Color</span><input id="color2" type="color" value="#A9A84C" disabled></div>
+          <div class="controlStack"><label><span data-i18n="size">Size</span><output id="size2Out">52%</output></label><input id="size2" type="range" min="10" max="180" value="52" disabled></div>
+          <div class="controlStack"><label><span data-i18n="rotation">Rotation</span><output id="rotation2Out">45°</output></label><input id="rotation2" type="range" min="-180" max="180" step="5" value="45" disabled></div>
         </div>
       </div>
+      <div class="backgroundLine"><span data-i18n="background">Background color</span><input id="background" type="color" value="#F8F8ED"></div>
     </section>
 
+    <section class="card" id="decorationCard"><div id="decorationHost"></div></section>
     <div class="footer"><img id="footerLogo" alt="LEDNIQUE" src="data:image/png;base64,__LEDNIQUE_B64__"></div>
   </main>
 </div>
 
-<div class="sticky" id="sticky"><button class="createBtn" id="createBtn" disabled data-i18n="create">Создать бесшовный узор</button><div class="status" id="status"></div></div>
+<div class="decorationPanel" id="decorationPanel">
+  <div class="sectionTitle" data-i18n="intersections">Intersection element</div>
+  <div id="decorationControls">
+    <div class="decorTypes" id="decorTypes"><button class="active" data-value="none">—</button><button data-value="cross">×</button><button data-value="star">✦</button><button data-value="circle">●</button><button data-value="symbol">Aa</button><button data-value="line">╱</button></div>
+    <div class="decorDetails hidden" id="decorDetails">
+      <div class="decorColor"><span data-i18n="decorColor">Element color</span><input id="decorationColor" type="color" value="#5E5D22"></div>
+      <div class="controlRow"><span class="name" data-i18n="decorSize">Size</span><input id="decorationSize" type="range" min="4" max="100" value="20"><output id="decorationSizeOut">20</output></div>
+      <div class="field hidden" id="symbolField"><label data-i18n="symbolLabel">Symbol</label><input class="symbolInput" id="symbol" value="✦" maxlength="8"></div>
+    </div>
+    <div class="decorUnavailable hidden" id="decorUnavailable" data-i18n="decorUnavailable">Set both offsets to 0 to use intersection elements.</div>
+  </div>
+</div>
+
+<div class="stickyBottom" id="stickyBottom"><button class="createBtn" id="createBtn" disabled data-i18n="create">Create seamless pattern</button><div class="status" id="status"></div></div>
 
 <script>
 /*__PATTERN_CORE__*/
+var SITE_URL='https://pattern.lednique.ru',ACTIVATE_URL=SITE_URL,TRIAL_LIMIT=5;
+var LANGS={en:{flag:'🇬🇧',label:'English'},ru:{flag:'🇷🇺',label:'Русский'},it:{flag:'🇮🇹',label:'Italiano'},pt:{flag:'🇵🇹',label:'Português'},fr:{flag:'🇫🇷',label:'Français'},zh:{flag:'🇨🇳',label:'中文'},ja:{flag:'🇯🇵',label:'日本語'}};
+var language=(function(){var code=(navigator.language||'en').toLowerCase().slice(0,2);return LANGS[code]?code:'en';})();
+var state={mode:'grid',checkerLayout:1,decoration:'none'};
+var selection={valid:false,items:[],images:[]};
+var license={userId:null,licensed:false,plan:null,expiresAt:null,remaining:TRIAL_LIMIT,locked:false};
+var createPending=false,saveTimer=null,pendingCache={};
 
-var SITE_URL = 'https://pattern.lednique.ru';
-var ACTIVATE_URL = SITE_URL;
-var TRIAL_LIMIT = 5;
-var language = /^ru/i.test(navigator.language || '') ? 'ru' : 'en';
-var state = { mode:'grid', checkerBehavior:'skip', shiftMode:'none', decoration:'none' };
-var selection = { valid:false, items:[], images:[] };
-var license = { userId:null, loaded:false, licensed:false, plan:null, expiresAt:null, remaining:TRIAL_LIMIT, locked:false };
-var createPending = false;
-var saveTimer = null;
-
-var I18N = {
-  ru: {
-    subtitle:'Бесшовные узоры из слоёв Figma', trialEnded:'Пробные создания закончились', trialEndedText:'Активируйте ключ, чтобы создавать неограниченное количество узоров.', activate:'Активировать', buy:'Купить лицензию',
-    selectPrompt:'Выберите 1 или 2 объекта', selectHint:'Фигура, вектор, группа или текст в Figma', previewHint:'Здесь появится живой предпросмотр узора', repeatMode:'Режим повторения', modeGrid:'▦ Сетка', modeRotate:'⟳ Поворот', modeChecker:'◩ Шахматы', rotationStep:'Шаг поворота', oneObjectMode:'Если выбран один объект', checkerSkip:'Через ячейку', checkerVariant:'Другой вариант', twoObjectHelp:'При выборе двух объектов они автоматически чередуются.',
-    gridSettings:'Сетка и ячейка', columns:'Столбцы', rows:'Строки', cellWidth:'Ширина ячейки, px', cellHeight:'Высота ячейки, px', alternateShift:'Сдвиг через один', shiftNone:'Нет', shiftRows:'Строки', shiftColumns:'Колонки', shiftBoth:'Оба', horizontal:'По горизонтали', vertical:'По вертикали', evenNotice:'Для бесшовного чередования нечётное значение будет округлено вверх.',
-    objectSettings:'Объекты и фон', objectOne:'Объект 1', objectTwo:'Объект 2 / вариант', objectColor:'Цвет фигуры', objectSize:'Размер', baseRotation:'Поворот', background:'Цвет фона', intersections:'Фигура на пересечениях', intersectionHint:'Доступно для обычной сетки без сдвигов.', decorColor:'Цвет элемента', decorSize:'Размер', symbolLabel:'Символ', create:'Создать бесшовный узор',
-    selectedOne:'Выбран 1 объект', selectedTwo:'Выбраны 2 объекта', selectedMeta:'{names} · {sizes}', tooMany:'Выбрано больше 2 объектов', unsupported:'Этот тип слоя не поддерживается', empty:'Выберите объект в Figma', creating:'Создаём узор…', created:'Готово: {w} × {h} px', selectionChanged:'Выделение изменилось. Выберите исходный объект снова.', genericError:'Не удалось создать узор', trial:'ПРОБА', forever:'НАВСЕГДА', annual:'1 ГОД', left:'Осталось {n} из {m}', noKey:'Введите ключ лицензии', badKey:'Проверьте формат ключа', activating:'Проверяем ключ…', activated:'Лицензия активирована', keyError:'Ключ не найден, истёк или уже привязан к другому аккаунту.', networkError:'Нет связи с сервером лицензий'
-  },
-  en: {
-    subtitle:'Seamless patterns from Figma layers', trialEnded:'Free creations used up', trialEndedText:'Activate a key to create unlimited patterns.', activate:'Activate', buy:'Buy a license',
-    selectPrompt:'Select 1 or 2 objects', selectHint:'Shape, vector, group or text in Figma', previewHint:'A live pattern preview will appear here', repeatMode:'Repeat mode', modeGrid:'▦ Grid', modeRotate:'⟳ Rotation', modeChecker:'◩ Checker', rotationStep:'Rotation step', oneObjectMode:'With one selected object', checkerSkip:'Every other cell', checkerVariant:'Alternate style', twoObjectHelp:'Two selected objects alternate automatically.',
-    gridSettings:'Grid and cell', columns:'Columns', rows:'Rows', cellWidth:'Cell width, px', cellHeight:'Cell height, px', alternateShift:'Alternate offset', shiftNone:'None', shiftRows:'Rows', shiftColumns:'Columns', shiftBoth:'Both', horizontal:'Horizontal', vertical:'Vertical', evenNotice:'Odd counts are rounded up to keep the tile seamless.',
-    objectSettings:'Objects and background', objectOne:'Object 1', objectTwo:'Object 2 / variant', objectColor:'Object color', objectSize:'Size', baseRotation:'Rotation', background:'Background color', intersections:'Intersection element', intersectionHint:'Available for a regular grid without offsets.', decorColor:'Element color', decorSize:'Size', symbolLabel:'Symbol', create:'Create seamless pattern',
-    selectedOne:'1 object selected', selectedTwo:'2 objects selected', selectedMeta:'{names} · {sizes}', tooMany:'More than 2 objects selected', unsupported:'This layer type is not supported', empty:'Select an object in Figma', creating:'Creating pattern…', created:'Done: {w} × {h} px', selectionChanged:'Selection changed. Select the source object again.', genericError:'Could not create the pattern', trial:'TRIAL', forever:'FOREVER', annual:'1 YEAR', left:'{n} of {m} left', noKey:'Enter a license key', badKey:'Check the key format', activating:'Checking key…', activated:'License activated', keyError:'Key was not found, expired, or belongs to another account.', networkError:'License server is unavailable'
-  }
+var I18N={
+ en:{subtitle:'Seamless pattern maker',trialEnded:'Free creations used up',trialEndedText:'Activate a key to create unlimited patterns.',activate:'Activate',buy:'Buy a license',previewHint:'Select 1 or 2 objects in Figma',repeatMode:'Repeat mode',modeGrid:'Grid',modeRotate:'Rotation',modeChecker:'Checker',rotationStep:'Rotation step',gridSettings:'Grid',columns:'Columns',rows:'Rows',halfGrid:'Half-size grid',horizontal:'Horizontal',vertical:'Vertical',alternateShift:'Alternate offset: both',fixedSize:'The generated pattern is always 256 × 256 px.',objectSettings:'Objects and background',object:'Object',color:'Color',size:'Size',rotation:'Rotation',background:'Background color',intersections:'Intersection element',decorColor:'Element color',decorSize:'Size',symbolLabel:'Symbol',decorUnavailable:'Set both offsets to 0 to use intersection elements.',create:'Create seamless pattern',empty:'Select an object in Figma',tooMany:'Select no more than 2 objects',unsupported:'This layer type is not supported',creating:'Creating pattern…',created:'Pattern created: 256 × 256 px',selectionChanged:'Select the source object again.',genericError:'Could not create the pattern',trial:'TRIAL',forever:'FOREVER',annual:'1 YEAR',noKey:'Enter a license key',badKey:'Check the key format',activating:'Checking key…',activated:'License activated',keyError:'Key not found, expired, or bound to another account.',networkError:'License server is unavailable'},
+ ru:{subtitle:'Создание бесшовных узоров',trialEnded:'Пробные создания закончились',trialEndedText:'Активируйте ключ, чтобы создавать неограниченное количество узоров.',activate:'Активировать',buy:'Купить лицензию',previewHint:'Выберите 1 или 2 объекта в Figma',repeatMode:'Режим повторения',modeGrid:'Сетка',modeRotate:'Поворот',modeChecker:'Шахматы',rotationStep:'Шаг поворота',gridSettings:'Сетка',columns:'Столбцы',rows:'Строки',halfGrid:'Сетка в полразмера',horizontal:'По горизонтали',vertical:'По вертикали',alternateShift:'Сдвиг через один: оба',fixedSize:'Создаваемый паттерн всегда имеет размер 256 × 256 px.',objectSettings:'Объекты и фон',object:'Объект',color:'Цвет',size:'Размер',rotation:'Поворот',background:'Цвет фона',intersections:'Фигура при пересечении',decorColor:'Цвет элемента',decorSize:'Размер',symbolLabel:'Символ',decorUnavailable:'Установите оба сдвига в 0, чтобы использовать фигуру при пересечении.',create:'Создать бесшовный узор',empty:'Выберите объект в Figma',tooMany:'Выберите не больше 2 объектов',unsupported:'Этот тип слоя не поддерживается',creating:'Создаём узор…',created:'Паттерн создан: 256 × 256 px',selectionChanged:'Снова выберите исходный объект.',genericError:'Не удалось создать узор',trial:'ПРОБА',forever:'НАВСЕГДА',annual:'1 ГОД',noKey:'Введите ключ лицензии',badKey:'Проверьте формат ключа',activating:'Проверяем ключ…',activated:'Лицензия активирована',keyError:'Ключ не найден, истёк или привязан к другому аккаунту.',networkError:'Нет связи с сервером лицензий'},
+ it:{subtitle:'Creatore di pattern continui',trialEnded:'Creazioni gratuite esaurite',trialEndedText:'Attiva una chiave per creare pattern senza limiti.',activate:'Attiva',buy:'Acquista licenza',previewHint:'Seleziona 1 o 2 oggetti in Figma',repeatMode:'Modalità ripetizione',modeGrid:'Griglia',modeRotate:'Rotazione',modeChecker:'Scacchiera',rotationStep:'Passo rotazione',gridSettings:'Griglia',columns:'Colonne',rows:'Righe',halfGrid:'Griglia a mezza misura',horizontal:'Orizzontale',vertical:'Verticale',alternateShift:'Spostamento alternato: entrambi',fixedSize:'Il pattern generato è sempre 256 × 256 px.',objectSettings:'Oggetti e sfondo',object:'Oggetto',color:'Colore',size:'Dimensione',rotation:'Rotazione',background:'Colore sfondo',intersections:'Elemento alle intersezioni',decorColor:'Colore elemento',decorSize:'Dimensione',symbolLabel:'Simbolo',decorUnavailable:'Imposta entrambi gli spostamenti su 0 per usare le intersezioni.',create:'Crea pattern continuo',empty:'Seleziona un oggetto in Figma',tooMany:'Seleziona al massimo 2 oggetti',unsupported:'Tipo di livello non supportato',creating:'Creazione…',created:'Pattern creato: 256 × 256 px',selectionChanged:'Seleziona di nuovo l’oggetto sorgente.',genericError:'Impossibile creare il pattern',trial:'PROVA',forever:'PER SEMPRE',annual:'1 ANNO',noKey:'Inserisci una chiave',badKey:'Controlla il formato',activating:'Verifica chiave…',activated:'Licenza attivata',keyError:'Chiave non trovata, scaduta o già associata.',networkError:'Server licenze non disponibile'},
+ pt:{subtitle:'Criador de padrões contínuos',trialEnded:'Criações gratuitas esgotadas',trialEndedText:'Ative uma chave para criar padrões ilimitados.',activate:'Ativar',buy:'Comprar licença',previewHint:'Selecione 1 ou 2 objetos no Figma',repeatMode:'Modo de repetição',modeGrid:'Grade',modeRotate:'Rotação',modeChecker:'Xadrez',rotationStep:'Passo da rotação',gridSettings:'Grade',columns:'Colunas',rows:'Linhas',halfGrid:'Grade de meio tamanho',horizontal:'Horizontal',vertical:'Vertical',alternateShift:'Deslocamento alternado: ambos',fixedSize:'O padrão gerado tem sempre 256 × 256 px.',objectSettings:'Objetos e fundo',object:'Objeto',color:'Cor',size:'Tamanho',rotation:'Rotação',background:'Cor de fundo',intersections:'Elemento nas interseções',decorColor:'Cor do elemento',decorSize:'Tamanho',symbolLabel:'Símbolo',decorUnavailable:'Defina ambos os deslocamentos como 0 para usar interseções.',create:'Criar padrão contínuo',empty:'Selecione um objeto no Figma',tooMany:'Selecione no máximo 2 objetos',unsupported:'Tipo de camada não suportado',creating:'Criando…',created:'Padrão criado: 256 × 256 px',selectionChanged:'Selecione novamente o objeto de origem.',genericError:'Não foi possível criar o padrão',trial:'TESTE',forever:'PARA SEMPRE',annual:'1 ANO',noKey:'Digite uma chave',badKey:'Verifique o formato',activating:'Verificando…',activated:'Licença ativada',keyError:'Chave não encontrada, expirada ou vinculada.',networkError:'Servidor de licenças indisponível'},
+ fr:{subtitle:'Créateur de motifs continus',trialEnded:'Créations gratuites épuisées',trialEndedText:'Activez une clé pour créer des motifs illimités.',activate:'Activer',buy:'Acheter une licence',previewHint:'Sélectionnez 1 ou 2 objets dans Figma',repeatMode:'Mode de répétition',modeGrid:'Grille',modeRotate:'Rotation',modeChecker:'Damier',rotationStep:'Pas de rotation',gridSettings:'Grille',columns:'Colonnes',rows:'Lignes',halfGrid:'Grille demi-taille',horizontal:'Horizontal',vertical:'Vertical',alternateShift:'Décalage alterné : les deux',fixedSize:'Le motif généré mesure toujours 256 × 256 px.',objectSettings:'Objets et arrière-plan',object:'Objet',color:'Couleur',size:'Taille',rotation:'Rotation',background:'Couleur du fond',intersections:'Élément aux intersections',decorColor:'Couleur élément',decorSize:'Taille',symbolLabel:'Symbole',decorUnavailable:'Réglez les deux décalages sur 0 pour utiliser les intersections.',create:'Créer un motif continu',empty:'Sélectionnez un objet dans Figma',tooMany:'Sélectionnez 2 objets maximum',unsupported:'Type de calque non pris en charge',creating:'Création…',created:'Motif créé : 256 × 256 px',selectionChanged:'Sélectionnez à nouveau l’objet source.',genericError:'Impossible de créer le motif',trial:'ESSAI',forever:'À VIE',annual:'1 AN',noKey:'Saisissez une clé',badKey:'Vérifiez le format',activating:'Vérification…',activated:'Licence activée',keyError:'Clé introuvable, expirée ou déjà liée.',networkError:'Serveur de licences indisponible'},
+ zh:{subtitle:'无缝图案生成器',trialEnded:'免费创建次数已用完',trialEndedText:'激活密钥即可无限创建图案。',activate:'激活',buy:'购买许可证',previewHint:'在 Figma 中选择 1 或 2 个对象',repeatMode:'重复模式',modeGrid:'网格',modeRotate:'旋转',modeChecker:'棋盘',rotationStep:'旋转步长',gridSettings:'网格',columns:'列',rows:'行',halfGrid:'半尺寸网格',horizontal:'水平',vertical:'垂直',alternateShift:'交替偏移：两者',fixedSize:'生成的图案始终为 256 × 256 px。',objectSettings:'对象与背景',object:'对象',color:'颜色',size:'大小',rotation:'旋转',background:'背景颜色',intersections:'交点元素',decorColor:'元素颜色',decorSize:'大小',symbolLabel:'符号',decorUnavailable:'将两个偏移设为 0 以使用交点元素。',create:'创建无缝图案',empty:'请在 Figma 中选择对象',tooMany:'最多选择 2 个对象',unsupported:'不支持此图层类型',creating:'正在创建…',created:'图案已创建：256 × 256 px',selectionChanged:'请重新选择源对象。',genericError:'无法创建图案',trial:'试用',forever:'永久',annual:'1 年',noKey:'请输入许可证密钥',badKey:'请检查密钥格式',activating:'正在验证…',activated:'许可证已激活',keyError:'密钥不存在、已过期或已绑定。',networkError:'许可证服务器不可用'},
+ ja:{subtitle:'シームレスパターン作成',trialEnded:'無料作成回数を使い切りました',trialEndedText:'キーを有効化すると無制限に作成できます。',activate:'有効化',buy:'ライセンスを購入',previewHint:'Figmaで1つまたは2つのオブジェクトを選択',repeatMode:'リピートモード',modeGrid:'グリッド',modeRotate:'回転',modeChecker:'市松模様',rotationStep:'回転ステップ',gridSettings:'グリッド',columns:'列',rows:'行',halfGrid:'ハーフサイズグリッド',horizontal:'水平',vertical:'垂直',alternateShift:'交互オフセット：両方',fixedSize:'生成パターンは常に 256 × 256 px です。',objectSettings:'オブジェクトと背景',object:'オブジェクト',color:'色',size:'サイズ',rotation:'回転',background:'背景色',intersections:'交点の要素',decorColor:'要素の色',decorSize:'サイズ',symbolLabel:'記号',decorUnavailable:'交点要素を使うには両方のオフセットを0にしてください。',create:'シームレスパターンを作成',empty:'Figmaでオブジェクトを選択',tooMany:'選択は2つまでです',unsupported:'このレイヤー形式は未対応です',creating:'作成中…',created:'パターンを作成しました：256 × 256 px',selectionChanged:'元のオブジェクトを再選択してください。',genericError:'パターンを作成できませんでした',trial:'試用',forever:'永久',annual:'1年',noKey:'ライセンスキーを入力',badKey:'キー形式を確認してください',activating:'確認中…',activated:'ライセンスを有効化しました',keyError:'キーがない、期限切れ、または別アカウントに紐付いています。',networkError:'ライセンスサーバーに接続できません'}
 };
+function $(id){return document.getElementById(id)}
+function t(key,vars){var text=(I18N[language]&&I18N[language][key])||I18N.en[key]||key;Object.keys(vars||{}).forEach(function(k){text=text.split('{'+k+'}').join(vars[k])});return text}
+function applyLanguage(){document.documentElement.lang=language;document.querySelectorAll('[data-i18n]').forEach(function(el){el.textContent=t(el.dataset.i18n)});$('langFlag').textContent=LANGS[language].flag;$('langCode').textContent=language.toUpperCase();document.querySelectorAll('#langMenu button').forEach(function(b){b.classList.toggle('active',b.dataset.lang===language)});updateSelectionUI();updateLicenseUI()}
+function buildLangMenu(){var menu=$('langMenu');Object.keys(LANGS).forEach(function(code){var b=document.createElement('button');b.dataset.lang=code;b.innerHTML='<span>'+LANGS[code].flag+'</span>'+LANGS[code].label;b.addEventListener('click',function(){language=code;applyLanguage();cacheSave('lang',code);menu.classList.add('hidden')});menu.appendChild(b)})}
+$('langBtn').addEventListener('click',function(e){e.stopPropagation();$('langMenu').classList.toggle('hidden')});document.addEventListener('click',function(){$('langMenu').classList.add('hidden')});buildLangMenu();
 
-function $(id) { return document.getElementById(id); }
-function t(key, vars) {
-  var text = (I18N[language] && I18N[language][key]) || I18N.ru[key] || key;
-  Object.keys(vars || {}).forEach(function (name) { text = text.split('{' + name + '}').join(vars[name]); });
-  return text;
-}
-function applyLanguage() {
-  document.documentElement.lang = language;
-  document.querySelectorAll('[data-i18n]').forEach(function (el) { el.textContent = t(el.dataset.i18n); });
-  $('langBtn').textContent = language.toUpperCase();
-  updateSelectionCopy(); updateLicenseUI(); updateDynamicUI();
-}
-$('langBtn').addEventListener('click', function () { language = language === 'ru' ? 'en' : 'ru'; applyLanguage(); cacheSave('lang', language); });
+function setMode(value){state.mode=value;document.querySelectorAll('#modeSegment>button').forEach(function(b){b.classList.toggle('active',b.dataset.value===value)});updateDynamicUI();changed()}
+$('modeSegment').addEventListener('click',function(e){var option=e.target.closest('[data-checker]');if(option){state.checkerLayout=Number(option.dataset.checker);document.querySelectorAll('.checkerOption').forEach(function(i){i.classList.toggle('selected',i===option)});if(state.mode!=='checker')setMode('checker');else changed();return}var button=e.target.closest('button[data-value]');if(button)setMode(button.dataset.value)});
+$('decorTypes').addEventListener('click',function(e){var b=e.target.closest('button[data-value]');if(!b)return;state.decoration=b.dataset.value;document.querySelectorAll('#decorTypes button').forEach(function(x){x.classList.toggle('active',x===b)});updateDynamicUI();changed()});
 
-function setSegment(containerId, value) {
-  document.querySelectorAll('#' + containerId + ' button').forEach(function (button) { button.classList.toggle('active', button.dataset.value === value); });
-}
-function bindSegment(containerId, key) {
-  $(containerId).addEventListener('click', function (event) {
-    var button = event.target.closest('button[data-value]'); if (!button) return;
-    state[key] = button.dataset.value; setSegment(containerId, state[key]); updateDynamicUI(); changed();
-  });
-}
-bindSegment('modeSegment','mode'); bindSegment('checkerBehavior','checkerBehavior'); bindSegment('shiftMode','shiftMode'); bindSegment('decorTypes','decoration');
+function paintRange(id,suffix){var input=$(id),out=$(id+'Out'),pct=((+input.value-+input.min)/(+input.max-+input.min))*100;input.style.setProperty('--fill',pct+'%');if(out)out.textContent=input.value+(suffix||'')}
+var ranges=[['rotationStep','°'],['shiftX','%'],['shiftY','%'],['size1','%'],['rotation1','°'],['size2','%'],['rotation2','°'],['decorationSize','']];
+ranges.forEach(function(entry){var input=$(entry[0]);paintRange(entry[0],entry[1]);input.tabIndex=-1;input.addEventListener('keydown',function(e){e.preventDefault()});input.addEventListener('wheel',function(){input.blur()},{passive:true});input.addEventListener('pointerdown',function(e){var rect=input.getBoundingClientRect(),pct=(+input.value-+input.min)/(+input.max-+input.min),thumb=15,center=rect.left+thumb/2+pct*(rect.width-thumb);if(Math.abs(e.clientX-center)>thumb/2+3){e.preventDefault();e.stopImmediatePropagation();return}input.classList.add('dragging')},true);input.addEventListener('pointerup',function(){input.classList.remove('dragging')});input.addEventListener('pointercancel',function(){input.classList.remove('dragging')});input.addEventListener('input',function(){paintRange(entry[0],entry[1]);changed()})});
+['columns','rows','color1','color2','background','decorationColor','symbol','halfGrid','halfHorizontal','halfVertical','shiftEnabled'].forEach(function(id){$(id).addEventListener('input',changed)});
 
-function paintRange(id, suffix) {
-  var input = $(id), output = $(id + 'Out');
-  var percent = ((Number(input.value) - Number(input.min)) / (Number(input.max) - Number(input.min))) * 100;
-  input.style.setProperty('--fill', percent + '%');
-  if (output) output.textContent = input.value + (suffix || '');
-}
-[['rotationStep','°'],['shiftX','%'],['shiftY','%'],['size1','%'],['rotation1','°'],['size2','%'],['rotation2','°'],['decorationSize','']].forEach(function (entry) {
-  paintRange(entry[0],entry[1]);
-  $(entry[0]).addEventListener('input', function () { paintRange(entry[0],entry[1]); changed(); });
-});
+function readSettings(){return{mode:state.mode,checkerLayout:state.checkerLayout,decoration:state.decoration,columns:$('columns').value,rows:$('rows').value,rotationStep:$('rotationStep').value,shiftEnabled:$('shiftEnabled').checked,shiftX:$('shiftX').value,shiftY:$('shiftY').value,halfGrid:$('halfGrid').checked,halfHorizontal:$('halfHorizontal').checked,halfVertical:$('halfVertical').checked,size1:$('size1').value,rotation1:$('rotation1').value,color1:$('color1').value,size2:$('size2').value,rotation2:$('rotation2').value,color2:$('color2').value,background:$('background').value,decorationColor:$('decorationColor').value,decorationSize:$('decorationSize').value,symbol:$('symbol').value}}
+function applySettings(saved){if(!saved)return;if(saved.mode)state.mode=saved.mode;if(saved.checkerLayout)state.checkerLayout=+saved.checkerLayout;if(saved.decoration)state.decoration=saved.decoration;['columns','rows','rotationStep','shiftX','shiftY','size1','rotation1','color1','size2','rotation2','color2','background','decorationColor','decorationSize','symbol'].forEach(function(id){if(saved[id]!==undefined)$(id).value=saved[id]});['shiftEnabled','halfGrid','halfHorizontal','halfVertical'].forEach(function(id){if(saved[id]!==undefined)$(id).checked=!!saved[id]});document.querySelectorAll('#modeSegment>button').forEach(function(b){b.classList.toggle('active',b.dataset.value===state.mode)});document.querySelectorAll('.checkerOption').forEach(function(i){i.classList.toggle('selected',+i.dataset.checker===state.checkerLayout)});document.querySelectorAll('#decorTypes button').forEach(function(b){b.classList.toggle('active',b.dataset.value===state.decoration)});ranges.forEach(function(x){paintRange(x[0],x[1])});updateDynamicUI();renderPreview()}
+function changed(){updateDynamicUI();renderPreview();clearTimeout(saveTimer);saveTimer=setTimeout(function(){cacheSave('settings',readSettings())},250)}
 
-['columns','rows','cellWidth','cellHeight','color1','color2','background','decorationColor','symbol'].forEach(function (id) {
-  $(id).addEventListener('input', changed);
-});
+function updateDynamicUI(){
+ var s=PatternCore.normalizeSettings(readSettings()),two=selection.items.length===2;
+ $('rotateOptions').classList.toggle('hidden',state.mode!=='rotate');$('checkerSlot').classList.toggle('hidden',state.mode!=='checker');
+ var eligible=s.halfEligible;$('halfGridLine').classList.toggle('disabled',!eligible);$('halfGrid').disabled=!eligible;if(!eligible)$('halfGrid').checked=false;var halfActive=$('halfGrid').checked&&eligible;$('halfAxes').classList.toggle('hidden',!halfActive);['size1','size2'].forEach(function(id){var input=$(id);input.max=halfActive?'100':'180';if(halfActive&&+input.value>100){input.value=100;paintRange(id,'%')}});
+ $('shiftControls').classList.toggle('hidden',!$('shiftEnabled').checked);
+ $('objectPanel2').classList.toggle('inactive',!two);$('objectPanel2').querySelectorAll('input').forEach(function(input){input.disabled=!two});
+ var blocked=s.shiftEnabled&&(Math.abs(s.shiftX)>0.0001||Math.abs(s.shiftY)>0.0001);$('decorationControls').classList.toggle('disabledPanel',blocked);$('decorUnavailable').classList.toggle('hidden',!blocked);$('decorDetails').classList.toggle('hidden',state.decoration==='none'||blocked);$('symbolField').classList.toggle('hidden',state.decoration!=='symbol');
+ if(state.mode==='checker'){if($('decorationPanel').parentNode!==$('checkerSlot'))$('checkerSlot').appendChild($('decorationPanel'));$('decorationCard').classList.add('hidden')}else{if($('decorationPanel').parentNode!==$('decorationHost'))$('decorationHost').appendChild($('decorationPanel'));$('decorationCard').classList.remove('hidden')}
+}
+function updateSelectionUI(reason){$('objectName1').textContent=selection.items[0]?selection.items[0].name:'—';$('objectName2').textContent=selection.items[1]?selection.items[1].name:'—';$('previewHint').textContent=selection.valid?'':t(reason==='too-many'?'tooMany':reason==='unsupported'?'unsupported':'empty');$('previewHint').classList.toggle('hidden',selection.valid);$('createBtn').disabled=!selection.valid||createPending||license.locked;updateDynamicUI();renderPreview()}
 
-function updateDynamicUI() {
-  $('rotateOptions').classList.toggle('hidden', state.mode !== 'rotate');
-  $('checkerOptions').classList.toggle('hidden', state.mode !== 'checker');
-  var second = state.mode === 'checker' && (selection.items.length === 2 || state.checkerBehavior === 'variant');
-  $('secondObjectPanel').classList.toggle('hidden', !second);
-  $('checkerHelp').classList.toggle('hidden', selection.items.length !== 2);
-  $('shiftXRow').classList.toggle('hidden', state.shiftMode !== 'rows' && state.shiftMode !== 'both');
-  $('shiftYRow').classList.toggle('hidden', state.shiftMode !== 'columns' && state.shiftMode !== 'both');
-  var decorAvailable = state.mode === 'grid' && state.shiftMode === 'none';
-  $('decorationControls').classList.toggle('disabledPanel', !decorAvailable);
-  $('decorDetails').classList.toggle('hidden', state.decoration === 'none' || !decorAvailable);
-  $('symbolField').classList.toggle('hidden', state.decoration !== 'symbol');
-  var columns = Number($('columns').value), rows = Number($('rows').value);
-  var needsEven = (state.mode === 'checker' && (columns % 2 || rows % 2)) ||
-    ((state.shiftMode === 'rows' || state.shiftMode === 'both') && rows % 2) ||
-    ((state.shiftMode === 'columns' || state.shiftMode === 'both') && columns % 2);
-  $('evenNotice').classList.toggle('hidden', !needsEven);
-  $('objectOneTag').textContent = selection.items[0] ? selection.items[0].name.slice(0,12) : 'A';
-  $('objectTwoTag').textContent = selection.items[1] ? selection.items[1].name.slice(0,12) : 'B';
-}
+function bytesToImage(bytes){return new Promise(function(resolve){if(!bytes)return resolve(null);var url=URL.createObjectURL(new Blob([new Uint8Array(bytes)],{type:'image/png'})),image=new Image();image.onload=function(){URL.revokeObjectURL(url);resolve(image)};image.onerror=function(){URL.revokeObjectURL(url);resolve(null)};image.src=url})}
+function tintedImage(image,color){var c=document.createElement('canvas'),max=180,scale=Math.min(1,max/Math.max(image.naturalWidth||image.width,image.naturalHeight||image.height));c.width=Math.max(1,Math.round((image.naturalWidth||image.width)*scale));c.height=Math.max(1,Math.round((image.naturalHeight||image.height)*scale));var x=c.getContext('2d');x.drawImage(image,0,0,c.width,c.height);x.globalCompositeOperation='source-in';x.fillStyle=color;x.fillRect(0,0,c.width,c.height);return c}
+function drawDecoration(ctx,kind,x,y,size,color,symbol){ctx.save();ctx.translate(x,y);ctx.fillStyle=color;ctx.strokeStyle=color;ctx.lineCap='round';if(kind==='circle'){ctx.beginPath();ctx.arc(0,0,size/2,0,Math.PI*2);ctx.fill()}if(kind==='star'){ctx.beginPath();for(var i=0;i<8;i++){var r=i%2===0?size/2:size*.1,a=-Math.PI/2+i*Math.PI/4,px=Math.cos(a)*r,py=Math.sin(a)*r;i?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.closePath();ctx.fill()}if(kind==='cross'){ctx.lineWidth=Math.max(1,size*.14);ctx.beginPath();ctx.moveTo(-size*.4,-size*.4);ctx.lineTo(size*.4,size*.4);ctx.moveTo(size*.4,-size*.4);ctx.lineTo(-size*.4,size*.4);ctx.stroke()}if(kind==='line'){ctx.lineWidth=Math.max(1,size*.12);ctx.beginPath();ctx.moveTo(-size*.45,size*.45);ctx.lineTo(size*.45,-size*.45);ctx.stroke()}if(kind==='symbol'){ctx.font='700 '+size+'px Montserrat,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(symbol||'✦',0,0)}ctx.restore()}
+function makeTile(settings,forcedColor,transparent){var tile=document.createElement('canvas');tile.width=tile.height=256;var ctx=tile.getContext('2d');if(!transparent){ctx.fillStyle=settings.background;ctx.fillRect(0,0,256,256)}var built=PatternCore.buildPlacements(settings,selection.items.length||1),cache={};built.placements.forEach(function(p){var index=Math.min(p.sourceIndex,selection.items.length-1),item=selection.items[index];if(!item)return;var color=forcedColor||p.color,key=index+'@'+color,image=selection.images[index];if(cache[key]===undefined)cache[key]=image?tintedImage(image,color):null;var fitted=PatternCore.fitDimensions(item.width,item.height,settings,p.size);ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.angle*Math.PI/180);if(cache[key])ctx.drawImage(cache[key],-fitted.width/2,-fitted.height/2,fitted.width,fitted.height);else{ctx.fillStyle=color;ctx.beginPath();ctx.arc(0,0,Math.min(fitted.width,fitted.height)/2,0,Math.PI*2);ctx.fill()}ctx.restore()});if(settings.decoration!=='none'){var dc=forcedColor||settings.decorationColor;for(var row=0;row<=settings.rows;row++)for(var col=0;col<=settings.columns;col++)drawDecoration(ctx,settings.decoration,col*settings.cellWidth,row*settings.cellHeight,settings.decorationSize,dc,settings.symbol)}return tile}
+function renderPreview(){var canvas=$('preview'),stage=$('previewStage'),ratio=window.devicePixelRatio||1,w=stage.clientWidth||376,h=stage.clientHeight||356;canvas.width=Math.round(w*ratio);canvas.height=Math.round(h*ratio);var ctx=canvas.getContext('2d');ctx.setTransform(ratio,0,0,ratio,0,0);ctx.clearRect(0,0,w,h);if(!selection.valid)return;var settings=PatternCore.normalizeSettings(readSettings()),tile=makeTile(settings,null,false),compact=$('previewDock').classList.contains('compact');if(compact){ctx.drawImage(tile,0,0,w,h);return}var display=Math.min(156,w-200,h-200),x=(w-display)/2,y=100;for(var k=-2;k<=2;k++)ctx.drawImage(tile,x+k*display,y,display,display);var ghost=makeTile(settings,'#DEDD74',true),layer=document.createElement('canvas');layer.width=Math.round(w*ratio);layer.height=Math.round(h*ratio);var lx=layer.getContext('2d');lx.setTransform(ratio,0,0,ratio,0,0);for(var j=-2;j<=2;j++){lx.drawImage(ghost,x+j*display,y-display,display,display);lx.drawImage(ghost,x+j*display,y+display,display,display)}lx.globalCompositeOperation='destination-in';var mask=lx.createLinearGradient(0,0,0,h);mask.addColorStop(0,'rgba(0,0,0,0)');mask.addColorStop(y/h,'rgba(0,0,0,1)');mask.addColorStop((y+display)/h,'rgba(0,0,0,1)');mask.addColorStop(1,'rgba(0,0,0,0)');lx.fillStyle=mask;lx.fillRect(0,0,w,h);ctx.drawImage(layer,0,0,w,h);ctx.strokeStyle='rgba(75,75,35,.35)';ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,display-1,display-1)}
+function updatePreviewDock(){var compact=window.scrollY>52;if($('previewDock').classList.toggle('compact',compact)!==undefined)requestAnimationFrame(renderPreview)}window.addEventListener('scroll',updatePreviewDock,{passive:true});window.addEventListener('resize',renderPreview);
 
-function readSettings() {
-  return {
-    mode:state.mode, checkerBehavior:state.checkerBehavior, shiftMode:state.shiftMode, decoration:state.decoration,
-    columns:$('columns').value, rows:$('rows').value, cellWidth:$('cellWidth').value, cellHeight:$('cellHeight').value,
-    rotationStep:$('rotationStep').value, shiftX:$('shiftX').value, shiftY:$('shiftY').value,
-    size1:$('size1').value, rotation1:$('rotation1').value, color1:$('color1').value,
-    size2:$('size2').value, rotation2:$('rotation2').value, color2:$('color2').value,
-    background:$('background').value, decorationColor:$('decorationColor').value, decorationSize:$('decorationSize').value, symbol:$('symbol').value
-  };
-}
-function applySettings(saved) {
-  if (!saved) return;
-  ['mode','checkerBehavior','shiftMode','decoration'].forEach(function (key) { if (saved[key] !== undefined) state[key] = saved[key]; });
-  ['columns','rows','cellWidth','cellHeight','rotationStep','shiftX','shiftY','size1','rotation1','color1','size2','rotation2','color2','background','decorationColor','decorationSize','symbol'].forEach(function (id) { if (saved[id] !== undefined && $(id)) $(id).value = saved[id]; });
-  setSegment('modeSegment',state.mode); setSegment('checkerBehavior',state.checkerBehavior); setSegment('shiftMode',state.shiftMode); setSegment('decorTypes',state.decoration);
-  [['rotationStep','°'],['shiftX','%'],['shiftY','%'],['size1','%'],['rotation1','°'],['size2','%'],['rotation2','°'],['decorationSize','']].forEach(function (entry) { paintRange(entry[0],entry[1]); });
-  updateDynamicUI(); renderPreview();
-}
-function changed() {
-  updateDynamicUI(); renderPreview();
-  clearTimeout(saveTimer); saveTimer = setTimeout(function () { cacheSave('settings', readSettings()); }, 250);
-}
-
-function updateSelectionCopy(reason) {
-  if (selection.valid) {
-    $('selectionTitle').textContent = selection.items.length === 2 ? t('selectedTwo') : t('selectedOne');
-    $('selectionMeta').textContent = t('selectedMeta', {
-      names:selection.items.map(function (item) { return item.name; }).join(' + '),
-      sizes:selection.items.map(function (item) { return Math.round(item.width) + '×' + Math.round(item.height); }).join(' / ')
-    });
-  } else {
-    $('selectionTitle').textContent = reason === 'too-many' ? t('tooMany') : reason === 'unsupported' ? t('unsupported') : t('empty');
-    $('selectionMeta').textContent = t('selectHint');
-  }
-  $('selectionCount').textContent = selection.items.length || 0;
-  $('createBtn').disabled = !selection.valid || createPending || license.locked;
-  updateDynamicUI(); renderPreview();
-}
-
-function bytesToImage(bytes) {
-  return new Promise(function (resolve) {
-    if (!bytes) return resolve(null);
-    var blob = new Blob([new Uint8Array(bytes)], { type:'image/png' });
-    var url = URL.createObjectURL(blob); var image = new Image();
-    image.onload = function () { URL.revokeObjectURL(url); resolve(image); };
-    image.onerror = function () { URL.revokeObjectURL(url); resolve(null); };
-    image.src = url;
-  });
-}
-
-function tintedImage(image, color) {
-  var canvas = document.createElement('canvas');
-  var max = 180, scale = Math.min(1, max / Math.max(image.naturalWidth || image.width, image.naturalHeight || image.height));
-  canvas.width = Math.max(1, Math.round((image.naturalWidth || image.width) * scale));
-  canvas.height = Math.max(1, Math.round((image.naturalHeight || image.height) * scale));
-  var context = canvas.getContext('2d'); context.drawImage(image,0,0,canvas.width,canvas.height);
-  context.globalCompositeOperation = 'source-in'; context.fillStyle = color; context.fillRect(0,0,canvas.width,canvas.height);
-  return canvas;
-}
-
-function drawDecoration(context, kind, x, y, size, color, symbol) {
-  context.save(); context.translate(x,y); context.fillStyle=color; context.strokeStyle=color; context.lineCap='round';
-  if (kind === 'circle') { context.beginPath(); context.arc(0,0,size/2,0,Math.PI*2); context.fill(); }
-  if (kind === 'star') { context.beginPath(); for (var i=0;i<8;i++) { var radius=i%2===0?size/2:size*.1; var angle=-Math.PI/2+i*Math.PI/4; var px=Math.cos(angle)*radius,py=Math.sin(angle)*radius; if(i===0) context.moveTo(px,py); else context.lineTo(px,py); } context.closePath(); context.fill(); }
-  if (kind === 'cross') { context.lineWidth=Math.max(1,size*.14); context.beginPath(); context.moveTo(-size*.4,-size*.4); context.lineTo(size*.4,size*.4); context.moveTo(size*.4,-size*.4); context.lineTo(-size*.4,size*.4); context.stroke(); }
-  if (kind === 'line') { context.lineWidth=Math.max(1,size*.12); context.beginPath(); context.moveTo(-size*.45,size*.45); context.lineTo(size*.45,-size*.45); context.stroke(); }
-  if (kind === 'symbol') { context.font='700 '+size+'px Inter,sans-serif'; context.textAlign='center'; context.textBaseline='middle'; context.fillText(symbol || '✦',0,0); }
-  context.restore();
-}
-
-function renderPreview() {
-  var canvas=$('preview'), wrap=canvas.parentElement, ratio=window.devicePixelRatio||1;
-  var width=wrap.clientWidth||374,height=wrap.clientHeight||172; canvas.width=Math.round(width*ratio); canvas.height=Math.round(height*ratio);
-  var context=canvas.getContext('2d'); context.setTransform(ratio,0,0,ratio,0,0); context.clearRect(0,0,width,height);
-  $('previewHint').classList.toggle('hidden', selection.valid);
-  if (!selection.valid) return;
-  var built=PatternCore.buildPlacements(readSettings(),selection.items.length||1), s=built.settings;
-  var tileWidth=s.columns*s.cellWidth,tileHeight=s.rows*s.cellHeight;
-  var scale=Math.min((width-24)/tileWidth,(height-20)/tileHeight); var ox=(width-tileWidth*scale)/2,oy=(height-tileHeight*scale)/2;
-  var tinted={};
-  function previewImage(sourceIndex,color){
-    var key=sourceIndex+'@'+color;
-    if(tinted[key]===undefined){var source=selection.images[sourceIndex];tinted[key]=source?tintedImage(source,color):null;}
-    return tinted[key];
-  }
-  context.save(); context.beginPath(); context.rect(ox,oy,tileWidth*scale,tileHeight*scale); context.clip(); context.fillStyle=s.background; context.fillRect(ox,oy,tileWidth*scale,tileHeight*scale);
-  built.placements.forEach(function (placement) {
-    var sourceIndex=Math.min(placement.sourceIndex,selection.items.length-1),item=selection.items[sourceIndex],image=previewImage(sourceIndex,placement.color);
-    var longest=Math.max(item.width,item.height), fit=Math.min(s.cellWidth,s.cellHeight)*placement.size/100;
-    var drawWidth=item.width/longest*fit*scale,drawHeight=item.height/longest*fit*scale;
-    var x=ox+placement.x*scale,y=oy+placement.y*scale;
-    context.save(); context.translate(x,y); context.rotate(placement.angle*Math.PI/180);
-    if (image) context.drawImage(image,-drawWidth/2,-drawHeight/2,drawWidth,drawHeight);
-    else { context.fillStyle=placement.color; context.beginPath(); context.arc(0,0,Math.min(drawWidth,drawHeight)/2,0,Math.PI*2); context.fill(); }
-    context.restore();
-  });
-  if (s.decoration!=='none') {
-    for(var row=0;row<=s.rows;row++) for(var column=0;column<=s.columns;column++) drawDecoration(context,s.decoration,ox+column*s.cellWidth*scale,oy+row*s.cellHeight*scale,s.decorationSize*scale,s.decorationColor,s.symbol);
-  }
-  context.restore();
-  context.strokeStyle='rgba(25,55,75,.18)'; context.strokeRect(ox+.5,oy+.5,tileWidth*scale-1,tileHeight*scale-1);
-}
-
-var pendingCache={};
-function cacheSave(key,value) { parent.postMessage({pluginMessage:{type:'cache-set',key:key,value:value}},'*'); }
-function cacheLoad(key) {
-  return new Promise(function (resolve) {
-    var timer=setTimeout(function(){ delete pendingCache[key]; resolve(null); },1200);
-    pendingCache[key]=function(value){ clearTimeout(timer); delete pendingCache[key]; resolve(value); };
-    parent.postMessage({pluginMessage:{type:'cache-get',key:key}},'*');
-  });
-}
-
-function updateLicenseUI() {
-  var badge=$('licenseBadge');
-  if (license.licensed) {
-    badge.className='badge licensed'; badge.innerHTML='<b>'+(license.plan==='lifetime'?t('forever'):t('annual'))+'</b>';
-  } else {
-    badge.className='badge'; badge.innerHTML='<b>'+license.remaining+'/'+TRIAL_LIMIT+'</b>'+t('trial');
-  }
-  $('lockScreen').classList.toggle('hidden',!license.locked);
-  $('editor').classList.toggle('hidden',license.locked);
-  $('sticky').classList.toggle('hidden',license.locked);
-  $('createBtn').disabled=!selection.valid||createPending||license.locked;
-}
-
-async function initLicense() {
-  var langSaved=await cacheLoad('lang'); if (langSaved==='ru'||langSaved==='en') { language=langSaved; applyLanguage(); }
-  var savedSettings=await cacheLoad('settings'); applySettings(savedSettings);
-  var saved=await cacheLoad('license');
-  if (saved&&saved.plan) {
-    var expires=saved.expiresAt?new Date(saved.expiresAt).getTime():null;
-    if (!expires||expires>Date.now()) { license.licensed=true; license.plan=saved.plan; license.expiresAt=saved.expiresAt||null; }
-    else cacheSave('license',null);
-  }
-  var trial=await cacheLoad('trial'); license.remaining=Math.max(0,TRIAL_LIMIT-(trial&&trial.count||0));
-  license.locked=!license.licensed&&license.remaining<=0; license.loaded=true; updateLicenseUI();
-  if (license.licensed&&saved&&saved.key&&license.userId) verifyLicense(saved);
-}
-async function verifyLicense(saved) {
-  try {
-    var response=await fetch(ACTIVATE_URL+'/api/activate-key',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:saved.key,figma_user_id:license.userId})});
-    var data=await response.json();
-    if (!data.ok) { license.licensed=false; cacheSave('license',null); var trial=await cacheLoad('trial'); license.remaining=Math.max(0,TRIAL_LIMIT-(trial&&trial.count||0)); license.locked=license.remaining<=0; updateLicenseUI(); }
-  } catch(error) { /* keep a valid cached license while offline */ }
-}
-async function consumeTrial() {
-  if (license.licensed) return;
-  var trial=await cacheLoad('trial')||{count:0}; trial.count=Math.min(TRIAL_LIMIT,trial.count+1); trial.lastAt=new Date().toISOString(); cacheSave('trial',trial);
-  license.remaining=Math.max(0,TRIAL_LIMIT-trial.count); license.locked=license.remaining<=0; updateLicenseUI();
-}
-async function activateLicense() {
-  var key=$('licenseKey').value.trim().toUpperCase(),message=$('licenseMessage'); message.className='licenseMessage'; message.textContent='';
-  if(!key){message.className+=' error';message.textContent=t('noKey');return;}
-  if(!/^[A-Z2-9]{4}-[A-Z2-9]{4}-[A-Z2-9]{4}-[A-Z2-9]{4}$/.test(key)){message.className+=' error';message.textContent=t('badKey');return;}
-  $('activateBtn').disabled=true; $('activateBtn').textContent=t('activating');
-  try {
-    var response=await fetch(ACTIVATE_URL+'/api/activate-key',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:key,figma_user_id:license.userId})}); var data=await response.json();
-    if(data.ok){license.licensed=true;license.plan=data.plan||data.tier||'lifetime';license.expiresAt=data.expires_at||null;license.locked=false;cacheSave('license',{key:key,plan:license.plan,expiresAt:license.expiresAt,activatedAt:Date.now()});message.className+=' ok';message.textContent=t('activated');updateLicenseUI();}
-    else {message.className+=' error';message.textContent=t('keyError');}
-  } catch(error){message.className+=' error';message.textContent=t('networkError');}
-  $('activateBtn').disabled=false;$('activateBtn').textContent=t('activate');
-}
-$('activateBtn').addEventListener('click',activateLicense); $('licenseKey').addEventListener('keydown',function(e){if(e.key==='Enter')activateLicense();});
-$('buyBtn').addEventListener('click',function(){parent.postMessage({pluginMessage:{type:'open-url',url:SITE_URL}},'*');});
-$('footerLogo').addEventListener('click',function(){parent.postMessage({pluginMessage:{type:'open-url',url:'https://lednique.ru'}},'*');});
-
-$('createBtn').addEventListener('click',function(){
-  if(!selection.valid||createPending||license.locked)return; createPending=true;$('createBtn').disabled=true;$('createBtn').textContent=t('creating');$('status').className='status';$('status').textContent='';
-  parent.postMessage({pluginMessage:{type:'create-pattern',settings:readSettings()}},'*');
-});
-function finishCreate(){createPending=false;$('createBtn').textContent=t('create');$('createBtn').disabled=!selection.valid||license.locked;}
-
-window.addEventListener('message',async function(event){
-  var message=event.data.pluginMessage;if(!message)return;
-  if(message.type==='cache-get'&&pendingCache[message.key]){pendingCache[message.key](message.value);return;}
-  if(message.type==='user'){license.userId=message.id;return;}
-  if(message.type==='selection'){
-    selection.valid=!!message.valid;selection.items=message.items||[];selection.images=[];updateSelectionCopy(message.reason);return;
-  }
-  if(message.type==='selection-thumbs'){
-    var images=await Promise.all((message.items||[]).map(function(item){return bytesToImage(item.bytes);}));selection.images=images;renderPreview();return;
-  }
-  if(message.type==='pattern-created'){
-    finishCreate();await consumeTrial();$('status').className='status ok';$('status').textContent=t('created',{w:message.result.width,h:message.result.height});return;
-  }
-  if(message.type==='pattern-error'){
-    finishCreate();$('status').className='status error';$('status').textContent=message.error==='selection-changed'?t('selectionChanged'):t('genericError')+': '+message.error;return;
-  }
-});
-
-window.addEventListener('resize',renderPreview);
-applyLanguage(); updateDynamicUI(); renderPreview(); updateLicenseUI();
-parent.postMessage({pluginMessage:{type:'get-user'}},'*');
-initLicense();
+function cacheSave(key,value){parent.postMessage({pluginMessage:{type:'cache-set',key:key,value:value}},'*')}function cacheLoad(key){return new Promise(function(resolve){var timer=setTimeout(function(){delete pendingCache[key];resolve(null)},1200);pendingCache[key]=function(value){clearTimeout(timer);delete pendingCache[key];resolve(value)};parent.postMessage({pluginMessage:{type:'cache-get',key:key}},'*')})}
+function updateLicenseUI(){var b=$('licenseBadge');if(license.licensed){b.className='badge licensed';b.innerHTML='<b>'+(license.plan==='lifetime'?t('forever'):t('annual'))+'</b>'}else{b.className='badge';b.innerHTML='<b>'+license.remaining+'/'+TRIAL_LIMIT+'</b>'+t('trial')}$('lockScreen').classList.toggle('hidden',!license.locked);$('editor').classList.toggle('hidden',license.locked);$('stickyBottom').classList.toggle('hidden',license.locked);$('createBtn').disabled=!selection.valid||createPending||license.locked}
+async function initLicense(){var savedLang=await cacheLoad('lang');if(LANGS[savedLang]){language=savedLang;applyLanguage()}applySettings(await cacheLoad('settings'));var saved=await cacheLoad('license');if(saved&&saved.plan){var expires=saved.expiresAt?new Date(saved.expiresAt).getTime():null;if(!expires||expires>Date.now()){license.licensed=true;license.plan=saved.plan;license.expiresAt=saved.expiresAt||null}else cacheSave('license',null)}var trial=await cacheLoad('trial');license.remaining=Math.max(0,TRIAL_LIMIT-(trial&&trial.count||0));license.locked=!license.licensed&&license.remaining<=0;updateLicenseUI();if(license.licensed&&saved&&saved.key&&license.userId)verifyLicense(saved)}
+async function verifyLicense(saved){try{var r=await fetch(ACTIVATE_URL+'/api/activate-key',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:saved.key,figma_user_id:license.userId})}),d=await r.json();if(!d.ok){license.licensed=false;cacheSave('license',null);var trial=await cacheLoad('trial');license.remaining=Math.max(0,TRIAL_LIMIT-(trial&&trial.count||0));license.locked=license.remaining<=0;updateLicenseUI()}}catch(e){}}
+async function consumeTrial(){if(license.licensed)return;var trial=await cacheLoad('trial')||{count:0};trial.count=Math.min(TRIAL_LIMIT,trial.count+1);trial.lastAt=new Date().toISOString();cacheSave('trial',trial);license.remaining=Math.max(0,TRIAL_LIMIT-trial.count);license.locked=license.remaining<=0;updateLicenseUI()}
+async function activateLicense(){var key=$('licenseKey').value.trim().toUpperCase(),msg=$('licenseMessage');msg.className='licenseMessage';msg.textContent='';if(!key){msg.className+=' error';msg.textContent=t('noKey');return}if(!/^[A-Z2-9]{4}(?:-[A-Z2-9]{4}){3}$/.test(key)){msg.className+=' error';msg.textContent=t('badKey');return}$('activateBtn').disabled=true;$('activateBtn').textContent=t('activating');try{var r=await fetch(ACTIVATE_URL+'/api/activate-key',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:key,figma_user_id:license.userId})}),d=await r.json();if(d.ok){license.licensed=true;license.plan=d.plan||'lifetime';license.expiresAt=d.expires_at||null;license.locked=false;cacheSave('license',{key:key,plan:license.plan,expiresAt:license.expiresAt});msg.className+=' ok';msg.textContent=t('activated');updateLicenseUI()}else{msg.className+=' error';msg.textContent=t('keyError')}}catch(e){msg.className+=' error';msg.textContent=t('networkError')}$('activateBtn').disabled=false;$('activateBtn').textContent=t('activate')}
+$('activateBtn').addEventListener('click',activateLicense);$('licenseKey').addEventListener('keydown',function(e){if(e.key==='Enter')activateLicense()});$('buyBtn').addEventListener('click',function(){parent.postMessage({pluginMessage:{type:'open-url',url:SITE_URL}},'*')});$('footerLogo').addEventListener('click',function(){parent.postMessage({pluginMessage:{type:'open-url',url:'https://lednique.ru'}},'*')});
+$('createBtn').addEventListener('click',function(){if(!selection.valid||createPending||license.locked)return;createPending=true;this.disabled=true;this.textContent=t('creating');$('status').className='status';$('status').textContent='';parent.postMessage({pluginMessage:{type:'create-pattern',settings:readSettings()}},'*')});function finishCreate(){createPending=false;$('createBtn').textContent=t('create');$('createBtn').disabled=!selection.valid||license.locked}
+window.addEventListener('message',async function(e){var m=e.data.pluginMessage;if(!m)return;if(m.type==='cache-get'&&pendingCache[m.key]){pendingCache[m.key](m.value);return}if(m.type==='user'){license.userId=m.id;return}if(m.type==='selection'){selection.valid=!!m.valid;selection.items=m.items||[];selection.images=[];updateSelectionUI(m.reason);return}if(m.type==='selection-thumbs'){selection.images=await Promise.all((m.items||[]).map(function(item){return bytesToImage(item.bytes)}));renderPreview();return}if(m.type==='pattern-created'){finishCreate();await consumeTrial();$('status').className='status ok';$('status').textContent=t('created');return}if(m.type==='pattern-error'){finishCreate();$('status').className='status error';$('status').textContent=m.error==='selection-changed'?t('selectionChanged'):t('genericError');return}});
+$('decorationHost').appendChild($('decorationPanel'));applyLanguage();updateSelectionUI();updateDynamicUI();renderPreview();updateLicenseUI();parent.postMessage({pluginMessage:{type:'get-user'}},'*');initLicense();
 </script>
 </body>
 </html>

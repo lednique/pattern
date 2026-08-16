@@ -2,7 +2,7 @@
 
 В репозитории находятся исходники нового продукта, созданного на основе дизайна и лицензионной архитектуры из `tracebase-full-set.zip`:
 
-- [`pattern-plugin/`](pattern-plugin/) — Figma-плагин для бесшовных узоров;
+- [`pattern-plugin/`](pattern-plugin/) — Figma-плагин для редактируемых бесшовных узоров 256 × 256 px;
 - [`pattern-backend/`](pattern-backend/) — сайт покупки, API лицензий и схема Supabase.
 
 ## Быстрая проверка

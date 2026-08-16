@@ -5,6 +5,8 @@
 'use strict';
 
 var PatternCore = (function () {
+  var TILE_SIZE = 256;
+
   function clamp(value, min, max) {
     var number = Number(value);
     if (!Number.isFinite(number)) number = min;
@@ -15,89 +17,86 @@ var PatternCore = (function () {
     return ((value % divisor) + divisor) % divisor;
   }
 
-  function evenAtLeast(value, min, max) {
-    var number = Math.round(clamp(value, min, max));
-    if (number % 2) number += 1;
-    return Math.min(max, number);
-  }
-
-  function normalizeSettings(input) {
-    var source = input || {};
-    var mode = ['grid', 'rotate', 'checker'].indexOf(source.mode) >= 0 ? source.mode : 'grid';
-    var shiftMode = ['none', 'rows', 'columns', 'both'].indexOf(source.shiftMode) >= 0 ? source.shiftMode : 'none';
-    var columns = Math.round(clamp(source.columns, 2, 20));
-    var rows = Math.round(clamp(source.rows, 2, 20));
-
-    // Alternating rows/columns and checkerboards need an even tile period so that
-    // the generated frame can be duplicated edge-to-edge without a phase jump.
-    if (mode === 'checker' || shiftMode === 'columns' || shiftMode === 'both') {
-      columns = evenAtLeast(columns, 2, 20);
-    }
-    if (mode === 'checker' || shiftMode === 'rows' || shiftMode === 'both') {
-      rows = evenAtLeast(rows, 2, 20);
-    }
-
-    var decoration = ['none', 'cross', 'star', 'circle', 'symbol', 'line'].indexOf(source.decoration) >= 0
-      ? source.decoration : 'none';
-    if (mode !== 'grid' || shiftMode !== 'none') decoration = 'none';
-
-    return {
-      mode: mode,
-      checkerBehavior: source.checkerBehavior === 'variant' ? 'variant' : 'skip',
-      columns: columns,
-      rows: rows,
-      cellWidth: Math.round(clamp(source.cellWidth, 32, 400)),
-      cellHeight: Math.round(clamp(source.cellHeight, 32, 400)),
-      size1: clamp(source.size1, 10, 180),
-      size2: clamp(source.size2, 10, 180),
-      rotation1: clamp(source.rotation1, -180, 180),
-      rotation2: clamp(source.rotation2, -180, 180),
-      rotationStep: clamp(source.rotationStep, -180, 180),
-      color1: validHex(source.color1, '#11A5CA'),
-      color2: validHex(source.color2, '#FF4F9A'),
-      background: validHex(source.background, '#F4F8FB'),
-      shiftMode: shiftMode,
-      shiftX: clamp(source.shiftX, -100, 100),
-      shiftY: clamp(source.shiftY, -100, 100),
-      decoration: decoration,
-      decorationColor: validHex(source.decorationColor, '#12202D'),
-      decorationSize: clamp(source.decorationSize, 4, 100),
-      symbol: String(source.symbol || '✦').slice(0, 8)
-    };
-  }
-
   function validHex(value, fallback) {
     var text = String(value || '').trim();
     return /^#[0-9a-f]{6}$/i.test(text) ? text.toUpperCase() : fallback;
   }
 
+  function normalizeSettings(input) {
+    var source = input || {};
+    var mode = ['grid', 'rotate', 'checker'].indexOf(source.mode) >= 0 ? source.mode : 'grid';
+    var columns = Math.round(clamp(source.columns, 1, 20));
+    var rows = Math.round(clamp(source.rows, 1, 20));
+    var shiftEnabled = source.shiftEnabled === true || source.shiftEnabled === 'true' || source.shiftMode === 'both';
+    var shiftX = clamp(source.shiftX, -100, 100);
+    var shiftY = clamp(source.shiftY, -100, 100);
+    var halfEligible = columns >= 3 || rows >= 3;
+    var halfGrid = halfEligible && (source.halfGrid === true || source.halfGrid === 'true');
+    var decoration = ['none', 'cross', 'star', 'circle', 'symbol', 'line'].indexOf(source.decoration) >= 0
+      ? source.decoration : 'none';
+
+    // Intersection elements remain available in rotation and checker modes. They
+    // are disabled only while a real alternating offset is applied. A checked
+    // offset with both values at zero is still an ordinary intersecting grid.
+    if (shiftEnabled && (Math.abs(shiftX) > 0.0001 || Math.abs(shiftY) > 0.0001)) decoration = 'none';
+
+    var checkerLayout = Number(source.checkerLayout || (source.checkerBehavior === 'variant' ? 2 : 1)) === 2 ? 2 : 1;
+    return {
+      tileSize: TILE_SIZE,
+      mode: mode,
+      checkerLayout: checkerLayout,
+      checkerBehavior: checkerLayout === 2 ? 'variant' : 'skip',
+      columns: columns,
+      rows: rows,
+      cellWidth: TILE_SIZE / columns,
+      cellHeight: TILE_SIZE / rows,
+      size1: clamp(source.size1, 10, 180),
+      size2: clamp(source.size2, 10, 180),
+      rotation1: clamp(source.rotation1, -180, 180),
+      rotation2: clamp(source.rotation2, -180, 180),
+      rotationStep: clamp(source.rotationStep, -180, 180),
+      color1: validHex(source.color1, '#DEDD74'),
+      color2: validHex(source.color2, '#A9A84C'),
+      background: validHex(source.background, '#F8F8ED'),
+      shiftEnabled: shiftEnabled,
+      shiftMode: shiftEnabled ? 'both' : 'none',
+      shiftX: shiftX,
+      shiftY: shiftY,
+      halfGrid: halfGrid,
+      halfEligible: halfEligible,
+      halfHorizontal: halfGrid && source.halfHorizontal !== false && source.halfHorizontal !== 'false',
+      halfVertical: halfGrid && source.halfVertical !== false && source.halfVertical !== 'false',
+      decoration: decoration,
+      decorationColor: validHex(source.decorationColor, '#5E5D22'),
+      decorationSize: clamp(source.decorationSize, 4, 100),
+      symbol: String(source.symbol || '✦').slice(0, 8)
+    };
+  }
+
   function variantAt(settings, row, column, objectCount) {
-    var s = settings;
     var parity = mod(row + column, 2);
     var sourceIndex = 0;
     var visible = true;
     var useSecondStyle = false;
 
-    if (s.mode === 'checker') {
-      if (objectCount > 1) {
-        sourceIndex = parity;
-        useSecondStyle = parity === 1;
-      } else if (s.checkerBehavior === 'skip') {
+    if (settings.mode === 'checker') {
+      if (settings.checkerLayout === 1) {
         visible = parity === 0;
       } else {
+        sourceIndex = objectCount > 1 ? parity : 0;
         useSecondStyle = parity === 1;
       }
     }
 
-    var angle = useSecondStyle ? s.rotation2 : s.rotation1;
-    if (s.mode === 'rotate') angle = s.rotation1 + (row + column) * s.rotationStep;
+    var angle = useSecondStyle ? settings.rotation2 : settings.rotation1;
+    if (settings.mode === 'rotate') angle = settings.rotation1 + (row + column) * settings.rotationStep;
 
     return {
       visible: visible,
       sourceIndex: sourceIndex,
       second: useSecondStyle,
-      size: useSecondStyle ? s.size2 : s.size1,
-      color: useSecondStyle ? s.color2 : s.color1,
+      size: useSecondStyle ? settings.size2 : settings.size1,
+      color: useSecondStyle ? settings.color2 : settings.color1,
       angle: angle
     };
   }
@@ -105,15 +104,11 @@ var PatternCore = (function () {
   function placementAt(settings, row, column, objectCount) {
     var x = (column + 0.5) * settings.cellWidth;
     var y = (row + 0.5) * settings.cellHeight;
-    if ((settings.shiftMode === 'rows' || settings.shiftMode === 'both') && mod(row, 2) === 1) {
-      x += settings.cellWidth * settings.shiftX / 100;
-    }
-    if ((settings.shiftMode === 'columns' || settings.shiftMode === 'both') && mod(column, 2) === 1) {
-      y += settings.cellHeight * settings.shiftY / 100;
-    }
-    // Overscan copies that cross a tile edge must use the style of the cell on
-    // the opposite edge. This is especially important for rotation mode: the
-    // two clipped halves then have exactly the same angle in adjacent tiles.
+    if (settings.shiftEnabled && mod(row, 2) === 1) x += settings.cellWidth * settings.shiftX / 100;
+    if (settings.shiftEnabled && mod(column, 2) === 1) y += settings.cellHeight * settings.shiftY / 100;
+
+    // Overscan copies use the style of the opposite edge, so both clipped halves
+    // of a rotated or checkerboard object remain identical in adjacent tiles.
     var styleRow = mod(row, settings.rows);
     var styleColumn = mod(column, settings.columns);
     var variant = variantAt(settings, styleRow, styleColumn, objectCount);
@@ -128,16 +123,29 @@ var PatternCore = (function () {
 
   function buildPlacements(input, objectCount) {
     var settings = normalizeSettings(input);
-    var overscanX = settings.shiftMode === 'rows' || settings.shiftMode === 'both' ? 2 : 1;
-    var overscanY = settings.shiftMode === 'columns' || settings.shiftMode === 'both' ? 2 : 1;
-    var out = [];
-    for (var row = -overscanY; row < settings.rows + overscanY; row++) {
-      for (var column = -overscanX; column < settings.columns + overscanX; column++) {
+    var overscan = settings.shiftEnabled ? 2 : 1;
+    var placements = [];
+    for (var row = -overscan; row < settings.rows + overscan; row++) {
+      for (var column = -overscan; column < settings.columns + overscan; column++) {
         var item = placementAt(settings, row, column, objectCount || 1);
-        if (item.visible) out.push(item);
+        if (item.visible) placements.push(item);
       }
     }
-    return { settings: settings, placements: out };
+    return { settings: settings, placements: placements };
+  }
+
+  function fitDimensions(sourceWidth, sourceHeight, settings, percent) {
+    var safeWidth = Math.max(0.001, Number(sourceWidth) || 1);
+    var safeHeight = Math.max(0.001, Number(sourceHeight) || 1);
+    var effectivePercent = settings.halfGrid ? Math.min(Number(percent) || 100, 100) : percent;
+    var maxWidth = settings.cellWidth * (settings.halfHorizontal ? 2 / 3 : 1) * effectivePercent / 100;
+    var maxHeight = settings.cellHeight * (settings.halfVertical ? 2 / 3 : 1) * effectivePercent / 100;
+    var factor = Math.min(maxWidth / safeWidth, maxHeight / safeHeight);
+    return {
+      width: Math.max(0.5, safeWidth * factor),
+      height: Math.max(0.5, safeHeight * factor),
+      factor: factor
+    };
   }
 
   function hexToRgb(hex) {
@@ -150,12 +158,14 @@ var PatternCore = (function () {
   }
 
   return {
+    TILE_SIZE: TILE_SIZE,
     clamp: clamp,
     mod: mod,
     normalizeSettings: normalizeSettings,
     variantAt: variantAt,
     placementAt: placementAt,
     buildPlacements: buildPlacements,
+    fitDimensions: fitDimensions,
     hexToRgb: hexToRgb
   };
 })();
@@ -281,18 +291,14 @@ function cloneForPattern(source, parent) {
   return clone;
 }
 
-function resizeProportionally(node, source, cellWidth, cellHeight, percent) {
-  var available = Math.min(cellWidth, cellHeight) * percent / 100;
-  var longest = Math.max(source.width, source.height);
-  var factor = longest > 0 ? available / longest : 1;
-  var width = Math.max(0.5, source.width * factor);
-  var height = Math.max(0.5, source.height * factor);
+function resizeProportionally(node, source, settings, percent) {
+  var fitted = PatternCore.fitDimensions(source.width, source.height, settings, percent);
   try {
-    node.resizeWithoutConstraints(width, height);
+    node.resizeWithoutConstraints(fitted.width, fitted.height);
   } catch (error) {
-    try { node.resize(width, height); } catch (nested) { /* non-resizable nodes are filtered earlier */ }
+    try { node.resize(fitted.width, fitted.height); } catch (nested) { /* non-resizable nodes are filtered earlier */ }
   }
-  return { width: Number(node.width) || width, height: Number(node.height) || height };
+  return { width: Number(node.width) || fitted.width, height: Number(node.height) || fitted.height };
 }
 
 function placeAroundCenter(node, centerX, centerY, width, height, angle) {
@@ -391,8 +397,8 @@ async function createPattern(rawSettings) {
   var sourceNodes = selectionSnapshot.slice();
   var built = PatternCore.buildPlacements(rawSettings, sourceNodes.length);
   var settings = built.settings;
-  var width = settings.columns * settings.cellWidth;
-  var height = settings.rows * settings.cellHeight;
+  var width = PatternCore.TILE_SIZE;
+  var height = PatternCore.TILE_SIZE;
   var frame = figma.createFrame();
   frame.name = 'Patternique · ' + (settings.mode === 'checker' ? 'checkerboard' : settings.mode === 'rotate' ? 'rotation' : 'grid');
   frame.resize(width, height);
@@ -417,7 +423,7 @@ async function createPattern(rawSettings) {
       var clone = cloneForPattern(source, frame);
       clone.name = source.name + ' · repeat';
       recolorTree(clone, PatternCore.hexToRgb(placement.color));
-      var dimensions = resizeProportionally(clone, source, settings.cellWidth, settings.cellHeight, placement.size);
+      var dimensions = resizeProportionally(clone, source, settings, placement.size);
       placeAroundCenter(clone, placement.x, placement.y, dimensions.width, dimensions.height, placement.angle);
     });
 

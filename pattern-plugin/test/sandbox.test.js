@@ -19,12 +19,12 @@ vm.createContext(sandbox);vm.runInContext(fs.readFileSync(require('path').join(_
 (async function(){
   await new Promise(r=>setTimeout(r,10));
   assert(messages.some(m=>m.type==='selection'&&m.valid));
-  await figma.ui.onmessage({type:'create-pattern',settings:{mode:'grid',columns:2,rows:2,cellWidth:80,cellHeight:60,size1:50,color1:'#11A5CA',background:'#FFFFFF',shiftMode:'none',decoration:'none'}});
+  await figma.ui.onmessage({type:'create-pattern',settings:{mode:'grid',columns:2,rows:2,size1:50,color1:'#DEDD74',background:'#FFFFFF',shiftEnabled:false,decoration:'none'}});
   const done=messages.find(m=>m.type==='pattern-created');assert(done,'pattern-created message');
-  assert.equal(done.result.width,160);assert.equal(done.result.height,120);
+  assert.equal(done.result.width,256);assert.equal(done.result.height,256);
   const frame=page.selection[0];assert.equal(frame.type,'FRAME');assert.equal(frame.clipsContent,true);assert.equal(frame.children.length,16);assert(frame.pluginData.patterniqueSettings);
   console.log('  ✓ selection metadata is sent');
-  console.log('  ✓ editable frame 160×120 is created');
+  console.log('  ✓ editable fixed 256×256 frame is created');
   console.log('  ✓ overscan repeat clones are appended and clipped');
   console.log('  ✓ settings are stored in plugin data');
   console.log('\nSandbox: 4 checks passed.');
