@@ -5,13 +5,14 @@ const source=fs.readFileSync(path.join(__dirname,'..','src','ui-template.html'),
 function test(value,name){assert(value,name);passed++;console.log('  ✓ '+name);}
 test(source.includes('.previewDock{position:sticky;top:5px'),'preview is sticky with a 5 px top offset');
 test(source.includes("previewProgress=Math.max(0,Math.min(1,window.scrollY/180))")&&!source.includes("classList.toggle('compact'"),'preview geometry follows scroll continuously without snapping');
-test(source.includes('.topGlow{position:fixed')&&source.includes('width:100%;height:372px')&&source.includes('172px,rgba(222,221,116,0) 372px'),'full-width translucent backdrop fades for 200 px below the preview');
-test(source.includes('.page{position:relative;z-index:1')&&!source.includes('.previewDock:before'),'preview gradient stays behind all blocks and text');
+test(source.includes('.patternBackdrop{position:absolute;z-index:0;left:0;right:0;top:0')&&source.includes('.page{position:relative;z-index:1'),'pattern backdrop spans the plugin width and scrolls behind all interface content');
+test(source.includes('fadeStart=backdropAnchorY+256,height=Math.ceil(fadeStart+200)')&&source.includes("makeTile(settings,'#DEDD74',true)"),'transparent theme pattern fades for 200 px below the original preview');
+test(source.includes("$('patternBackdropCanvas').style.opacity=String(1-previewProgress)")&&source.includes('backdropAnchorY===null'),'backdrop pattern stays anchored and only fades while the preview transforms');
 test(source.includes('.previewDock{position:sticky;top:5px;z-index:35')&&source.includes('.previewDock+.card{position:relative;z-index:16'),'sticky preview stays above repeat-mode cards');
 test(source.includes('var display=256+(172-256)*previewProgress')&&source.includes('top:-100px;width:100%;height:356px'),'full preview renders the central tile at 100% scale and 100 px higher');
 test(source.includes('.previewDock+.card')&&source.includes('margin-top:-100px'),'settings are raised 100 px over the preview continuation');
 test(source.includes("ctx.lineWidth=3")&&source.includes("ctx.strokeStyle='#DEDD74'")&&source.includes('radius=8+(22-8)*previewProgress'),'central tile has a yellow 3 px border and 8 px starting radius');
-test(source.includes("for(var side=-2;side<=2;side++){if(side!==0)ctx.drawImage(ghost"),'side repeats are transparent theme-colored figures');
+test(source.includes('for(var row=startRow;row<=endRow;row++)')&&source.includes('ctx.drawImage(ghost,originX+column*256'),'background repeats are transparent theme-colored figures across the full plugin width');
 test(source.includes("out.contentEditable='true'")&&source.includes("input.value=value"),'slider values support direct keyboard entry');
 test(!source.includes('stopImmediatePropagation')&&!source.includes('thumb/2+3'),'clicking anywhere on a slider is no longer blocked');
 test(source.includes('pluginDrop')&&source.includes("source:'patternique'"),'central preview square starts a Figma drag and drop');
