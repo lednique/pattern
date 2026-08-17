@@ -55,6 +55,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:34px;heigh
 input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.08)}
 input[type=range].dragging::-webkit-slider-thumb{cursor:grabbing}
 .notice{margin-top:7px;padding:7px 9px;border-radius:12px;background:#f5f5dc;color:#777629;font-size:10px}.disabledPanel{opacity:.42;pointer-events:none}
+/* The offset warning swaps in for the 34 px figure row, keeping the card height unchanged. */
+.decorNotice{display:flex;align-items:center;justify-content:center;height:34px;margin:0;padding:0 12px;border-radius:11px;background:#f5f5dc;color:#777629;font-size:10px;text-align:center;line-height:1.3}
 
 .objectGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.objectPanel{min-width:0;padding:10px;border:1px solid var(--border);border-radius:22px;background:#fff}.objectPanel.inactive{opacity:.38;background:var(--soft)}.objectHead{display:flex;align-items:baseline;gap:6px;margin-bottom:9px}.objectHead span{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.06em}.objectHead b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:700}.objectPanel .colorLine{display:flex;align-items:center;justify-content:space-between;gap:5px;margin-bottom:7px;font-size:10px}.objectPanel .controlStack{margin-top:6px}.objectPanel .controlStack label{display:flex;justify-content:space-between;align-items:center;margin-bottom:0;font-size:10px}.objectPanel .controlStack output{font-size:10px}.objectPanel input[type=color]{width:43px;height:27px}
 input[type=color]{-webkit-appearance:auto;appearance:auto;padding:0;border:1px solid var(--border);border-radius:4px;background:transparent;cursor:pointer;color-scheme:light}
@@ -103,7 +105,7 @@ input[type=color]{-webkit-appearance:auto;appearance:auto;padding:0;border:1px s
           <div class="decorTypes" id="decorTypes"><button data-value="none"><i class="decorGlyph">—</i></button><button data-value="cross"><i class="decorGlyph">×</i></button><button class="active" data-value="star"><i class="decorGlyph">✦</i></button><button data-value="circle"><i class="decorGlyph">●</i></button><button data-value="symbol"><i class="decorGlyph">Aa</i></button><button data-value="line"><i class="decorGlyph">╱</i></button></div>
           <div class="field hidden" id="symbolField" style="margin-top:8px"><label data-i18n="symbolLabel">Symbol</label><input class="symbolInput" id="symbol" value="✦" maxlength="8"></div>
         </div>
-        <div class="notice hidden" id="decorNotice" data-i18n="decorUnavailable">Turn off the column offset to use intersection elements.</div>
+        <div class="decorNotice hidden" id="decorNotice" data-i18n="decorUnavailable">Turn off the column offset to use intersection elements.</div>
       </div>
     </section>
 
@@ -211,7 +213,8 @@ function updateDynamicUI(){
  $('objectPanel2').classList.toggle('inactive',!secondActive);$('objectPanel2').querySelectorAll('input').forEach(function(input){input.disabled=!secondActive});
  /* Intersection elements work in every mode; only an active column offset disables them. */
  var shiftBlocked=s.shiftEnabled&&(s.shiftX!==0||s.shiftY!==0);
- $('decorationControls').classList.toggle('disabledPanel',shiftBlocked);$('decorNotice').classList.toggle('hidden',!shiftBlocked);
+ /* The warning replaces the figure row at the same 34 px height, so the card never changes size. */
+ $('decorationControls').classList.toggle('hidden',shiftBlocked);$('decorNotice').classList.toggle('hidden',!shiftBlocked);
  $('decorDetails').classList.toggle('hidden',state.decoration==='none'||shiftBlocked);$('symbolField').classList.toggle('hidden',state.decoration!=='symbol');
 }
 function updateSelectionUI(reason){$('objectName1').textContent=selection.items[0]?selection.items[0].name:'—';$('objectName2').textContent=selection.items[1]?selection.items[1].name:'—';$('previewHint').textContent=selection.valid?'':t(reason==='too-many'?'tooMany':reason==='unsupported'?'unsupported':'empty');$('previewHint').classList.toggle('hidden',selection.valid);$('createBtn').disabled=!selection.valid||createPending||license.locked;updateDynamicUI();renderPreview();renderPatternBackdrop()}

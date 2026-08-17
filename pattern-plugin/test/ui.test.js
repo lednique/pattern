@@ -30,6 +30,7 @@ test(source.includes('id="shiftEnabled"')&&!source.includes('id="shiftMode"'),'a
 test(source.includes('checkerInline')&&source.includes('data-checker="1"')&&source.includes('data-checker="2"'),'checker layouts 1 and 2 are embedded in the mode button');
 test(source.includes('id="decorationPanel"')&&!source.includes('checkerSlot')&&source.indexOf('id="decorationPanel"')<source.indexOf('id="columns"'),'intersection element block sits back at the top next to the repeat modes');
 test(source.includes("shiftBlocked=s.shiftEnabled&&(s.shiftX!==0||s.shiftY!==0)")&&source.includes("$('decorNotice').classList.toggle('hidden',!shiftBlocked)"),'intersection card is only disabled by an active column offset');
+test(source.includes("$('decorationControls').classList.toggle('hidden',shiftBlocked)")&&source.includes('.decorNotice{display:flex;align-items:center;justify-content:center;height:34px'),'offset warning replaces the 34 px figure row without resizing the card');
 test(source.includes('id="decorationRotation" type="range" min="-180" max="180" step="5" value="0"'),'intersection element has a rotation slider');
 test(source.includes('id="decorDetails"')&&source.indexOf('id="background"')<source.indexOf('id="decorDetails"'),'element color, size, and rotation live in Objects and background after the background color');
 test(source.includes("secondActive=two||(state.mode==='checker'&&state.checkerLayout===2)"),'checker layout 2 unlocks the second object panel for recoloring');
