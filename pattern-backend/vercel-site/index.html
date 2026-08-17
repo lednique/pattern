@@ -49,6 +49,7 @@
   .bgShape svg { display:block; overflow:visible; }
   .bgFig { display:grid; place-items:center; }
   .bgEmoji { line-height:1; }
+  .bgLetter { line-height:1; font-weight:800; font-family:var(--font); opacity:.85; }
   /* Затемнение фона: первые 400px полностью прозрачны, затем растяжка 200px до
      полного затемнения. Absolute вместо fixed — градиент привязан к документу
      и сдвигается вместе со страницей при прокрутке. */
@@ -307,6 +308,21 @@
     line:'<rect x="8" y="44" width="84" height="12" rx="6" transform="rotate(-45 50 50)"/>'
   };
   var EMOJI=['✨','🌟','💫','🌸','🌼','🍀','🍋','🍓','💛','😊','🐣','🎈'];
+  /* Letters and symbols of every supported language, used as pattern figures
+     with the same probability as emojis. */
+  var LETTERS={
+    en:'ABCDEFGHKMNPRSTUWXYZ&@#?!',
+    ru:'АБВГДЖЗИКЛМНПРСТУФЦЧШЭЮЯ',
+    it:'ÀÈÉÌÒÙ',
+    pt:'ÃÁÂÇÉÊÕÚ',
+    fr:'ÀÂÇÉÈÊËÎÔŒÙ',
+    zh:'花样图案形色美丽云星月光',
+    ja:'あいうかきくさしすなにぬパターン柄和'
+  };
+  function pickLetter(){var langs=Object.keys(LETTERS),alphabet=LETTERS[pick(langs)];return alphabet.charAt(Math.floor(Math.random()*alphabet.length));}
+  /* Emojis and letters each appear on roughly every 3rd–6th slide: 18% per
+     figure roll gives ~20–30% per pattern including checker and decor rolls. */
+  function rollFigure(keys){var r=Math.random();if(r<0.18)return{emoji:pick(EMOJI)};if(r<0.36)return{text:pickLetter()};return{shape:pick(keys)};}
   function rand(a,b){return a+Math.random()*(b-a);}
   function pick(list){return list[Math.floor(Math.random()*list.length)];}
   function hslToRgb(h,sa,l){sa/=100;l/=100;var k=function(n){return (n+h/30)%12;},a=sa*Math.min(l,1-l);var f=function(n){return l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1)));};return [f(0),f(8),f(4)];}
@@ -314,6 +330,7 @@
   function figureHtml(fig,color,px,angle){
     var rot=angle?' style="transform:rotate('+angle+'deg)"':'';
     if(fig.emoji)return '<span class="bgFig"'+rot+'><span class="bgEmoji" style="font-size:'+Math.round(px*.92)+'px">'+fig.emoji+'</span></span>';
+    if(fig.text)return '<span class="bgFig"'+rot+'><span class="bgLetter" style="font-size:'+Math.round(px*.92)+'px;color:'+color+'">'+fig.text+'</span></span>';
     var sh=SHAPES[fig.shape],h=fig.shape==='logo'?Math.round(px*154/270):px;
     /* Figures render as plain vectors — no SVG filter. Filters force each
        shape through an intermediate raster buffer that browsers may compute
@@ -327,16 +344,18 @@
     prevRgb=rgb;
     var shapeH=(bgH+rand(110,250))%360;
     var keys=Object.keys(SHAPES);
-    /* The regular figure may be an emoji, exactly like any other object — but rarely. */
-    var fig1=Math.random()<0.03?{emoji:pick(EMOJI)}:{shape:pick(keys)};
-    var fig2=Math.random()<0.03?{emoji:pick(EMOJI)}:{shape:pick(keys)};
+    /* The regular figure may be an emoji or a letter/symbol of a supported
+       language — each with the same probability, exactly like any object. */
+    var fig1=rollFigure(keys);
+    var fig2=rollFigure(keys);
     var mode=pick(['grid','grid','checker','checker2','rotate']);
     /* Column offsets like the plugin: odd rows shift horizontally, odd columns vertically. */
     var shiftX=pick([0,0,0,.5,.5,.25,-.5]),shiftY=pick([0,0,0,.5,.25]);
     /* The intersection element is only available when offsets are 0 — as in the plugin. */
     var decor=null;
     if(shiftX===0&&shiftY===0&&Math.random()<0.55){
-      decor=Math.random()<0.06?{emoji:pick(EMOJI)}:{shape:pick(Object.keys(INTER))};
+      var dr=Math.random();
+      decor=dr<0.18?{emoji:pick(EMOJI)}:dr<0.36?{text:pickLetter()}:{shape:pick(Object.keys(INTER))};
     }
     return {
       bg:'hsl('+Math.round(bgH)+','+Math.round(bgS)+'%,'+Math.round(bgL)+'%)',
@@ -382,6 +401,8 @@
           var idl=Math.round((ir+ic)*stepMs);
           var iInner=pat.decor.emoji
             ?'<span class="bgEmoji" style="font-size:'+Math.round(iSize*.92)+'px">'+pat.decor.emoji+'</span>'
+            :pat.decor.text
+            ?'<span class="bgLetter" style="font-size:'+Math.round(iSize*.92)+'px;color:'+pat.interColor+'">'+pat.decor.text+'</span>'
             :'<svg viewBox="0 0 100 100" width="'+iSize+'" height="'+iSize+'" fill="'+pat.interColor+'">'+INTER[pat.decor.shape]+'</svg>';
           html+='<div class="bgShape" data-d="'+idl+'" style="left:'+Math.round(ix)+'px;top:'+Math.round(iy)+'px;width:'+iSize+'px;height:'+iSize+'px">'+iInner+'</div>';
         }

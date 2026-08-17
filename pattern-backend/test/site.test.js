@@ -30,8 +30,9 @@ test(index.includes('setDelays(oldLayer,0)')&&index.includes('setDelays(layer,GA
 test(index.includes('cubic-bezier(.26,1.36,.5,1)')&&index.includes('cubic-bezier(.55,.06,.68,.19)'),'figures grow with a gentle back-out and shrink smoothly');
 test(index.includes("'grid','grid','checker','checker2','rotate'")&&index.includes('cell*pat.shiftX')&&index.includes('cell*pat.shiftY'),'background replays plugin modes with horizontal and vertical column offsets');
 test(index.includes('size1:rand(')&&index.includes('size2:rand(')&&index.includes('alt?pat.size2:pat.size1'),'different figure sizes are shown per object like the plugin sliders');
-test(index.includes("decor=Math.random()<0.06?{emoji:pick(EMOJI)}")&&index.includes("shiftX===0&&shiftY===0"),'emoji appears only as the plugin allows: an intersection symbol when offsets are 0');
-test(index.includes("fig1=Math.random()<0.03?{emoji:pick(EMOJI)}")&&index.includes("Math.random()<0.06?{emoji:pick(EMOJI)}"),'emojis stay possible but appear rarely (3% figure, 6% intersection)');
+test(index.includes("decor=dr<0.18?{emoji:pick(EMOJI)}:dr<0.36?{text:pickLetter()}")&&index.includes("shiftX===0&&shiftY===0"),'emoji or a letter appears as the intersection symbol only when offsets are 0');
+test(index.includes('function rollFigure(')&&index.includes('if(r<0.18)return{emoji:pick(EMOJI)};if(r<0.36)return{text:pickLetter()};')&&index.includes('var fig1=rollFigure(keys)'),'emojis and letters each appear on roughly every 3rd-6th pattern (~24% per slide)');
+test(index.includes('var LETTERS={')&&['en','ru','it','pt','fr','zh','ja'].every(function(l){return index.indexOf(l+":'")>0;})&&index.includes('function pickLetter()')&&index.includes('class="bgLetter"'),'letters and symbols from all seven supported languages join the patterns');
 test((index.match(/backdrop-filter:blur\(16px\)/g)||[]).length>=7,'translucent blocks use a plain 16px gaussian backdrop blur');
 test(!index.includes('will-change'),'background shapes are not layer-promoted, so vectors re-rasterize sharp at full scale');
 test(index.includes('.bgLayer.on.settled .bgShape { transform:none; transition:none; }')&&index.includes('settleAfter(newLayer,WAVE+GAP+700)')&&index.includes('settleAfter(layers[0],WAVE+700)'),'settled layers drop transforms so the resting pattern repaints at native resolution');
