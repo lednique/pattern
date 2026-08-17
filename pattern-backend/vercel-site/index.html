@@ -58,23 +58,17 @@
   #langMenu button.active { background:rgba(222,221,116,.28); }
   .hidden { display:none !important; }
 
-  /* ---------- герой (поднят на 40 px: было 54px сверху, стало 14px) ---------- */
-  .hero { padding:14px 0 0; margin-bottom:20px; }
-  .eyebrow { display:inline-flex; align-items:center; gap:8px; padding:6px 12px; border-radius:10000px; color:#F4F3AE; background:var(--pill-bg); box-shadow:var(--pill-shadow); text-transform:uppercase; letter-spacing:.11em; font-size:10px; font-weight:700; position:relative; overflow:hidden; }
-  .eyebrow::after { content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none; box-shadow:0px -3px 1px rgba(255,255,255,.15) inset, 0px 2px 2px #fff inset; mix-blend-mode:plus-lighter; }
-  .eyebrow::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--accent-hi); box-shadow:0 0 12px var(--accent-hi); }
-  h1.heroTitle { margin:16px 0 12px; font-size:clamp(34px,5.6vw,56px); line-height:1; letter-spacing:-.05em; font-weight:550; text-shadow:0 3px 26px rgba(0,0,0,.5); }
+  /* ---------- герой: текст слева, блок фич справа ---------- */
+  .hero { padding:14px 0 0; margin-bottom:20px; display:grid; grid-template-columns:1.15fr .85fr; gap:20px; align-items:center; }
+  h1.heroTitle { margin:0 0 12px; font-size:clamp(34px,5.6vw,56px); line-height:1; letter-spacing:-.05em; font-weight:550; text-shadow:0 3px 26px rgba(0,0,0,.5); }
   h1.heroTitle em { color:var(--accent-hi); font-style:normal; }
-  .lead { max-width:560px; color:#d5dde1; font-size:15px; margin:0 0 16px; text-shadow:0 2px 14px rgba(0,0,0,.55); }
-  .heroPrice { display:flex; gap:14px; flex-wrap:wrap; }
-  .heroPrice span { color:#cfd8dd; font-size:12px; text-shadow:0 2px 10px rgba(0,0,0,.5); }
-  .heroPrice b { color:#fff; font-size:14px; }
+  .lead { max-width:560px; color:#d5dde1; font-size:15px; margin:0; text-shadow:0 2px 14px rgba(0,0,0,.55); }
 
-  /* ---------- три блока, объединённые в одну фигуру (на месте квадрата) ---------- */
-  .featureBar { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; background:var(--card); border-radius:36px; padding:18px 24px; margin-bottom:20px; position:relative; }
+  /* ---------- блок фич справа от заголовка, пункты вертикально ---------- */
+  .featureBar { display:flex; flex-direction:column; gap:20px; background:rgba(20,20,20,.55); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-radius:36px; padding:22px 24px; position:relative; }
   .featureBar::before { content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none; box-shadow:var(--card-inset); }
   .featureCell { position:relative; display:flex; gap:12px; align-items:flex-start; }
-  .featureCell + .featureCell { border-left:1px solid rgba(255,255,255,.09); padding-left:20px; }
+  .featureCell + .featureCell { border-top:1px solid rgba(255,255,255,.09); padding-top:20px; }
   .featureIcon { flex:none; width:35px; height:35px; display:grid; place-items:center; border-radius:12px; background:rgba(222,221,116,.16); color:var(--accent-hi); font-size:17px; box-shadow:var(--pill-shadow); }
   .featureCell h3 { font-size:13px; margin:1px 0 4px; color:#fff; }
   .featureCell p { color:var(--muted); font-size:11.5px; margin:0; }
@@ -83,10 +77,11 @@
   .checkout { margin-bottom:20px; position:relative; }
   .label { font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:rgba(255,255,255,.75); margin:12px 0 8px; position:relative; text-shadow:0 1px 8px rgba(0,0,0,.6); }
   .plans { display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:stretch; position:relative; }
-  .plan { border:none; border-radius:36px; padding:16px 18px; cursor:pointer; background:var(--card); color:var(--text); font:inherit; text-align:left; position:relative; overflow:hidden; transition:transform 150ms var(--ease-out-back); box-shadow:var(--pill-shadow); display:flex; flex-direction:column; align-items:flex-start; }
+  /* Активный и неактивный тарифы поменялись стилями: неактивный — жёлтый градиент, активный — тёмная карточка с размытием. */
+  .plan { border:none; border-radius:36px; padding:16px 18px; cursor:pointer; background:linear-gradient(90deg, rgba(222,221,116,.16) 0%, rgba(222,221,116,.3) 100%); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); color:var(--text); font:inherit; text-align:left; position:relative; overflow:hidden; transition:transform 150ms var(--ease-out-back); box-shadow:var(--pill-shadow), 0 0 0 1px rgba(222,221,116,.45), 0 4px 18px rgba(222,221,116,.22); display:flex; flex-direction:column; align-items:flex-start; }
   .plan::after { content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none; box-shadow:0px -3px 1px rgba(255,255,255,.15) inset, 0px 2px 2px #fff inset; mix-blend-mode:plus-lighter; }
   .plan:hover { transform:scale(1.02); }
-  .plan.selected { background:linear-gradient(90deg, rgba(222,221,116,.16) 0%, rgba(222,221,116,.3) 100%); box-shadow:var(--pill-shadow), 0 0 0 1px rgba(222,221,116,.45), 0 4px 18px rgba(222,221,116,.22); }
+  .plan.selected { background:rgba(20,20,20,.55); box-shadow:var(--pill-shadow); }
   .planTop { display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%; position:relative; }
   .planName { font-size:16px; font-weight:700; }
   .check { width:19px; height:19px; border-radius:50%; border:1px solid rgba(255,255,255,.22); display:grid; place-items:center; color:transparent; font-size:10px; flex:none; }
@@ -118,7 +113,7 @@
 
   /* ---------- шаги (TraceBase) ---------- */
   .steps { display:flex; gap:15px; margin-bottom:20px; flex-wrap:wrap; position:relative; }
-  .step { flex:1; min-width:150px; background:var(--card); border-radius:36px; padding:12px 25px; position:relative; }
+  .step { flex:1; min-width:150px; background:rgba(20,20,20,.55); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-radius:36px; padding:12px 25px; position:relative; }
   .step::before { content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none; box-shadow:var(--card-inset); }
   .step:not(:last-child)::after { content:''; position:absolute; top:50%; right:-15px; width:15px; height:2px; transform:translateY(-50%); background:linear-gradient(90deg, rgba(222,221,116,.85), rgba(222,221,116,.2)); }
   .step b { display:block; font-size:12px; font-weight:700; color:#fff; margin-bottom:2px; }
@@ -139,8 +134,8 @@
     .wrap { padding:24px 14px 40px; }
     .head h1 { font-size:20px; }
     .brandIcon { width:48px; height:28px; }
-    .featureBar { grid-template-columns:1fr; padding:18px 20px; }
-    .featureCell + .featureCell { border-left:0; border-top:1px solid rgba(255,255,255,.09); padding-left:0; padding-top:18px; }
+    .hero { grid-template-columns:1fr; }
+    .featureBar { padding:18px 20px; }
     .plans { grid-template-columns:1fr; }
     .row2 { flex-direction:column; gap:12px; }
     .steps { flex-direction:column; }
@@ -197,17 +192,16 @@
   </div>
 
   <section class="hero">
-    <span class="eyebrow" data-i18n="eyebrow">Генератор бесшовных узоров</span>
-    <h1 class="heroTitle" data-i18n-html="hero">Один объект.<br><em>Бесконечный</em> узор.</h1>
-    <p class="lead" data-i18n="lead">Создавайте в Figma редактируемые паттерны: сетка, повороты, шахматное чередование двух фигур, сдвиги и элементы на пересечениях.</p>
-    <div class="heroPrice"><span><b>690 ₽</b> <i data-i18n="perYear">на 1 год</i></span><span><b>1 790 ₽</b> <i data-i18n="foreverPrice">навсегда</i></span></div>
-  </section>
-
-  <!-- Три блока на месте квадрата, объединённые в одну фигуру. -->
-  <section class="featureBar" id="featureBar">
-    <div class="featureCell"><div class="featureIcon">◩</div><div><h3 data-i18n="f1t">Две фигуры</h3><p data-i18n="f1d">Выделите два объекта — Patternique расставит их шахматным узором.</p></div></div>
-    <div class="featureCell"><div class="featureIcon">↔</div><div><h3 data-i18n="f2t">Ритм и сдвиги</h3><p data-i18n="f2d">Сдвигайте каждую вторую строку или колонку по горизонтали и вертикали.</p></div></div>
-    <div class="featureCell"><div class="featureIcon">✦</div><div><h3 data-i18n="f3t">Детали между ячейками</h3><p data-i18n="f3d">Добавляйте крест, звезду, круг, символ или линию на пересечениях.</p></div></div>
+    <div>
+      <h1 class="heroTitle" data-i18n-html="hero">Один объект.<br><em>Бесконечный</em> узор.</h1>
+      <p class="lead" data-i18n="lead">Создавайте в Figma редактируемые паттерны: сетка, повороты, шахматное чередование двух фигур, сдвиги и элементы на пересечениях.</p>
+    </div>
+    <!-- Три пункта вертикально, справа от заголовка, одной фигурой. -->
+    <aside class="featureBar" id="featureBar">
+      <div class="featureCell"><div class="featureIcon">◩</div><div><h3 data-i18n="f1t">Две фигуры</h3><p data-i18n="f1d">Выделите два объекта — Patternique расставит их шахматным узором.</p></div></div>
+      <div class="featureCell"><div class="featureIcon">↔</div><div><h3 data-i18n="f2t">Ритм и сдвиги</h3><p data-i18n="f2d">Сдвигайте каждую вторую строку или колонку по горизонтали и вертикали.</p></div></div>
+      <div class="featureCell"><div class="featureIcon">✦</div><div><h3 data-i18n="f3t">Детали между ячейками</h3><p data-i18n="f3d">Добавляйте крест, звезду, круг, символ или линию на пересечениях.</p></div></div>
+    </aside>
   </section>
 
   <section class="checkout" id="buy">
@@ -331,16 +325,16 @@
     prevRgb=rgb;
     var shapeH=(bgH+rand(110,250))%360;
     var keys=Object.keys(SHAPES);
-    /* The regular figure may be an emoji, exactly like any other object. */
-    var fig1=Math.random()<0.18?{emoji:pick(EMOJI)}:{shape:pick(keys)};
-    var fig2=Math.random()<0.18?{emoji:pick(EMOJI)}:{shape:pick(keys)};
+    /* The regular figure may be an emoji, exactly like any other object — but rarely. */
+    var fig1=Math.random()<0.06?{emoji:pick(EMOJI)}:{shape:pick(keys)};
+    var fig2=Math.random()<0.06?{emoji:pick(EMOJI)}:{shape:pick(keys)};
     var mode=pick(['grid','grid','checker','checker2','rotate']);
     /* Column offsets like the plugin: odd rows shift horizontally, odd columns vertically. */
     var shiftX=pick([0,0,0,.5,.5,.25,-.5]),shiftY=pick([0,0,0,.5,.25]);
     /* The intersection element is only available when offsets are 0 — as in the plugin. */
     var decor=null;
     if(shiftX===0&&shiftY===0&&Math.random()<0.55){
-      decor=Math.random()<0.35?{emoji:pick(EMOJI)}:{shape:pick(Object.keys(INTER))};
+      decor=Math.random()<0.12?{emoji:pick(EMOJI)}:{shape:pick(Object.keys(INTER))};
     }
     return {
       bg:'hsl('+Math.round(bgH)+','+Math.round(bgS)+'%,'+Math.round(bgL)+'%)',
@@ -348,14 +342,16 @@
       color2:'hsl('+Math.round((shapeH+rand(40,90))%360)+','+Math.round(rand(45,75))+'%,'+Math.round(rand(50,70))+'%)',
       interColor:bgL>32?'hsla(0,0%,8%,.55)':'hsla(0,0%,100%,.78)',
       fig1:fig1,fig2:fig2,mode:mode,shiftX:shiftX,shiftY:shiftY,decor:decor,
-      /* Different object sizes every pattern, like the plugin's per-object size sliders. */
-      size1:rand(.42,.88),size2:rand(.3,.66),
+      /* Different object sizes every pattern, like the plugin's per-object size
+         sliders. Sizes are clamped well above zero so figures never vanish. */
+      size1:rand(.46,.88),size2:rand(.36,.66),
       /* Static per-object rotation, like the plugin's rotation sliders. */
       rot1:pick([0,0,0,15,45,-15,90]),rot2:pick([0,0,180,45,-45]),
       cell:rand(130,200),baseRot:0,rotStep:pick([15,30,45,-15,-30])
     };
   }
-  var WAVE=1300,GAP=430,HOLD=7000;
+  /* HOLD is the pause between patterns (4 s); each cycle adds the wave time on top. */
+  var WAVE=1300,GAP=430,HOLD=4000;
   function buildLayer(layer,pat){
     var W=window.innerWidth,H=window.innerHeight;
     var cell=pat.cell,cols=Math.ceil(W/cell)+2,rows=Math.ceil(H/cell)+2;
@@ -371,13 +367,13 @@
            per-object rotation sliders); the morph itself never rotates. */
         var angle=pat.mode==='rotate'?pat.baseRot+(r+c)*pat.rotStep:(alt?pat.rot2:pat.rot1);
         var d=Math.round((r+c)*stepMs);
-        var size=Math.round(cell*(alt?pat.size2:pat.size1));
+        var size=Math.max(24,Math.round(cell*(alt?pat.size2:pat.size1)));
         var inner=figureHtml(alt?pat.fig2:pat.fig1,alt?pat.color2:pat.color1,size,angle);
         html+='<div class="bgShape" data-d="'+d+'" style="left:'+Math.round(x)+'px;top:'+Math.round(y)+'px;width:'+Math.round(cell)+'px;height:'+Math.round(cell)+'px">'+inner+'</div>';
       }
     }
     if(pat.decor){
-      var iSize=Math.round(cell*0.2);
+      var iSize=Math.max(16,Math.round(cell*0.2));
       for(var ir=0;ir<=rows;ir++){
         for(var ic=0;ic<=cols;ic++){
           var ix=(ic-1)*cell-iSize/2,iy=(ir-1)*cell-iSize/2;
@@ -402,7 +398,7 @@
   /* The next pattern is randomized and its DOM is fully built during the
      hold time — the swap itself only flips classes, so nothing loads or
      computes while the morph wave is running. */
-  var pending=null;
+  var pending=null,cycleTimer=null,cleanupTimer=null;
   function prepareNext(){
     var next=1-active,layer=layers[next];
     var pat=makePattern();
@@ -410,7 +406,14 @@
     setDelays(layer,GAP);
     pending={pat:pat,index:next};
   }
+  function scheduleNext(){
+    clearTimeout(cycleTimer);
+    cycleTimer=setTimeout(cycle,HOLD+WAVE+GAP);
+  }
   function cycle(){
+    /* Never start a morph in a hidden tab: transitions would not play and
+       both layers would end up overlapping. The wave resumes on return. */
+    if(document.hidden){scheduleNext();return;}
     if(!pending)prepareNext();
     var oldLayer=layers[active],newLayer=layers[pending.index];
     holder.style.backgroundColor=pending.pat.bg;
@@ -420,17 +423,39 @@
     requestAnimationFrame(function(){requestAnimationFrame(function(){newLayer.classList.add('on');});});
     active=pending.index;
     pending=null;
-    setTimeout(function(){oldLayer.innerHTML='';prepareNext();},WAVE+GAP+900);
+    clearTimeout(cleanupTimer);
+    cleanupTimer=setTimeout(function(){oldLayer.innerHTML='';oldLayer.classList.remove('on');prepareNext();},WAVE+GAP+900);
+    scheduleNext();
+  }
+  /* Fresh start of the whole background: the current pattern appears with its
+     wave, the next one is prebuilt. Used on load, resize, and tab return. */
+  function restart(){
+    clearTimeout(cycleTimer);clearTimeout(cleanupTimer);
+    pending=null;
+    layers[0].classList.remove('on');layers[1].classList.remove('on');
+    layers[0].innerHTML='';layers[1].innerHTML='';
+    active=0;
+    var pat=makePattern();
+    buildLayer(layers[0],pat);
+    holder.style.backgroundColor=pat.bg;
+    show(layers[0],0);
+    setTimeout(prepareNext,WAVE+300);
+    if(!reduced)scheduleNext();
   }
   var reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var first=makePattern();
-  buildLayer(layers[0],first);
-  holder.style.backgroundColor=first.bg;
-  show(layers[0],0);
-  setTimeout(prepareNext,WAVE+600);
-  if(!reduced)setInterval(cycle,HOLD);
+  restart();
+  /* Returning to the tab: throttled timers and skipped transitions can leave
+     a frozen or doubled pattern — rebuild cleanly and keep animating. */
+  document.addEventListener('visibilitychange',function(){if(!document.hidden)restart();});
   var resizeTimer=null;
-  window.addEventListener('resize',function(){clearTimeout(resizeTimer);resizeTimer=setTimeout(function(){pending=null;var pat=makePattern();buildLayer(layers[active],pat);holder.style.backgroundColor=pat.bg;show(layers[active],0);setTimeout(prepareNext,WAVE+600);},350);});
+  window.addEventListener('resize',function(){clearTimeout(resizeTimer);resizeTimer=setTimeout(restart,350);});
+  /* Watchdog: the background must always show a pattern. If a stray state
+     ever leaves both layers without visible figures, rebuild immediately. */
+  setInterval(function(){
+    if(document.hidden)return;
+    if(!layers[0].childElementCount&&!layers[1].childElementCount)restart();
+    else if(!layers[active].classList.contains('on')&&!layers[1-active].classList.contains('on'))restart();
+  },2500);
 })();
 </script>
 
