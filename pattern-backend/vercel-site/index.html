@@ -49,8 +49,10 @@
   .bgShape svg { display:block; overflow:visible; }
   .bgFig { display:grid; place-items:center; }
   .bgEmoji { line-height:1; }
-  /* Затемнение фона: первые 400px полностью прозрачны, затем растяжка 200px до полного затемнения. */
-  .bgDim { position:fixed; inset:0; z-index:0; pointer-events:none; background:linear-gradient(180deg, rgba(5,7,8,0) 0, rgba(5,7,8,0) 400px, rgba(5,7,8,.55) 600px, rgba(5,7,8,.55) 100%); }
+  /* Затемнение фона: первые 400px полностью прозрачны, затем растяжка 200px до
+     полного затемнения. Absolute вместо fixed — градиент привязан к документу
+     и сдвигается вместе со страницей при прокрутке. */
+  .bgDim { position:absolute; inset:0; z-index:0; pointer-events:none; background:linear-gradient(180deg, rgba(5,7,8,0) 0, rgba(5,7,8,0) 400px, rgba(5,7,8,.55) 600px, rgba(5,7,8,.55) 100%); }
 
   .wrap { max-width:880px; margin:0 auto; padding:36px 20px 60px; position:relative; z-index:1; }
 
@@ -73,8 +75,8 @@
   #langMenu button.active { background:rgba(222,221,116,.28); }
   .hidden { display:none !important; }
 
-  /* ---------- герой: один тёмный блок — заголовок, текст справа, фичи горизонтально снизу ---------- */
-  .hero { margin-bottom:20px; background:var(--tint-dark); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-radius:36px; padding:24px 26px; position:relative; }
+  /* ---------- герой: один блок в цвете акцента — заголовок, текст справа, фичи горизонтально снизу ---------- */
+  .hero { margin-bottom:20px; background:linear-gradient(90deg, rgba(222,221,116,.16) 0%, rgba(222,221,116,.3) 100%); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-radius:36px; padding:24px 26px; position:relative; box-shadow:0 0 0 1px rgba(222,221,116,.45), 0 4px 18px rgba(222,221,116,.22); }
   .hero::before { content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none; box-shadow:var(--card-inset); }
   .heroTop { display:grid; grid-template-columns:1.1fr .9fr; gap:20px; align-items:center; position:relative; }
   h1.heroTitle { margin:0; font-size:clamp(30px,5vw,48px); line-height:1; letter-spacing:-.05em; font-weight:550; }
