@@ -19,6 +19,12 @@
     --card-inset:0px 3px 2px rgba(255,255,255,0.5) inset, 0px -3px 2px rgba(255,255,255,0.3) inset;
     --pill-bg:linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.1) 100%);
     --pill-shadow:0px 3px 6px rgba(0,0,0,0.2), 1px 0px 2px rgba(0,0,0,0.3), -1px 0px 2px rgba(0,0,0,0.3);
+    /* Frosted glass: the blur is pre-sampled at 1/4 resolution into --frost
+       (a viewport-sized blurred snapshot of the pattern); the pattern DOM
+       itself stays at full resolution. --tint-dark is the shared color of
+       inactive cards, fields, and the disabled pay button. */
+    --frost:none;
+    --tint-dark:rgba(20,20,20,.55);
     --font:'Montserrat',system-ui,sans-serif;
   }
   * { box-sizing:border-box; margin:0; padding:0; }
@@ -51,10 +57,16 @@
   .head h1 { font-size:26px; font-weight:500; color:#fff; letter-spacing:.3px; white-space:nowrap; }
   .licTag { font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:rgba(255,255,255,.7); white-space:nowrap; transform:translateY(3px); }
   .langWrap { margin-left:auto; position:relative; flex:none; }
-  #langBtn { display:flex; align-items:center; gap:5px; height:30px; padding:0 7px; background:var(--pill-bg); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:none; color:#fff; font:inherit; font-weight:700; font-size:12px; border-radius:10000px; cursor:pointer; box-shadow:var(--pill-shadow); position:relative; overflow:hidden; transition:transform 150ms var(--ease-out-back), background 150ms var(--ease-out-back); }
+  /* Frosted glass without backdrop-filter: every translucent block layers its
+     tint over --frost — a 16px-gaussian snapshot of the pattern sampled at 1/4
+     resolution (blur(4px) on the quarter-size canvas = 16px full-scale). The
+     fixed attachment aligns the snapshot with the viewport, so each block
+     shows exactly the piece of pattern behind it. */
+  .featureBar, .plan, .step, input[type="email"], input[type="text"], .btnSmall, #langBtn, #langMenu { background-attachment:scroll, fixed; background-size:auto, 100vw 100vh; background-position:0 0, 0 0; background-repeat:repeat, no-repeat; }
+  #langBtn { display:flex; align-items:center; gap:5px; height:30px; padding:0 7px; background-image:var(--pill-bg), var(--frost); border:none; color:#fff; font:inherit; font-weight:700; font-size:12px; border-radius:10000px; cursor:pointer; box-shadow:var(--pill-shadow); position:relative; overflow:hidden; transition:transform 150ms var(--ease-out-back), background 150ms var(--ease-out-back); }
   #langBtn::after { content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none; box-shadow:0px -3px 1px rgba(255,255,255,.15) inset, 0px 2px 2px #fff inset; mix-blend-mode:plus-lighter; }
-  #langBtn:hover { background:linear-gradient(90deg, rgba(255,255,255,.3) 0%, rgba(255,255,255,.6) 100%); transform:scale(1.12); }
-  #langMenu, .langMenu { position:absolute; top:calc(100% + 6px); right:0; width:190px; background:rgba(20,20,20,.72); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:4px; box-shadow:0 8px 24px rgba(0,0,0,.6); z-index:50; }
+  #langBtn:hover { background-image:linear-gradient(90deg, rgba(255,255,255,.3) 0%, rgba(255,255,255,.6) 100%), var(--frost); transform:scale(1.12); }
+  #langMenu, .langMenu { position:absolute; top:calc(100% + 6px); right:0; width:190px; background-image:linear-gradient(rgba(20,20,20,.72), rgba(20,20,20,.72)), var(--frost); border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:4px; box-shadow:0 8px 24px rgba(0,0,0,.6); z-index:50; }
   #langMenu button { display:flex; align-items:center; gap:8px; width:100%; background:transparent; border:none; color:var(--text); font:inherit; font-size:12.5px; font-weight:600; padding:7px 10px; border-radius:8px; cursor:pointer; text-align:left; }
   #langMenu button:hover { background:rgba(222,221,116,.16); }
   #langMenu button.active { background:rgba(222,221,116,.28); }
@@ -67,7 +79,7 @@
   .lead { max-width:560px; color:#d5dde1; font-size:15px; margin:0; text-shadow:0 2px 14px rgba(0,0,0,.55); }
 
   /* ---------- блок фич справа от заголовка, пункты вертикально ---------- */
-  .featureBar { display:flex; flex-direction:column; gap:20px; background:rgba(20,20,20,.55); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-radius:36px; padding:22px 24px; position:relative; }
+  .featureBar { display:flex; flex-direction:column; gap:20px; background-image:linear-gradient(var(--tint-dark), var(--tint-dark)), var(--frost); border-radius:36px; padding:22px 24px; position:relative; }
   .featureBar::before { content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none; box-shadow:var(--card-inset); }
   .featureCell { position:relative; display:flex; gap:12px; align-items:flex-start; }
   .featureCell + .featureCell { border-top:1px solid rgba(255,255,255,.09); padding-top:20px; }
@@ -80,10 +92,10 @@
   .label { font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:rgba(255,255,255,.75); margin:12px 0 8px; position:relative; text-shadow:0 1px 8px rgba(0,0,0,.6); }
   .plans { display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:stretch; position:relative; }
   /* Неактивный тариф — тёмная полупрозрачная карточка; активный — цветной жёлтый градиент со свечением. */
-  .plan { border:none; border-radius:36px; padding:16px 18px; cursor:pointer; background:rgba(20,20,20,.55); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); color:var(--text); font:inherit; text-align:left; position:relative; overflow:hidden; transition:transform 150ms var(--ease-out-back); box-shadow:var(--pill-shadow); display:flex; flex-direction:column; align-items:flex-start; }
+  .plan { border:none; border-radius:36px; padding:16px 18px; cursor:pointer; background-image:linear-gradient(var(--tint-dark), var(--tint-dark)), var(--frost); color:var(--text); font:inherit; text-align:left; position:relative; overflow:hidden; transition:transform 150ms var(--ease-out-back); box-shadow:var(--pill-shadow); display:flex; flex-direction:column; align-items:flex-start; }
   .plan::after { content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none; box-shadow:0px -3px 1px rgba(255,255,255,.15) inset, 0px 2px 2px #fff inset; mix-blend-mode:plus-lighter; }
   .plan:hover { transform:scale(1.02); }
-  .plan.selected { background:linear-gradient(90deg, rgba(222,221,116,.16) 0%, rgba(222,221,116,.3) 100%); box-shadow:var(--pill-shadow), 0 0 0 1px rgba(222,221,116,.45), 0 4px 18px rgba(222,221,116,.22); }
+  .plan.selected { background-image:linear-gradient(90deg, rgba(222,221,116,.16) 0%, rgba(222,221,116,.3) 100%), var(--frost); box-shadow:var(--pill-shadow), 0 0 0 1px rgba(222,221,116,.45), 0 4px 18px rgba(222,221,116,.22); }
   .planTop { display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%; position:relative; }
   .planName { font-size:16px; font-weight:700; }
   .check { width:19px; height:19px; border-radius:50%; border:1px solid rgba(255,255,255,.22); display:grid; place-items:center; color:transparent; font-size:10px; flex:none; }
@@ -96,19 +108,21 @@
   .fullAccess span:before { content:'✓'; margin-right:6px; color:var(--ok); font-weight:800; }
   .row2 { display:flex; gap:20px; margin-top:6px; align-items:stretch; position:relative; }
   .fieldCol { flex:1; display:flex; flex-direction:column; }
-  input[type="email"], input[type="text"] { width:100%; height:44px; border:none; outline:none; color:#fff; font:inherit; font-size:14px; font-weight:500; padding:0 22px; border-radius:10000px; background:rgba(255,255,255,0.07); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); box-shadow:var(--pill-shadow); transition:background 150ms var(--ease-out-back), box-shadow 150ms var(--ease-out-back); }
-  input:focus { background:rgba(255,255,255,0.11); }
+  /* Поля email и промокода — тот же цвет, что у неактивной карточки тарифа. */
+  input[type="email"], input[type="text"] { width:100%; height:44px; border:none; outline:none; color:#fff; font:inherit; font-size:14px; font-weight:500; padding:0 22px; border-radius:10000px; background-image:linear-gradient(var(--tint-dark), var(--tint-dark)), var(--frost); box-shadow:var(--pill-shadow); transition:background 150ms var(--ease-out-back), box-shadow 150ms var(--ease-out-back); }
+  input:focus { background-image:linear-gradient(rgba(30,30,30,.6), rgba(30,30,30,.6)), var(--frost); }
   /* Заполненное поле выглядит как активный элемент — тот же жёлтый градиент со свечением. */
-  input[type="email"]:not(:placeholder-shown), input[type="text"]:not(:placeholder-shown) { background:linear-gradient(90deg, rgba(222,221,116,.16) 0%, rgba(222,221,116,.3) 100%); box-shadow:var(--pill-shadow), 0 0 0 1px rgba(222,221,116,.45), 0 4px 18px rgba(222,221,116,.22); }
+  input[type="email"]:not(:placeholder-shown), input[type="text"]:not(:placeholder-shown) { background-image:linear-gradient(90deg, rgba(222,221,116,.16) 0%, rgba(222,221,116,.3) 100%), var(--frost); box-shadow:var(--pill-shadow), 0 0 0 1px rgba(222,221,116,.45), 0 4px 18px rgba(222,221,116,.22); }
   input::placeholder { color:rgba(255,255,255,.35); }
   .couponRow { display:flex; gap:8px; position:relative; }
   .couponRow input { flex:1; min-width:0; text-transform:uppercase; }
-  .btnSmall { flex:none; padding:0 20px; height:44px; border:none; border-radius:10000px; cursor:pointer; color:#fff; font:inherit; font-size:11px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; background:linear-gradient(90deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.28) 100%); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); transition:transform 150ms var(--ease-out-back), background 150ms var(--ease-out-back); }
-  .btnSmall:hover { transform:scale(1.06); background:linear-gradient(90deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.6) 100%); }
+  .btnSmall { flex:none; padding:0 20px; height:44px; border:none; border-radius:10000px; cursor:pointer; color:#fff; font:inherit; font-size:11px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; background-image:linear-gradient(90deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.28) 100%), var(--frost); transition:transform 150ms var(--ease-out-back), background 150ms var(--ease-out-back); }
+  .btnSmall:hover { transform:scale(1.06); background-image:linear-gradient(90deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.6) 100%), var(--frost); }
   .couponMsg { font-size:12px; margin-top:6px; min-height:16px; color:var(--ok); position:relative; }
   .pay { width:100%; padding:14px; border-radius:10000px; border:none; font:inherit; font-weight:800; font-size:15px; cursor:pointer; color:#333; background:linear-gradient(90deg,#797979 0%,#B3B3B3 25%,#E4E4E4 50%,#B3B3B3 75%,#797979 100%); background-size:200%; transition:transform 150ms var(--ease-out-back); margin-top:14px; position:relative; }
   .pay:not(:disabled):hover { animation:silverFlow 1.8s linear infinite; transform:scale(1.02); }
-  .pay:disabled { background:rgba(255,255,255,.07); color:var(--muted); cursor:not-allowed; box-shadow:var(--pill-shadow); }
+  /* Неактивная кнопка оплаты — тот же цвет, что у неактивной карточки тарифа. */
+  .pay:disabled { background:var(--tint-dark); color:var(--muted); cursor:not-allowed; box-shadow:var(--pill-shadow); }
   @keyframes silverFlow { 0% { background-position:0% 0; } 100% { background-position:200% 0; } }
   .message { min-height:19px; margin-top:8px; text-align:center; color:var(--err); font-size:11px; }
   .agreeNote { font-size:11.5px; color:var(--muted); margin-top:8px; text-align:center; position:relative; text-shadow:0 1px 8px rgba(0,0,0,.6); }
@@ -117,7 +131,7 @@
 
   /* ---------- шаги (TraceBase) ---------- */
   .steps { display:flex; gap:15px; margin-bottom:20px; flex-wrap:wrap; position:relative; }
-  .step { flex:1; min-width:150px; background:rgba(20,20,20,.55); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-radius:36px; padding:12px 25px; position:relative; }
+  .step { flex:1; min-width:150px; background-image:linear-gradient(var(--tint-dark), var(--tint-dark)), var(--frost); border-radius:36px; padding:12px 25px; position:relative; }
   .step::before { content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none; box-shadow:var(--card-inset); }
   .step:not(:last-child)::after { content:''; position:absolute; top:50%; right:-15px; width:15px; height:2px; transform:translateY(-50%); background:linear-gradient(90deg, rgba(222,221,116,.85), rgba(222,221,116,.2)); }
   .step b { display:block; font-size:12px; font-weight:700; color:#fff; margin-bottom:2px; }
@@ -322,6 +336,78 @@
     var sh=SHAPES[fig.shape],h=fig.shape==='logo'?Math.round(px*154/270):px;
     return '<span class="bgFig"'+rot+'><svg viewBox="'+sh.vb+'" width="'+px+'" height="'+h+'"><g opacity=".8" filter="url(#skinShadow)" fill="'+color+'">'+sh.body+'</g></svg></span>';
   }
+  /* ---------- frosted glass sampling ----------
+     The pattern itself stays at full DOM resolution. Only the blur source is
+     downsampled: the pattern is painted onto a canvas at 1/4 of the viewport,
+     blurred with a 4px gaussian there (= 16px at full scale), and the result
+     is published as the --frost background that translucent blocks sample. */
+  var frostSrc=document.createElement('canvas'),frostOut=document.createElement('canvas');
+  function paintFigure(ctx,fig,color,px,angle,cx,cy){
+    ctx.save();
+    ctx.translate(cx,cy);
+    if(angle)ctx.rotate(angle*Math.PI/180);
+    if(fig.emoji){
+      ctx.font=Math.round(px*.92)+'px "Segoe UI Emoji","Apple Color Emoji",sans-serif';
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(fig.emoji,0,0);
+      ctx.restore();return;
+    }
+    var key=fig.shape,s=px/100;
+    ctx.fillStyle=color;ctx.globalAlpha=.8;
+    if(key==='logo'){ctx.scale(px/270,px/270);ctx.translate(0,(270-154)/2);ctx.fill(new Path2D(LOGO));ctx.restore();return;}
+    ctx.scale(s,s);ctx.translate(-50,-50);
+    if(key==='circle'){ctx.beginPath();ctx.arc(50,50,46,0,Math.PI*2);ctx.fill();}
+    else if(key==='squircle'){ctx.beginPath();if(ctx.roundRect)ctx.roundRect(4,4,92,92,30);else ctx.rect(4,4,92,92);ctx.fill();}
+    else if(key==='flower'){[[50,21],[79,50],[50,79],[21,50]].forEach(function(p){ctx.beginPath();ctx.arc(p[0],p[1],19,0,Math.PI*2);ctx.fill();});ctx.beginPath();ctx.arc(50,50,17,0,Math.PI*2);ctx.fill();}
+    else{var d=(SHAPES[key].body.match(/d="([^"]+)"/)||[])[1];if(d)ctx.fill(new Path2D(d),key==='ring'?'evenodd':'nonzero');}
+    ctx.restore();
+  }
+  function paintInter(ctx,decor,color,px,cx,cy){
+    ctx.save();ctx.translate(cx,cy);
+    if(decor.emoji){
+      ctx.font=Math.round(px*.92)+'px "Segoe UI Emoji","Apple Color Emoji",sans-serif';
+      ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(decor.emoji,0,0);
+      ctx.restore();return;
+    }
+    ctx.fillStyle=color;var s=px/100;ctx.scale(s,s);ctx.translate(-50,-50);
+    if(decor.shape==='circle'){ctx.beginPath();ctx.arc(50,50,34,0,Math.PI*2);ctx.fill();}
+    else if(decor.shape==='line'){ctx.translate(50,50);ctx.rotate(-Math.PI/4);ctx.beginPath();if(ctx.roundRect)ctx.roundRect(-42,-6,84,12,6);else ctx.rect(-42,-6,84,12);ctx.fill();}
+    else{var d=(INTER[decor.shape].match(/d="([^"]+)"/)||[])[1];if(d)ctx.fill(new Path2D(d));}
+    ctx.restore();
+  }
+  function renderFrost(pat){
+    try{
+      var W=window.innerWidth,H=window.innerHeight,q=4;
+      var w=Math.max(1,Math.round(W/q)),h=Math.max(1,Math.round(H/q));
+      frostSrc.width=w;frostSrc.height=h;
+      var ctx=frostSrc.getContext('2d');
+      ctx.fillStyle=pat.bg;ctx.fillRect(0,0,w,h);
+      ctx.save();ctx.scale(1/q,1/q);
+      var cell=pat.cell,cols=Math.ceil(W/cell)+2,rows=Math.ceil(H/cell)+2;
+      for(var r=0;r<rows;r++){
+        for(var c=0;c<cols;c++){
+          if(pat.mode==='checker'&&(r+c)%2===1)continue;
+          var alt=pat.mode==='checker2'&&(r+c)%2===1;
+          var x=(c-1)*cell+(r%2===1?cell*pat.shiftX:0);
+          var y=(r-1)*cell+(c%2===1?cell*pat.shiftY:0);
+          var angle=pat.mode==='rotate'?pat.baseRot+(r+c)*pat.rotStep:(alt?pat.rot2:pat.rot1);
+          var size=Math.max(24,Math.round(cell*(alt?pat.size2:pat.size1)));
+          paintFigure(ctx,alt?pat.fig2:pat.fig1,alt?pat.color2:pat.color1,size,angle,x+cell/2,y+cell/2);
+        }
+      }
+      if(pat.decor){
+        var iSize=Math.max(16,Math.round(cell*0.2));
+        for(var ir=0;ir<=rows;ir++)for(var ic=0;ic<=cols;ic++)paintInter(ctx,pat.decor,pat.interColor,iSize,(ic-1)*cell,(ir-1)*cell);
+      }
+      ctx.restore();
+      frostOut.width=w;frostOut.height=h;
+      var out=frostOut.getContext('2d');
+      out.fillStyle=pat.bg;out.fillRect(0,0,w,h);
+      if('filter' in out)out.filter='blur(4px)';
+      out.drawImage(frostSrc,0,0);
+      document.documentElement.style.setProperty('--frost','url("'+frostOut.toDataURL('image/png')+'")');
+    }catch(e){/* frost is decorative; blocks keep their tint if sampling fails */}
+  }
   function makePattern(){
     /* Random background at least 30% away from the previous one. */
     var bgH,bgS,bgL,rgb,tries=0;
@@ -412,6 +498,7 @@
     var pat=makePattern();
     buildLayer(layer,pat);
     setDelays(layer,GAP);
+    /* The frost snapshot is also prebuilt here, during the hold. */
     pending={pat:pat,index:next};
   }
   function scheduleNext(){
@@ -425,6 +512,7 @@
     if(!pending)prepareNext();
     var oldLayer=layers[active],newLayer=layers[pending.index];
     holder.style.backgroundColor=pending.pat.bg;
+    renderFrost(pending.pat);
     /* Per cell: the old figure shrinks at its wave time, the new one grows right after it. */
     setDelays(oldLayer,0);
     oldLayer.classList.remove('on');
@@ -446,6 +534,7 @@
     var pat=makePattern();
     buildLayer(layers[0],pat);
     holder.style.backgroundColor=pat.bg;
+    renderFrost(pat);
     show(layers[0],0);
     prepareTimer=setTimeout(prepareNext,WAVE+300);
     if(!reduced)scheduleNext();
