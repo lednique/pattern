@@ -24,7 +24,7 @@ test(index.includes('Math.max(24,Math.round(cell*')&&index.includes('Math.max(16
 test(index.includes('function prepareNext()')&&index.includes('if(!pending)prepareNext()')&&index.includes('prepareNext();},WAVE+GAP+900'),'the next pattern is randomized and built during the hold, before the morph starts');
 test(index.includes('rot1:pick(')&&index.includes('(alt?pat.rot2:pat.rot1)'),'per-object static rotations vary between patterns like the plugin sliders');
 test(index.includes('distance(rgb,prevRgb)<0.3'),'random background colors differ by at least 30% between cycles');
-test(index.includes('filter="url(#skinShadow)"')&&index.includes('skinShadow')&&index.includes('feBlend mode="overlay"'),'figures use the provided leather dddiii shadow recipe without its color');
+test(!index.includes('skinShadow')&&!index.includes('drop-shadow(0 3px 5px')&&index.includes("fill=\"'+color+'\">'+sh.body"),'figures render as plain unfiltered vectors so nothing rasterizes them at reduced resolution');
 test(index.includes('transform:scale(.14); opacity:0')&&index.includes('.bgLayer.on .bgShape { transform:scale(1); opacity:1')&&!index.includes('transform:scale(0)')&&!index.includes('rotate(calc(var(--rot'),'morph is scale-only and never uses zero scale: hidden figures keep a small scale with opacity 0');
 test(index.includes('setDelays(oldLayer,0)')&&index.includes('setDelays(layer,GAP)')&&index.includes("(r+c)*stepMs"),'the whole pattern morphs as one left-to-right diagonal wave, new figure right after the old');
 test(index.includes('cubic-bezier(.26,1.36,.5,1)')&&index.includes('cubic-bezier(.55,.06,.68,.19)'),'figures grow with a gentle back-out and shrink smoothly');

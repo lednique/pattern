@@ -48,7 +48,7 @@
   .bgLayer.on.settled .bgShape { transform:none; transition:none; }
   .bgShape svg { display:block; overflow:visible; }
   .bgFig { display:grid; place-items:center; }
-  .bgEmoji { line-height:1; filter:drop-shadow(0 3px 5px rgba(0,0,0,.25)); }
+  .bgEmoji { line-height:1; }
   .bgDim { position:fixed; inset:0; z-index:0; pointer-events:none; background:linear-gradient(180deg, rgba(5,7,8,.62) 0%, rgba(5,7,8,.36) 34%, rgba(5,7,8,.55) 100%); }
 
   .wrap { max-width:880px; margin:0 auto; padding:36px 20px 60px; position:relative; z-index:1; }
@@ -164,37 +164,6 @@
 <body>
 <div id="bgPattern"><div class="bgLayer" id="bgA"></div><div class="bgLayer" id="bgB"></div></div>
 <div class="bgDim"></div>
-<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
-  <!-- The provided leather/skin dddiii recipe: shadows only, fills stay per-shape. -->
-  <filter id="skinShadow" x="-30%" y="-30%" width="160%" height="175%" color-interpolation-filters="sRGB">
-    <feFlood flood-opacity="0" result="BackgroundImageFix"/>
-    <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-    <feOffset dy="3"/><feGaussianBlur stdDeviation="5"/><feComposite in2="hardAlpha" operator="out"/>
-    <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"/>
-    <feBlend mode="multiply" in2="BackgroundImageFix" result="d1"/>
-    <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-    <feOffset dx="1"/><feGaussianBlur stdDeviation="0.5"/><feComposite in2="hardAlpha" operator="out"/>
-    <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.3 0"/>
-    <feBlend mode="multiply" in2="d1" result="d2"/>
-    <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-    <feOffset dx="-1"/><feGaussianBlur stdDeviation="1"/><feComposite in2="hardAlpha" operator="out"/>
-    <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.3 0"/>
-    <feBlend mode="multiply" in2="d2" result="d3"/>
-    <feBlend mode="normal" in="SourceGraphic" in2="d3" result="shape"/>
-    <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-    <feOffset dy="2"/><feGaussianBlur stdDeviation="6"/><feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
-    <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0"/>
-    <feBlend mode="overlay" in2="shape" result="i4"/>
-    <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-    <feOffset dy="-2"/><feGaussianBlur stdDeviation="0.5"/><feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
-    <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.15 0"/>
-    <feBlend mode="lighten" in2="i4" result="i5"/>
-    <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-    <feOffset dy="3"/><feGaussianBlur stdDeviation="1"/><feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
-    <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0"/>
-    <feBlend mode="lighten" in2="i5" result="i6"/>
-  </filter>
-</defs></svg>
 <div class="wrap">
 
   <div class="head">
@@ -334,7 +303,10 @@
     var rot=angle?' style="transform:rotate('+angle+'deg)"':'';
     if(fig.emoji)return '<span class="bgFig"'+rot+'><span class="bgEmoji" style="font-size:'+Math.round(px*.92)+'px">'+fig.emoji+'</span></span>';
     var sh=SHAPES[fig.shape],h=fig.shape==='logo'?Math.round(px*154/270):px;
-    return '<span class="bgFig"'+rot+'><svg viewBox="'+sh.vb+'" width="'+px+'" height="'+h+'"><g opacity=".8" filter="url(#skinShadow)" fill="'+color+'">'+sh.body+'</g></svg></span>';
+    /* Figures render as plain vectors — no SVG filter. Filters force each
+       shape through an intermediate raster buffer that browsers may compute
+       at reduced resolution, which pixelated the pattern. */
+    return '<span class="bgFig"'+rot+'><svg viewBox="'+sh.vb+'" width="'+px+'" height="'+h+'"><g opacity=".85" fill="'+color+'">'+sh.body+'</g></svg></span>';
   }
   function makePattern(){
     /* Random background at least 30% away from the previous one. */
