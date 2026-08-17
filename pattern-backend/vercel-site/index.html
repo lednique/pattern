@@ -35,15 +35,17 @@
      then the new one grows in its place. Scale only — no rotation. The hidden
      state is a small non-zero scale plus opacity 0: zero scale is never used,
      so a skipped transition can never leave an invisible degenerate layer.
-     Shapes are intentionally not layer-promoted: a permanently promoted cell
-     would be rasterized once at the tiny initial scale and stretched, leaving
-     pixelated figures. With plain transitions the browser re-rasterizes the
-     vector shapes at full resolution once each cell settles at scale(1). */
+     Shapes are intentionally not layer-promoted, and once a wave settles the
+     layer gets .settled, dropping transforms entirely (transform:none): an
+     untransformed cell is always painted in the main raster, so the browser
+     re-renders every SVG vector at native full resolution — no texture from
+     the scale animation is ever reused for the resting pattern. */
   #bgPattern { position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none; transition:background-color 2s linear; }
   .bgLayer { position:absolute; inset:0; }
   .bgShape { position:absolute; display:grid; place-items:center; transform:scale(.14); opacity:0;
     transition:transform .4s cubic-bezier(.55,.06,.68,.19), opacity .4s cubic-bezier(.55,.06,.68,.19); }
   .bgLayer.on .bgShape { transform:scale(1); opacity:1; transition:transform .55s cubic-bezier(.26,1.36,.5,1), opacity .3s linear; }
+  .bgLayer.on.settled .bgShape { transform:none; transition:none; }
   .bgShape svg { display:block; overflow:visible; }
   .bgFig { display:grid; place-items:center; }
   .bgEmoji { line-height:1; filter:drop-shadow(0 3px 5px rgba(0,0,0,.25)); }
@@ -411,13 +413,21 @@
     setDelays(layer,offset);
     requestAnimationFrame(function(){requestAnimationFrame(function(){layer.classList.add('on');});});
   }
+  /* Once the grow wave has fully finished, .settled drops all transforms so
+     every figure is repainted as untransformed vectors at full native
+     resolution — the scale-animation texture is never left on screen. */
+  var settleTimer=null;
+  function settleAfter(layer,ms){
+    clearTimeout(settleTimer);
+    settleTimer=setTimeout(function(){if(layer.classList.contains('on'))layer.classList.add('settled');},ms);
+  }
   /* The next pattern is randomized and its DOM is fully built during the
      hold time — the swap itself only flips classes, so nothing loads or
      computes while the morph wave is running. */
   var pending=null,cycleTimer=null,cleanupTimer=null,prepareTimer=null;
   function clearTimers(){
-    clearTimeout(cycleTimer);clearTimeout(cleanupTimer);clearTimeout(prepareTimer);
-    cycleTimer=cleanupTimer=prepareTimer=null;
+    clearTimeout(cycleTimer);clearTimeout(cleanupTimer);clearTimeout(prepareTimer);clearTimeout(settleTimer);
+    cycleTimer=cleanupTimer=prepareTimer=settleTimer=null;
   }
   function prepareNext(){
     var next=1-active,layer=layers[next];
@@ -439,8 +449,10 @@
     holder.style.backgroundColor=pending.pat.bg;
     /* Per cell: the old figure shrinks at its wave time, the new one grows right after it. */
     setDelays(oldLayer,0);
+    oldLayer.classList.remove('settled');
     oldLayer.classList.remove('on');
     requestAnimationFrame(function(){requestAnimationFrame(function(){newLayer.classList.add('on');});});
+    settleAfter(newLayer,WAVE+GAP+700);
     active=pending.index;
     pending=null;
     clearTimeout(cleanupTimer);
@@ -452,13 +464,14 @@
   function restart(){
     clearTimers();
     pending=null;
-    layers[0].classList.remove('on');layers[1].classList.remove('on');
+    layers[0].classList.remove('on','settled');layers[1].classList.remove('on','settled');
     layers[0].innerHTML='';layers[1].innerHTML='';
     active=0;
     var pat=makePattern();
     buildLayer(layers[0],pat);
     holder.style.backgroundColor=pat.bg;
     show(layers[0],0);
+    settleAfter(layers[0],WAVE+700);
     prepareTimer=setTimeout(prepareNext,WAVE+300);
     if(!reduced)scheduleNext();
   }
