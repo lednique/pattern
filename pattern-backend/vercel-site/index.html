@@ -350,10 +350,12 @@
       fig1:fig1,fig2:fig2,mode:mode,shiftX:shiftX,shiftY:shiftY,decor:decor,
       /* Different object sizes every pattern, like the plugin's per-object size sliders. */
       size1:rand(.42,.88),size2:rand(.3,.66),
+      /* Static per-object rotation, like the plugin's rotation sliders. */
+      rot1:pick([0,0,0,15,45,-15,90]),rot2:pick([0,0,180,45,-45]),
       cell:rand(130,200),baseRot:0,rotStep:pick([15,30,45,-15,-30])
     };
   }
-  var WAVE=1300,GAP=420;
+  var WAVE=1300,GAP=430,HOLD=7000;
   function buildLayer(layer,pat){
     var W=window.innerWidth,H=window.innerHeight;
     var cell=pat.cell,cols=Math.ceil(W/cell)+2,rows=Math.ceil(H/cell)+2;
@@ -365,8 +367,9 @@
         var alt=pat.mode==='checker2'&&(r+c)%2===1;
         var x=(c-1)*cell+(r%2===1?cell*pat.shiftX:0);
         var y=(r-1)*cell+(c%2===1?cell*pat.shiftY:0);
-        /* Rotation mode keeps its static stepped angles; the morph itself never rotates. */
-        var angle=pat.mode==='rotate'?pat.baseRot+(r+c)*pat.rotStep:0;
+        /* Static angles come from the pattern settings (rotation mode steps or
+           per-object rotation sliders); the morph itself never rotates. */
+        var angle=pat.mode==='rotate'?pat.baseRot+(r+c)*pat.rotStep:(alt?pat.rot2:pat.rot1);
         var d=Math.round((r+c)*stepMs);
         var size=Math.round(cell*(alt?pat.size2:pat.size1));
         var inner=figureHtml(alt?pat.fig2:pat.fig1,alt?pat.color2:pat.color1,size,angle);
@@ -396,26 +399,38 @@
     setDelays(layer,offset);
     requestAnimationFrame(function(){requestAnimationFrame(function(){layer.classList.add('on');});});
   }
-  function cycle(){
-    var next=1-active,oldLayer=layers[active],newLayer=layers[next];
+  /* The next pattern is randomized and its DOM is fully built during the
+     hold time — the swap itself only flips classes, so nothing loads or
+     computes while the morph wave is running. */
+  var pending=null;
+  function prepareNext(){
+    var next=1-active,layer=layers[next];
     var pat=makePattern();
-    buildLayer(newLayer,pat);
-    holder.style.backgroundColor=pat.bg;
+    buildLayer(layer,pat);
+    setDelays(layer,GAP);
+    pending={pat:pat,index:next};
+  }
+  function cycle(){
+    if(!pending)prepareNext();
+    var oldLayer=layers[active],newLayer=layers[pending.index];
+    holder.style.backgroundColor=pending.pat.bg;
     /* Per cell: the old figure shrinks at its wave time, the new one grows right after it. */
     setDelays(oldLayer,0);
     oldLayer.classList.remove('on');
-    show(newLayer,GAP);
-    setTimeout(function(){oldLayer.innerHTML='';},WAVE+GAP+900);
-    active=next;
+    requestAnimationFrame(function(){requestAnimationFrame(function(){newLayer.classList.add('on');});});
+    active=pending.index;
+    pending=null;
+    setTimeout(function(){oldLayer.innerHTML='';prepareNext();},WAVE+GAP+900);
   }
   var reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var first=makePattern();
   buildLayer(layers[0],first);
   holder.style.backgroundColor=first.bg;
   show(layers[0],0);
-  if(!reduced)setInterval(cycle,7000);
+  setTimeout(prepareNext,WAVE+600);
+  if(!reduced)setInterval(cycle,HOLD);
   var resizeTimer=null;
-  window.addEventListener('resize',function(){clearTimeout(resizeTimer);resizeTimer=setTimeout(function(){var pat=makePattern();buildLayer(layers[active],pat);holder.style.backgroundColor=pat.bg;show(layers[active],0);},350);});
+  window.addEventListener('resize',function(){clearTimeout(resizeTimer);resizeTimer=setTimeout(function(){pending=null;var pat=makePattern();buildLayer(layers[active],pat);holder.style.backgroundColor=pat.bg;show(layers[active],0);setTimeout(prepareNext,WAVE+600);},350);});
 })();
 </script>
 

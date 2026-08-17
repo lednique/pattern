@@ -17,11 +17,13 @@ test(index.includes('/terms.html')&&index.includes('/privacy.html'),'legal links
 test(index.includes('class="footLogo"')&&index.includes('viewBox="0 0 140 52"')&&index.includes('footRow')&&index.includes('footNote'),'TraceBase-style footer with the LEDNIQUE vector logo is embedded');
 test(index.includes('t.me/lednique')&&index.includes('lednique@gmail.com')&&index.includes('ИНН 160101292015'),'footer repeats the TraceBase contact and legal rows');
 test(index.includes('id="bgPattern"')&&index.includes('bgLayer')&&index.includes('buildLayer'),'animated pattern background replaces the static demo square');
-test(index.includes('setInterval(cycle,7000)')&&index.includes('transition:background-color 2s linear'),'pattern builds ~2 s, holds ~5 s; the background color crossfades');
+test(index.includes('setInterval(cycle,HOLD)')&&index.includes('HOLD=7000')&&index.includes('transition:background-color 2s linear'),'pattern builds ~2 s, holds ~5 s; the background color crossfades');
+test(index.includes('function prepareNext()')&&index.includes('if(!pending)prepareNext()')&&index.includes('prepareNext();},WAVE+GAP+900'),'the next pattern is randomized and built during the hold, before the morph starts');
+test(index.includes('rot1:pick(')&&index.includes('(alt?pat.rot2:pat.rot1)'),'per-object static rotations vary between patterns like the plugin sliders');
 test(index.includes('distance(rgb,prevRgb)<0.3'),'random background colors differ by at least 30% between cycles');
 test(index.includes('filter="url(#skinShadow)"')&&index.includes('skinShadow')&&index.includes('feBlend mode="overlay"'),'figures use the provided leather dddiii shadow recipe without its color');
 test(index.includes('transform:scale(0)')&&index.includes('.bgLayer.on .bgShape { transform:scale(1)')&&!index.includes('rotate(calc(var(--rot'),'morph is scale-only: the old figure shrinks and the new one grows, no rotation');
-test(index.includes('setDelays(oldLayer,0)')&&index.includes('show(newLayer,GAP)')&&index.includes("(r+c)*stepMs"),'the whole pattern morphs as one left-to-right diagonal wave, new figure right after the old');
+test(index.includes('setDelays(oldLayer,0)')&&index.includes('setDelays(layer,GAP)')&&index.includes("(r+c)*stepMs"),'the whole pattern morphs as one left-to-right diagonal wave, new figure right after the old');
 test(index.includes('cubic-bezier(.26,1.36,.5,1)')&&index.includes('cubic-bezier(.55,.06,.68,.19)'),'figures grow with a gentle back-out and shrink smoothly');
 test(index.includes("'grid','grid','checker','checker2','rotate'")&&index.includes('cell*pat.shiftX')&&index.includes('cell*pat.shiftY'),'background replays plugin modes with horizontal and vertical column offsets');
 test(index.includes('size1:rand(')&&index.includes('size2:rand(')&&index.includes('alt?pat.size2:pat.size1'),'different figure sizes are shown per object like the plugin sliders');
