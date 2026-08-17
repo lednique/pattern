@@ -10,139 +10,207 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root { --accent:#DEDD74; --accent2:#EFEEA2; --pink:#A9A84C; --bg:#050708; --card:#111415; --text:#f4f7f8; --muted:#89959b; --line:rgba(255,255,255,.1); --ok:#37d98a; --err:#ff6c78; --font:Montserrat,system-ui,sans-serif; }
-  * { box-sizing:border-box; }
-  html { scroll-behavior:smooth; }
-  body { margin:0; min-height:100vh; color:var(--text); background:var(--bg); font:14px/1.55 var(--font); -webkit-font-smoothing:antialiased; overflow-x:hidden; }
-  button,input { font:inherit; }
+  /* TraceBase design system re-colored with the Patternique #DEDD74 theme. */
+  :root {
+    --accent:#DEDD74; --accent-hi:#EFEEA2; --grad:#A6A548;
+    --bg:#050708; --card:#141414; --border:rgba(255,255,255,.1);
+    --text:#f4f7f8; --muted:#9aa5aa; --ok:#37d98a; --err:#ff6c78;
+    --ease-out-back:cubic-bezier(0.01, 1.43, 0.46, 1.85);
+    --card-inset:0px 3px 2px rgba(255,255,255,0.5) inset, 0px -3px 2px rgba(255,255,255,0.3) inset;
+    --pill-bg:linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.1) 100%);
+    --pill-shadow:0px 3px 6px rgba(0,0,0,0.2), 1px 0px 2px rgba(0,0,0,0.3), -1px 0px 2px rgba(0,0,0,0.3);
+    --font:'Montserrat',system-ui,sans-serif;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font:14px/1.5 var(--font); min-height:100vh; position:relative; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+  ::selection { background:var(--accent); color:#25251f; }
+  button, input, a { font-family:inherit; }
   a { color:inherit; }
-  .glow { position:fixed; z-index:0; inset:0 0 auto; height:520px; background:radial-gradient(circle at 50% -20%,rgba(222,221,116,.55),rgba(222,221,116,.14) 37%,transparent 68%); pointer-events:none; }
-  .noise { position:fixed; z-index:0; inset:0; opacity:.025; pointer-events:none; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 140 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
-  .wrap { width:min(880px,calc(100% - 32px)); margin:0 auto; position:relative; z-index:1; }
-  header { height:92px; display:flex; align-items:center; gap:12px; }
-  .logoMark { width:42px; height:42px; flex:none; filter:drop-shadow(0 6px 16px rgba(222,221,116,.3)); }
-  .brand { font-size:19px; font-weight:650; letter-spacing:.02em; }
-  .productTag { margin-left:8px; color:rgba(255,255,255,.45); font-size:10px; text-transform:uppercase; letter-spacing:.14em; }
-  .langWrap { margin-left:auto; position:relative; }
-  .lang { display:flex; align-items:center; gap:5px; min-width:64px; height:31px; padding:0 9px; border:0; border-radius:999px; color:#fff; background:rgba(255,255,255,.08); cursor:pointer; font-weight:800; box-shadow:inset 0 1px rgba(255,255,255,.2); }
-  .langMenu { position:absolute; z-index:30; top:37px; right:0; width:190px; padding:5px; border:1px solid rgba(255,255,255,.1); border-radius:15px; background:#151817; box-shadow:0 14px 34px rgba(0,0,0,.45); }
-  .langMenu.hidden { display:none; }
-  .langMenu button { display:flex; align-items:center; gap:8px; width:100%; padding:7px 9px; border:0; border-radius:9px; background:transparent; color:#fff; cursor:pointer; text-align:left; font-size:11px; }
-  .langMenu button:hover,.langMenu button.active { background:rgba(222,221,116,.14); }
-  .hero { display:grid; grid-template-columns:1.1fr .9fr; gap:46px; align-items:center; padding:54px 0 58px; }
-  .eyebrow { display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; color:#F4F3AE; background:rgba(222,221,116,.12); border:1px solid rgba(222,221,116,.22); text-transform:uppercase; letter-spacing:.11em; font-size:10px; font-weight:700; }
-  .eyebrow:before { content:''; width:6px; height:6px; border-radius:50%; background:var(--accent2); box-shadow:0 0 12px var(--accent2); }
-  h1 { margin:18px 0 14px; font-size:clamp(36px,6vw,61px); line-height:.99; letter-spacing:-.055em; font-weight:550; }
-  h1 em { color:var(--accent2); font-style:normal; }
-  .lead { max-width:520px; color:#b5c0c5; font-size:15px; margin:0 0 23px; }
+
+  /* ---------- animated pattern background ---------- */
+  #bgPattern { position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
+  .bgLayer { position:absolute; inset:0; opacity:0; transition:opacity 2s linear; }
+  .bgLayer.show { opacity:1; }
+  .bgShape { position:absolute; display:grid; place-items:center; will-change:transform;
+    transform:scale(0) rotate(calc(var(--rot,0deg) - 70deg));
+    transition:transform .6s var(--ease-out-back); }
+  .bgLayer.on .bgShape { transform:scale(1) rotate(var(--rot,0deg)); }
+  .bgShape svg { display:block; overflow:visible; }
+  .bgEmoji { line-height:1; filter:drop-shadow(0 3px 5px rgba(0,0,0,.25)); }
+  .bgDim { position:fixed; inset:0; z-index:0; pointer-events:none; background:linear-gradient(180deg, rgba(5,7,8,.62) 0%, rgba(5,7,8,.36) 34%, rgba(5,7,8,.55) 100%); }
+
+  .wrap { max-width:880px; margin:0 auto; padding:36px 20px 60px; position:relative; z-index:1; }
+
+  /* ---------- шапка (TraceBase) ---------- */
+  .head { display:flex; align-items:center; gap:14px; margin-bottom:20px; }
+  .brandIcon { flex:none; filter:drop-shadow(0 2px 8px rgba(222,221,116,.4)); }
+  .titleRow { display:flex; align-items:center; gap:12px; min-width:0; }
+  .head h1 { font-size:26px; font-weight:500; color:#fff; letter-spacing:.3px; white-space:nowrap; }
+  .licTag { font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:rgba(255,255,255,.7); white-space:nowrap; transform:translateY(3px); }
+  .langWrap { margin-left:auto; position:relative; flex:none; }
+  #langBtn { display:flex; align-items:center; gap:5px; height:30px; padding:0 7px; background:var(--pill-bg); border:none; color:#fff; font:inherit; font-weight:700; font-size:12px; border-radius:10000px; cursor:pointer; box-shadow:var(--pill-shadow); position:relative; overflow:hidden; transition:transform 150ms var(--ease-out-back), background 150ms var(--ease-out-back); }
+  #langBtn::after { content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none; box-shadow:0px -3px 1px rgba(255,255,255,.15) inset, 0px 2px 2px #fff inset; mix-blend-mode:plus-lighter; }
+  #langBtn:hover { background:linear-gradient(90deg, rgba(255,255,255,.3) 0%, rgba(255,255,255,.6) 100%); transform:scale(1.12); }
+  #langMenu, .langMenu { position:absolute; top:calc(100% + 6px); right:0; width:190px; background:#141414; border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:4px; box-shadow:0 8px 24px rgba(0,0,0,.6); z-index:50; }
+  #langMenu button { display:flex; align-items:center; gap:8px; width:100%; background:transparent; border:none; color:var(--text); font:inherit; font-size:12.5px; font-weight:600; padding:7px 10px; border-radius:8px; cursor:pointer; text-align:left; }
+  #langMenu button:hover { background:rgba(222,221,116,.16); }
+  #langMenu button.active { background:rgba(222,221,116,.28); }
+  .hidden { display:none !important; }
+
+  /* ---------- герой (поднят на 40 px: было 54px сверху, стало 14px) ---------- */
+  .hero { padding:14px 0 0; margin-bottom:20px; }
+  .eyebrow { display:inline-flex; align-items:center; gap:8px; padding:6px 12px; border-radius:10000px; color:#F4F3AE; background:var(--pill-bg); box-shadow:var(--pill-shadow); text-transform:uppercase; letter-spacing:.11em; font-size:10px; font-weight:700; position:relative; overflow:hidden; }
+  .eyebrow::after { content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none; box-shadow:0px -3px 1px rgba(255,255,255,.15) inset, 0px 2px 2px #fff inset; mix-blend-mode:plus-lighter; }
+  .eyebrow::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--accent-hi); box-shadow:0 0 12px var(--accent-hi); }
+  h1.heroTitle { margin:16px 0 12px; font-size:clamp(34px,5.6vw,56px); line-height:1; letter-spacing:-.05em; font-weight:550; text-shadow:0 3px 26px rgba(0,0,0,.5); }
+  h1.heroTitle em { color:var(--accent-hi); font-style:normal; }
+  .lead { max-width:560px; color:#d5dde1; font-size:15px; margin:0 0 16px; text-shadow:0 2px 14px rgba(0,0,0,.55); }
   .heroPrice { display:flex; gap:14px; flex-wrap:wrap; }
-  .heroPrice span { color:var(--muted); font-size:12px; }
+  .heroPrice span { color:#cfd8dd; font-size:12px; text-shadow:0 2px 10px rgba(0,0,0,.5); }
   .heroPrice b { color:#fff; font-size:14px; }
-  .patternDemo { aspect-ratio:1; border-radius:38px; position:relative; overflow:hidden; background:#eaf6f8; box-shadow:0 22px 80px rgba(0,0,0,.45),inset 0 2px 2px rgba(255,255,255,.9); transform:rotate(2deg); }
-  .patternGrid { position:absolute; inset:-16%; display:grid; grid-template-columns:repeat(5,1fr); grid-template-rows:repeat(5,1fr); transform:rotate(-8deg); }
-  .shape { display:grid; place-items:center; position:relative; }
-  .shape:before,.shape:after { content:''; position:absolute; width:38%; height:72%; border-radius:999px; background:var(--accent); }
-  .shape:after { transform:rotate(90deg); }
-  .shape:nth-child(even):before,.shape:nth-child(even):after { background:var(--pink); width:24%; height:56%; }
-  .shape:nth-child(3n) { transform:rotate(45deg); }
-  .demoBadge { position:absolute; left:20px; bottom:20px; right:20px; display:flex; align-items:center; justify-content:space-between; padding:13px 16px; border-radius:999px; color:#12222a; background:rgba(255,255,255,.8); backdrop-filter:blur(10px); box-shadow:0 8px 22px rgba(0,0,0,.12); font-size:11px; font-weight:700; }
-  .demoBadge i { width:9px; height:9px; border-radius:50%; background:var(--ok); box-shadow:0 0 0 4px rgba(55,217,138,.16); }
-  .features { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:58px; }
-  .feature { background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.07); border-radius:26px; padding:18px; }
-  .featureIcon { width:35px; height:35px; display:grid; place-items:center; border-radius:12px; background:rgba(222,221,116,.13); color:var(--accent2); font-size:18px; }
-  .feature h3 { font-size:13px; margin:12px 0 4px; }
-  .feature p { color:var(--muted); font-size:11.5px; margin:0; }
-  .checkout { padding:32px; border-radius:38px; background:rgba(17,20,21,.96); border:1px solid rgba(255,255,255,.08); box-shadow:0 26px 80px rgba(0,0,0,.34),inset 0 1px rgba(255,255,255,.06); }
-  .checkoutHead { display:flex; align-items:flex-end; justify-content:space-between; gap:15px; margin-bottom:22px; }
-  .checkout h2 { margin:0; font-size:25px; font-weight:550; letter-spacing:-.025em; }
-  .checkoutHead p { margin:3px 0 0; color:var(--muted); font-size:12px; }
-  .secure { color:#DEDD74; font-size:10px; font-weight:700; letter-spacing:.06em; white-space:nowrap; }
-  .plans { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-  .plan { min-height:165px; padding:20px; border:1px solid var(--line); border-radius:28px; color:var(--text); background:rgba(255,255,255,.025); text-align:left; cursor:pointer; position:relative; overflow:hidden; transition:.18s ease; }
-  .plan:hover { transform:translateY(-2px); border-color:rgba(222,221,116,.35); }
-  .plan.selected { border-color:rgba(222,221,116,.62); background:linear-gradient(145deg,rgba(222,221,116,.17),rgba(222,221,116,.05)); box-shadow:0 12px 35px rgba(222,221,116,.1),inset 0 1px rgba(255,255,255,.08); }
-  .planTop { display:flex; align-items:center; justify-content:space-between; gap:8px; }
-  .planName { font-size:14px; font-weight:750; }
-  .check { width:19px; height:19px; border-radius:50%; border:1px solid rgba(255,255,255,.22); display:grid; place-items:center; color:transparent; font-size:10px; }
+
+  /* ---------- три блока, объединённые в одну фигуру (на месте квадрата) ---------- */
+  .featureBar { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; background:var(--card); border-radius:36px; padding:18px 24px; margin-bottom:20px; position:relative; }
+  .featureBar::before { content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none; box-shadow:var(--card-inset); }
+  .featureCell { position:relative; display:flex; gap:12px; align-items:flex-start; }
+  .featureCell + .featureCell { border-left:1px solid rgba(255,255,255,.09); padding-left:20px; }
+  .featureIcon { flex:none; width:35px; height:35px; display:grid; place-items:center; border-radius:12px; background:rgba(222,221,116,.16); color:var(--accent-hi); font-size:17px; box-shadow:var(--pill-shadow); }
+  .featureCell h3 { font-size:13px; margin:1px 0 4px; color:#fff; }
+  .featureCell p { color:var(--muted); font-size:11.5px; margin:0; }
+
+  /* ---------- покупка (карточки-кнопки TraceBase) ---------- */
+  .checkout { margin-bottom:20px; position:relative; }
+  .label { font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:rgba(255,255,255,.75); margin:12px 0 8px; position:relative; text-shadow:0 1px 8px rgba(0,0,0,.6); }
+  .plans { display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:stretch; position:relative; }
+  .plan { border:none; border-radius:36px; padding:16px 18px; cursor:pointer; background:var(--card); color:var(--text); font:inherit; text-align:left; position:relative; overflow:hidden; transition:transform 150ms var(--ease-out-back); box-shadow:var(--pill-shadow); display:flex; flex-direction:column; align-items:flex-start; }
+  .plan::after { content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none; box-shadow:0px -3px 1px rgba(255,255,255,.15) inset, 0px 2px 2px #fff inset; mix-blend-mode:plus-lighter; }
+  .plan:hover { transform:scale(1.02); }
+  .plan.selected { background:linear-gradient(90deg, rgba(222,221,116,.16) 0%, rgba(222,221,116,.3) 100%); box-shadow:var(--pill-shadow), 0 0 0 1px rgba(222,221,116,.45), 0 4px 18px rgba(222,221,116,.22); }
+  .planTop { display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%; position:relative; }
+  .planName { font-size:16px; font-weight:700; }
+  .check { width:19px; height:19px; border-radius:50%; border:1px solid rgba(255,255,255,.22); display:grid; place-items:center; color:transparent; font-size:10px; flex:none; }
   .selected .check { background:var(--accent); border-color:var(--accent); color:#35351f; }
-  .price { margin:13px 0 7px; color:var(--accent2); font-size:30px; line-height:1; font-weight:500; letter-spacing:-.04em; }
-  .price small { color:#aab5ba; font-size:15px; font-weight:650; }
-  .planDesc { color:var(--muted); font-size:11px; }
-  .popular { position:absolute; top:0; right:25px; padding:4px 9px; border-radius:0 0 9px 9px; background:var(--pink); font-size:8.5px; text-transform:uppercase; letter-spacing:.08em; font-weight:800; }
-  .fullAccess { margin:14px 2px 19px; display:flex; flex-wrap:wrap; gap:8px 18px; color:#b8c3c8; font-size:11px; }
+  .price { margin:12px 0 6px; color:var(--accent); font-size:26px; line-height:1; font-weight:500; letter-spacing:-.02em; white-space:nowrap; position:relative; }
+  .price small { color:#b9c4ce; font-size:15px; font-weight:700; }
+  .planDesc { color:var(--muted); font-size:11.5px; position:relative; }
+  .popular { position:absolute; top:0; right:25px; padding:4px 9px; border-radius:0 0 9px 9px; background:var(--accent); color:#35351f; font-size:8.5px; text-transform:uppercase; letter-spacing:.08em; font-weight:800; }
+  .fullAccess { margin:14px 2px 4px; display:flex; flex-wrap:wrap; gap:8px 18px; color:#c4ced3; font-size:11px; text-shadow:0 1px 8px rgba(0,0,0,.6); }
   .fullAccess span:before { content:'✓'; margin-right:6px; color:var(--ok); font-weight:800; }
-  .fields { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-  .field label { display:block; margin:0 0 6px 7px; color:rgba(255,255,255,.55); text-transform:uppercase; letter-spacing:.08em; font-size:9px; font-weight:700; }
-  .field input { width:100%; height:46px; padding:0 18px; border:1px solid transparent; outline:0; border-radius:999px; color:#fff; background:rgba(255,255,255,.055); }
-  .field input:focus { border-color:rgba(222,221,116,.55); background:rgba(255,255,255,.075); }
-  .field input::placeholder { color:#596268; }
-  .couponBox { display:flex; gap:7px; }
-  .couponBox input { min-width:0; text-transform:uppercase; }
-  .apply { flex:none; border:0; border-radius:999px; padding:0 17px; color:#fff; background:rgba(255,255,255,.11); cursor:pointer; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; }
-  .couponMsg { min-height:17px; margin:5px 8px 0; color:var(--ok); font-size:10px; }
-  .pay { width:100%; margin-top:7px; height:50px; border:0; border-radius:999px; color:#282c2e; cursor:pointer; background:linear-gradient(90deg,#838383,#dedede,#fff,#c5c5c5,#838383); background-size:200%; font-weight:800; }
-  .pay:hover:not(:disabled) { animation:silver 1.8s linear infinite; }
-  .pay:disabled { color:#626a6d; background:#252a2c; cursor:not-allowed; }
-  @keyframes silver { to { background-position:200% 0; } }
-  .message { min-height:19px; margin-top:7px; text-align:center; color:var(--err); font-size:11px; }
-  .agreement { margin:6px auto 0; max-width:590px; text-align:center; color:#626e73; font-size:9.5px; }
-  .agreement a { text-decoration:underline; text-underline-offset:2px; }
-  .steps { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:22px 0 58px; }
-  .step { padding:15px 18px; border-radius:23px; border:1px solid rgba(255,255,255,.07); color:var(--muted); font-size:10.5px; }
-  .step b { display:block; margin-bottom:3px; color:#fff; font-size:11px; }
-  .step b span { color:var(--accent2); margin-right:5px; }
-  footer { min-height:110px; display:flex; align-items:center; gap:18px; border-top:1px solid rgba(255,255,255,.07); color:#626d72; font-size:10px; }
-  footer img { height:26px; opacity:.55; }
-  footer nav { margin-left:auto; display:flex; gap:15px; }
-  @media(max-width:720px) {
-    .hero { grid-template-columns:1fr; padding-top:24px; gap:28px; }
-    .patternDemo { width:min(400px,100%); justify-self:center; }
-    .features { grid-template-columns:1fr; }
-    .plans,.fields { grid-template-columns:1fr; }
-    .checkout { padding:20px; }
-    .steps { grid-template-columns:1fr; }
-    .productTag,.secure { display:none; }
-    footer { flex-wrap:wrap; padding:25px 0; }
-    footer nav { width:100%; margin:0; }
+  .row2 { display:flex; gap:20px; margin-top:6px; align-items:stretch; position:relative; }
+  .fieldCol { flex:1; display:flex; flex-direction:column; }
+  input[type="email"], input[type="text"] { width:100%; height:44px; border:none; outline:none; color:#fff; font:inherit; font-size:14px; font-weight:500; padding:0 22px; border-radius:10000px; background:rgba(255,255,255,0.07); box-shadow:var(--pill-shadow); }
+  input:focus { background:rgba(255,255,255,0.11); }
+  input::placeholder { color:rgba(255,255,255,.35); }
+  .couponRow { display:flex; gap:8px; position:relative; }
+  .couponRow input { flex:1; min-width:0; text-transform:uppercase; }
+  .btnSmall { flex:none; padding:0 20px; height:44px; border:none; border-radius:10000px; cursor:pointer; color:#fff; font:inherit; font-size:11px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; background:linear-gradient(90deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.28) 100%); transition:transform 150ms var(--ease-out-back), background 150ms var(--ease-out-back); }
+  .btnSmall:hover { transform:scale(1.06); background:linear-gradient(90deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.6) 100%); }
+  .couponMsg { font-size:12px; margin-top:6px; min-height:16px; color:var(--ok); position:relative; }
+  .pay { width:100%; padding:14px; border-radius:10000px; border:none; font:inherit; font-weight:800; font-size:15px; cursor:pointer; color:#333; background:linear-gradient(90deg,#797979 0%,#B3B3B3 25%,#E4E4E4 50%,#B3B3B3 75%,#797979 100%); background-size:200%; transition:transform 150ms var(--ease-out-back); margin-top:14px; position:relative; }
+  .pay:not(:disabled):hover { animation:silverFlow 1.8s linear infinite; transform:scale(1.02); }
+  .pay:disabled { background:rgba(255,255,255,.07); color:var(--muted); cursor:not-allowed; box-shadow:var(--pill-shadow); }
+  @keyframes silverFlow { 0% { background-position:0% 0; } 100% { background-position:200% 0; } }
+  .message { min-height:19px; margin-top:8px; text-align:center; color:var(--err); font-size:11px; }
+  .agreeNote { font-size:11.5px; color:var(--muted); margin-top:8px; text-align:center; position:relative; text-shadow:0 1px 8px rgba(0,0,0,.6); }
+  .agreeNote a { color:var(--accent); text-decoration:none; }
+  .agreeNote a:hover { text-decoration:underline; }
+
+  /* ---------- шаги (TraceBase) ---------- */
+  .steps { display:flex; gap:15px; margin-bottom:20px; flex-wrap:wrap; position:relative; }
+  .step { flex:1; min-width:150px; background:var(--card); border-radius:36px; padding:12px 25px; position:relative; }
+  .step::before { content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none; box-shadow:var(--card-inset); }
+  .step:not(:last-child)::after { content:''; position:absolute; top:50%; right:-15px; width:15px; height:2px; transform:translateY(-50%); background:linear-gradient(90deg, rgba(222,221,116,.85), rgba(222,221,116,.2)); }
+  .step b { display:block; font-size:12px; font-weight:700; color:#fff; margin-bottom:2px; }
+  .step b span { color:var(--accent-hi); margin-right:5px; }
+  .step > span { font-size:11.5px; color:var(--muted); }
+
+  /* ---------- футер (1 в 1 как на сайте TraceBase) ---------- */
+  .foot { margin-top:28px; text-align:center; padding:14px 16px 20px; }
+  .footLogo { margin-bottom:12px; display:inline-block; line-height:0; }
+  .footLogo svg { height:52px; width:auto; color:#fff; transition:opacity 150ms var(--ease-out-back); }
+  .footLogo:hover svg { opacity:.75; }
+  .footRow { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin:6px 0; font-size:13px; }
+  .footRow a { color:#fff; text-decoration:none; transition:opacity 150ms var(--ease-out-back); }
+  .footRow a:hover { opacity:.75; }
+  .footNote { color:var(--muted); font-size:12px; margin:6px 0; }
+
+  @media (max-width:640px) {
+    .wrap { padding:24px 14px 40px; }
+    .head h1 { font-size:20px; }
+    .brandIcon { width:48px; height:28px; }
+    .featureBar { grid-template-columns:1fr; padding:18px 20px; }
+    .featureCell + .featureCell { border-left:0; border-top:1px solid rgba(255,255,255,.09); padding-left:0; padding-top:18px; }
+    .plans { grid-template-columns:1fr; }
+    .row2 { flex-direction:column; gap:12px; }
+    .steps { flex-direction:column; }
+    .step:not(:last-child)::after { display:none; }
   }
 </style>
 </head>
 <body>
-<div class="glow"></div><div class="noise"></div>
+<div id="bgPattern"><div class="bgLayer" id="bgA"></div><div class="bgLayer" id="bgB"></div></div>
+<div class="bgDim"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <!-- The provided leather/skin dddiii recipe: shadows only, fills stay per-shape. -->
+  <filter id="skinShadow" x="-30%" y="-30%" width="160%" height="175%" color-interpolation-filters="sRGB">
+    <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+    <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+    <feOffset dy="3"/><feGaussianBlur stdDeviation="5"/><feComposite in2="hardAlpha" operator="out"/>
+    <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"/>
+    <feBlend mode="multiply" in2="BackgroundImageFix" result="d1"/>
+    <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+    <feOffset dx="1"/><feGaussianBlur stdDeviation="0.5"/><feComposite in2="hardAlpha" operator="out"/>
+    <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.3 0"/>
+    <feBlend mode="multiply" in2="d1" result="d2"/>
+    <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+    <feOffset dx="-1"/><feGaussianBlur stdDeviation="1"/><feComposite in2="hardAlpha" operator="out"/>
+    <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.3 0"/>
+    <feBlend mode="multiply" in2="d2" result="d3"/>
+    <feBlend mode="normal" in="SourceGraphic" in2="d3" result="shape"/>
+    <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+    <feOffset dy="2"/><feGaussianBlur stdDeviation="6"/><feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+    <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0"/>
+    <feBlend mode="overlay" in2="shape" result="i4"/>
+    <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+    <feOffset dy="-2"/><feGaussianBlur stdDeviation="0.5"/><feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+    <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.15 0"/>
+    <feBlend mode="lighten" in2="i4" result="i5"/>
+    <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+    <feOffset dy="3"/><feGaussianBlur stdDeviation="1"/><feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+    <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0"/>
+    <feBlend mode="lighten" in2="i5" result="i6"/>
+  </filter>
+</defs></svg>
 <div class="wrap">
-  <header>
-    <svg class="logoMark" viewBox="0 0 42 42" fill="none"><rect x="1" y="1" width="40" height="40" rx="13" fill="white"/><path d="M11 11h8v8h-8zm12 0h8v8h-8zM11 23h8v8h-8zm12 0h8v8h-8z" fill="#DEDD74"/><path d="M21 18l3 3-3 3-3-3z" fill="#A9A84C"/></svg>
-    <span class="brand">Patternique</span><span class="productTag" data-i18n="tag">Плагин для Figma</span>
-    <div class="langWrap"><button class="lang" id="langBtn"><span id="langFlag">🇷🇺</span><span id="langCode">RU</span><span>▾</span></button><div class="langMenu hidden" id="langMenu"></div></div>
-  </header>
+
+  <div class="head">
+    <svg class="brandIcon" width="58" height="33" viewBox="0 0 270 154" fill="none" aria-hidden="true"><path d="M147.743 0L148.123 17.4785L148.115 17.4795C141.81 17.7267 135.522 18.1788 129.245 18.8291C99.5876 21.9016 68.3338 28.9385 43.0706 45.6631C31.2004 53.5214 6.65184 76.6465 21.9154 91.5332C31.4763 100.857 47.4502 100.691 60.0277 100.318C59.9115 76.1196 74.7146 58.4637 92.6312 50.4258C112.022 41.7268 137.492 43.489 151.661 62.9668C158.37 72.1881 159.389 84.5443 158.386 95.6006C158.087 98.9036 157.458 102.156 156.906 105.423C151.243 106.474 145.58 107.507 139.901 108.465C120.43 111.75 100.855 114.618 81.1898 116.443C85.7207 124.68 94.3642 130.346 106.725 133.588C123.89 138.089 146.621 137.267 169.489 132.052C192.294 126.85 214.218 117.508 229.746 105.946C245.6 94.1434 252.786 81.6832 251.446 70.2246C249.136 50.4766 227.434 38.5972 211.166 31.5293C201.614 27.3793 191.678 24.1185 181.595 21.5273L180.891 104.585C183.825 103.795 187.355 102.727 191.389 101.29L197.2 117.771C189.954 120.351 184.057 121.906 179.904 122.824C174.43 124.034 168.882 124.515 163.319 125.131L164.378 0.163086C182.811 3.50544 200.813 7.98237 218.072 15.4805C240.521 25.234 265.621 41.6501 268.725 68.1836C271.168 89.0719 257.694 106.899 240.104 119.995C222.189 133.333 197.884 143.503 173.338 149.102C148.854 154.686 123.108 155.952 102.331 150.504C84.24 145.759 68.7806 135.457 62.7669 117.714C44.6071 118.426 23.5483 117.489 9.79816 104.079C-14.5568 80.3255 11.5127 45.6187 33.4984 31.0635C61.1416 12.763 94.9654 4.80307 127.461 1.43652C134.2 0.738377 140.968 0.194353 147.743 0ZM137.618 73.2842C129.779 62.5091 114.203 59.8964 99.7239 66.3916C87.4769 71.886 77.7952 83.3018 77.4417 99.2266C98.8287 97.3422 120.117 94.1614 141.265 90.4951C141.423 84.7624 141.095 78.0651 137.618 73.2842Z" fill="white"/></svg>
+    <div class="titleRow">
+      <h1>Patternique</h1>
+      <span class="licTag" data-i18n="tag">Плагин для Figma</span>
+    </div>
+    <div class="langWrap">
+      <button id="langBtn"><span id="langFlag">🇷🇺</span><span id="langCode">RU</span><span style="opacity:.6">▾</span></button>
+      <div id="langMenu" class="langMenu hidden"></div>
+    </div>
+  </div>
 
   <section class="hero">
-    <div>
-      <span class="eyebrow" data-i18n="eyebrow">Генератор бесшовных узоров</span>
-      <h1 data-i18n-html="hero">Один объект.<br><em>Бесконечный</em> узор.</h1>
-      <p class="lead" data-i18n="lead">Создавайте в Figma редактируемые паттерны: сетка, повороты, шахматное чередование двух фигур, сдвиги и элементы на пересечениях.</p>
-      <div class="heroPrice"><span><b>690 ₽</b> <i data-i18n="perYear">на 1 год</i></span><span><b>1 790 ₽</b> <i data-i18n="foreverPrice">навсегда</i></span></div>
-    </div>
-    <div class="patternDemo" aria-label="Пример бесшовного узора">
-      <div class="patternGrid">
-        <i class="shape"></i><i class="shape"></i><i class="shape"></i><i class="shape"></i><i class="shape"></i>
-        <i class="shape"></i><i class="shape"></i><i class="shape"></i><i class="shape"></i><i class="shape"></i>
-        <i class="shape"></i><i class="shape"></i><i class="shape"></i><i class="shape"></i><i class="shape"></i>
-        <i class="shape"></i><i class="shape"></i><i class="shape"></i><i class="shape"></i><i class="shape"></i>
-        <i class="shape"></i><i class="shape"></i><i class="shape"></i><i class="shape"></i><i class="shape"></i>
-      </div>
-      <div class="demoBadge"><span data-i18n="editable">Все копии остаются редактируемыми</span><i></i></div>
-    </div>
+    <span class="eyebrow" data-i18n="eyebrow">Генератор бесшовных узоров</span>
+    <h1 class="heroTitle" data-i18n-html="hero">Один объект.<br><em>Бесконечный</em> узор.</h1>
+    <p class="lead" data-i18n="lead">Создавайте в Figma редактируемые паттерны: сетка, повороты, шахматное чередование двух фигур, сдвиги и элементы на пересечениях.</p>
+    <div class="heroPrice"><span><b>690 ₽</b> <i data-i18n="perYear">на 1 год</i></span><span><b>1 790 ₽</b> <i data-i18n="foreverPrice">навсегда</i></span></div>
   </section>
 
-  <section class="features">
-    <article class="feature"><div class="featureIcon">◩</div><h3 data-i18n="f1t">Две фигуры</h3><p data-i18n="f1d">Выделите два объекта — Patternique расставит их шахматным узором.</p></article>
-    <article class="feature"><div class="featureIcon">↔</div><h3 data-i18n="f2t">Ритм и сдвиги</h3><p data-i18n="f2d">Сдвигайте каждую вторую строку или колонку по горизонтали и вертикали.</p></article>
-    <article class="feature"><div class="featureIcon">✦</div><h3 data-i18n="f3t">Детали между ячейками</h3><p data-i18n="f3d">Добавляйте крест, звезду, круг, символ или линию на пересечениях.</p></article>
+  <!-- Три блока на месте квадрата, объединённые в одну фигуру. -->
+  <section class="featureBar" id="featureBar">
+    <div class="featureCell"><div class="featureIcon">◩</div><div><h3 data-i18n="f1t">Две фигуры</h3><p data-i18n="f1d">Выделите два объекта — Patternique расставит их шахматным узором.</p></div></div>
+    <div class="featureCell"><div class="featureIcon">↔</div><div><h3 data-i18n="f2t">Ритм и сдвиги</h3><p data-i18n="f2d">Сдвигайте каждую вторую строку или колонку по горизонтали и вертикали.</p></div></div>
+    <div class="featureCell"><div class="featureIcon">✦</div><div><h3 data-i18n="f3t">Детали между ячейками</h3><p data-i18n="f3d">Добавляйте крест, звезду, круг, символ или линию на пересечениях.</p></div></div>
   </section>
 
   <section class="checkout" id="buy">
-    <div class="checkoutHead"><div><h2 data-i18n="choose">Выберите лицензию</h2><p data-i18n="sameFeatures">Обе лицензии открывают все возможности плагина.</p></div><span class="secure" data-i18n="secure">● БЕЗОПАСНАЯ ОПЛАТА</span></div>
+    <div class="label" data-i18n="choose">Выберите лицензию</div>
     <div class="plans" id="plans">
       <button class="plan selected" data-plan="annual">
         <div class="planTop"><span class="planName" data-i18n="annual">1 год</span><span class="check">✓</span></div>
@@ -157,13 +225,20 @@
       </button>
     </div>
     <div class="fullAccess"><span data-i18n="allModes">Все режимы узора</span><span data-i18n="twoObjects">Два объекта и цвета</span><span data-i18n="unlimited">Без лимита созданий</span><span data-i18n="oneAccount">Для одного Figma-аккаунта</span></div>
-    <div class="fields">
-      <div class="field"><label for="email" data-i18n="email">Email для получения ключа</label><input id="email" type="email" autocomplete="email" placeholder="name@example.com"></div>
-      <div class="field"><label for="coupon" data-i18n="coupon">Промокод</label><div class="couponBox"><input id="coupon" placeholder="PATTERN"><button class="apply" id="applyCoupon" data-i18n="apply">Применить</button></div><div class="couponMsg" id="couponMsg"></div></div>
+    <div class="row2">
+      <div class="fieldCol">
+        <div class="label" data-i18n="email">Email для получения ключа</div>
+        <input id="email" type="email" autocomplete="email" placeholder="name@example.com">
+      </div>
+      <div class="fieldCol">
+        <div class="label" data-i18n="coupon">Промокод</div>
+        <div class="couponRow"><input id="coupon" type="text" placeholder="PATTERN" spellcheck="false" autocomplete="off"><button class="btnSmall" id="applyCoupon" data-i18n="apply">Применить</button></div>
+        <div class="couponMsg" id="couponMsg"></div>
+      </div>
     </div>
     <button class="pay" id="payBtn" disabled data-i18n="pay">Оплатить и получить ключ</button>
     <div class="message" id="message"></div>
-    <p class="agreement" data-i18n-html="agreement">Нажимая кнопку, вы соглашаетесь с <a href="/terms.html">условиями использования</a> и <a href="/privacy.html">политикой конфиденциальности</a>.</p>
+    <p class="agreeNote" data-i18n-html="agreement">Нажимая кнопку, вы соглашаетесь с <a href="/terms.html">условиями использования</a> и <a href="/privacy.html">политикой конфиденциальности</a>.</p>
   </section>
 
   <section class="steps">
@@ -172,8 +247,134 @@
     <div class="step"><b><span>03</span><i data-i18n="step3">Активируйте</i></b><span data-i18n="step3d">Вставьте ключ в Patternique. Он привяжется к Figma.</span></div>
   </section>
 
-  <footer><img alt="LEDNIQUE" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHAAAAAeCAYAAAD0HpphAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAOdEVYdFNvZnR3YXJlAEZpZ21hnrGWYwAABWlJREFUeAHdms113DYQx/9SdNf6mJMmFXg7CHXLLZsKQlfgdQWiK5Bcwa4riDpYqgIpFQiqQOsKNpxHIBwOARAgV7Kt33vzSOJziAEGH+QveLtQI4+N/NHIspFfG3nAG2TdSNHIAm8Lfp+DkGe8QU7Q9lKyz9tGPiTkO6hno573VhwfPGleA63nCX4cdmgHjsOoeN2GX9Hap8eZSkTIZ9vInSfvhSrXqGeZvsYQHkFLkc8gH4Np7wT0dWTXu4+kXaDzYAuEXXWFtr2MCr+z4aTCZRsG6/8HnZu5RxqPIk+ZmOcj2l73jL5bO9jy1ip9ib4LvI6UvbRlLyN6shDGKW1ZByW7SP5CpHuMlH1AN+q2Is8GEzlt5Jt4njIPUmK6Fbq59gtad/aukb9sGBtoHcnv5mofexunDWiQDuvARtrY+0ur32+NfLbl33vqyIU8Ye8wETagHJqvtZCRLuYWrUGZK6GD08uItKFR6NJq/Z+QhjNeYetj49W2XH6u0M5BLt3Ck38O55gIG9AgXxFp9AvMZyvqX6o65KKK4yr49WEhxAnFX4t6L+Gfb7bodNQdaaF0CbHP1GsUPQK1MrmKTMWIe58brMUzz6WEIazTeaTcECW6ebyO5JFeg6cD2U5TDGhwBPQI1MqkQDgOe1We3oZIN+mb9A2GxteNSZ58V+L+DnH9jNBhJeLmutDJ+X0G/F7sI88G3TzJFOg3IMPz3WKkTE2J8e1MiCWmsUgMS+LUE0YY5ykzfU66kEu/Qb+zbTB0XTRSlubvzPQSCtx/G8mnF2k6PAveyJuZBRHa/dwe/dMDY+VzRjlA+MU4nF3pToSz+/sk6nPlGBWm63D5CxX/gHTeB8JTj+z0ez7C34ZM8HTsVCVkpvSEW1vG3uYntC6uRD6uEX2joUbfza3RGcG3lYiNqLH5MofJ2wBBjf6JD6FrQwplOrPXuXvBlPPTGHKU1eJexsm67kU4u1LebDvDE8KdQJZFKs4gDxMoNzWPhuf4GplMHYFGPRPm4UbDrSdu4an7i6q7QtoIPFf5EEk7xthcN0bKCnkUZ8C5x2m5aOVX9voVadyg34k+intSaQ3SSDEIifsa85jjsv/n1FPYFH9OCWliI+NPDOc3xsCPW9DIsjc2PHYyFDtzHFt86I6ds+AJlSEhTMDnQlOIzS0hQml4JUkIz6MUCK/Rd7mFrUMbyYj780B4CkuVt0Y+hCP/FeAbgYRxphjQBzdKhXarYZDPJ48uenkv96xST4M8pAFrFZfiDgv0vxUaFT/pTPlY24gpcIPwno6NV2EaBv0FDRPTX8bJJTsz9knnd3Gv97aykyzhhw8NarzQyRch7YOko0T/Y2eVkEem54/Izwn52MA3GEd/uJWGqhB+tx3S3psQf9dC1V+o+GsMPyiTyuNbgSdDyDPgCvMMyMYrE/K4D6xjFAh/eV+remP5QqNng/G22WHYSTfo/jpYq/SE4Rf/WegXIaT9QpD6S4DsIEukkWpARv4ashLhJfq6airEG9GNHtabEIbjthh2VC4z9L4ybcrAiaJ7kE8qm7ZAngHJpmN3mDPHLjLSE7reXopw7S18VOg35Ab90bPL0MMdJVJC2qMaUENCCitk45aq8rGfoTjfCi9PhaFLd4fWTkLwO23Rvsujvd6ge2/Wn93gxsatMR89QLIXkCeYBsHfY3hVZ8T1yRNm8LK4UWswjyt0P0r5Gpa3MCkLrBjP8H/DNEhsw6kGZAp7JSsX9roQ1xBztg6vxWEkng8etpiH6xyErs3eq7gQdSOXZ5hOnZCG0DcqywV+PrjnPzTyr72yGMwn5VSGMBwYF3i9/fpPCTcOu8cS87+0vCj/AQmByIu2IaGVAAAAAElFTkSuQmCC"><span>© 2026 LEDNIQUE · Patternique</span><nav><a href="/terms.html" data-i18n="terms">Условия</a><a href="/privacy.html" data-i18n="privacy">Конфиденциальность</a><a href="/manage.html" data-i18n="manage">Управление</a></nav></footer>
+  <footer class="foot">
+    <div class="footLogo">
+      <a href="https://lednique.ru" target="_blank" rel="noopener" aria-label="LEDNIQUE">
+      <svg width="140" height="52" viewBox="0 0 140 52" fill="none" aria-hidden="true">
+        <path d="M22.3895 33.2962L12.3067 32.8924L10 7.59168L13.9713 8.35189L15.3981 31.7045L22.4371 31.9896L22.3895 33.2962Z" fill="currentColor"/>
+        <path d="M24.9771 35.2918L24.0497 8.11433L37.1764 8.47067L37.4142 9.96733L27.6643 9.6585L28.235 18.9948L35.6783 19.4224L35.8923 21.1566L28.3539 20.6815L29.1862 33.9614L41.8849 35.268L42.1941 37.0973L24.9771 35.2918Z" fill="currentColor"/>
+        <path d="M47.4675 25.1002C46.9285 26.0663 46.2944 26.9453 45.5651 27.7372C44.8358 28.5291 44.0511 29.2655 43.2109 29.9465C42.3865 30.6434 41.5225 31.3007 40.6188 31.9183C39.731 32.5518 38.8591 33.1853 38.003 33.8189L38.431 10.8463C39.3664 10.6721 40.3017 10.49 41.2371 10.2999C42.1724 10.094 43.1157 9.99109 44.0669 9.99109C45.145 9.99109 46.0328 10.1891 46.7303 10.585C47.4437 10.9651 48.0065 11.4798 48.4187 12.1292C48.8309 12.7627 49.1163 13.4991 49.2748 14.3385C49.4492 15.1779 49.5364 16.0411 49.5364 16.928C49.5364 18.3217 49.362 19.7233 49.0132 21.1329C48.6803 22.5424 48.1651 23.8649 47.4675 25.1002ZM46.8017 16.0728C46.7858 15.5976 46.7383 15.0829 46.659 14.5286C46.5956 13.9743 46.4529 13.4595 46.231 12.9844C46.0249 12.5093 45.7236 12.1133 45.3273 11.7966C44.931 11.4798 44.4078 11.3215 43.7578 11.3215C43.4249 11.3215 43.0999 11.3531 42.7828 11.4165C42.4657 11.464 42.1487 11.5273 41.8316 11.6065L41.6176 29.5664C42.6798 28.7587 43.5438 27.9748 44.2096 27.2146C44.8913 26.4702 45.4224 25.6704 45.8029 24.8151C46.1992 23.9441 46.4688 22.9859 46.6114 21.9406C46.7541 20.8953 46.8255 19.6837 46.8255 18.3059C46.8255 17.9891 46.8255 17.6407 46.8255 17.2606C46.8413 16.8805 46.8334 16.4845 46.8017 16.0728Z" fill="currentColor"/>
+        <path d="M66.0175 34.0564L53.2237 12.7944L53.9608 32.1559L52.4865 31.9183L51.7255 10.0624L55.6492 10.2524L65.2803 25.5991L63.7345 10.5375L65.3516 10.585L67.8961 34.3415L66.0175 34.0564Z" fill="currentColor"/>
+        <path d="M71.3643 33.2249L69.2716 6L73.671 6.71269L74.9313 33.2962L71.3643 33.2249Z" fill="currentColor"/>
+        <path d="M85.1348 33.9376C83.7238 33.9376 82.5348 33.6446 81.5677 33.0586C80.6165 32.4727 79.8397 31.7045 79.2373 30.7543C78.6348 29.8198 78.1988 28.7666 77.9293 27.5947C77.6757 26.4385 77.5489 25.2824 77.5489 24.1262C77.5489 23.7303 77.5568 23.3343 77.5726 22.9384C77.6043 22.5424 77.636 22.1386 77.6678 21.7268C77.747 20.8874 77.9135 20.0163 78.1671 19.1136C78.4366 18.2108 78.7775 17.3318 79.1897 16.4766C79.6177 15.6055 80.1171 14.782 80.6879 14.0059C81.2586 13.2299 81.9006 12.5489 82.6141 11.9629C83.3433 11.3769 84.136 10.9097 84.9921 10.5612C85.864 10.2128 86.7994 10.0386 87.7982 10.0386C88.7177 10.0386 89.5341 10.1891 90.2475 10.49C90.9768 10.7909 91.6109 11.1948 92.15 11.7016C92.7048 12.2084 93.1725 12.8023 93.553 13.4833C93.9493 14.1485 94.2664 14.8612 94.5042 15.6214C94.7579 16.3658 94.9402 17.1339 95.0511 17.9258C95.1621 18.7018 95.2176 19.4462 95.2176 20.1589C95.2176 21.0775 95.1304 22.0594 94.956 23.1047C94.7816 24.1341 94.5121 25.1557 94.1475 26.1693C93.7829 27.1829 93.3231 28.1569 92.7682 29.0913C92.2134 30.0416 91.5634 30.8731 90.8183 31.5857C90.0731 32.2984 89.225 32.8686 88.2738 33.2962C87.3384 33.7238 86.2921 33.9376 85.1348 33.9376ZM87.6555 11.4165C86.8469 11.4165 86.1573 11.5986 85.5866 11.9629C85.0317 12.3113 84.5561 12.7706 84.1598 13.3408C83.7793 13.9109 83.4701 14.5682 83.2323 15.3125C83.0104 16.0411 82.8281 16.7934 82.6854 17.5694C82.5586 18.3296 82.4634 19.074 82.4 19.8025C82.3366 20.5311 82.2811 21.1804 82.2336 21.7506C82.1702 22.4633 82.1147 23.1759 82.0671 23.8886C82.0195 24.5855 81.9958 25.2903 81.9958 26.003C81.9958 26.6206 82.0195 27.2937 82.0671 28.0223C82.1305 28.7666 82.2732 29.4556 82.4952 30.0891C82.733 30.7384 83.0817 31.2769 83.5415 31.7045C84.0171 32.1321 84.6592 32.346 85.4677 32.346C86.4982 32.346 87.3543 32.0926 88.036 31.5857C88.7177 31.0948 89.2725 30.4454 89.7006 29.6377C90.1286 28.83 90.4457 27.9114 90.6518 26.882C90.8737 25.8683 91.0244 24.8389 91.1036 23.7936C91.1829 22.7483 91.2225 21.7506 91.2225 20.8003C91.2225 19.8342 91.2225 19.0027 91.2225 18.3059C91.2225 17.8782 91.2146 17.411 91.1987 16.9042C91.1829 16.3974 91.1353 15.8906 91.0561 15.3838C90.9926 14.877 90.8896 14.386 90.7469 13.9109C90.6042 13.4199 90.3981 12.9923 90.1286 12.6281C89.875 12.2638 89.542 11.9708 89.1299 11.7491C88.7335 11.5273 88.2421 11.4165 87.6555 11.4165ZM94.742 36.2658L85.5628 38L85.7768 34.6028L94.8133 33.0111L94.742 36.2658Z" fill="currentColor"/>
+        <path d="M102.639 32.0846C101.657 32.0846 100.848 31.9025 100.214 31.5382C99.5956 31.1898 99.1041 30.7226 98.7395 30.1366C98.3907 29.5506 98.145 28.8854 98.0023 28.1411C97.8596 27.4125 97.7883 26.6682 97.7883 25.9079C97.7883 23.3581 97.8596 20.7924 98.0023 18.2108C98.1609 15.6293 98.2956 12.9686 98.4066 10.2287L101.807 10.0861C101.728 12.7944 101.641 15.4076 101.546 17.9258C101.466 20.4281 101.427 22.9305 101.427 25.4328C101.427 25.9238 101.443 26.4464 101.474 27.0007C101.506 27.5551 101.609 28.0619 101.783 28.5212C101.958 28.9805 102.219 29.3606 102.568 29.6615C102.933 29.9782 103.44 30.1366 104.09 30.1366C104.93 30.1366 105.636 29.9545 106.207 29.5902C106.777 29.2418 107.237 28.7746 107.586 28.1886C107.95 27.6184 108.204 26.9611 108.347 26.2168C108.505 25.4882 108.585 24.736 108.585 23.9599C108.585 21.6476 108.553 19.3353 108.489 17.023C108.442 14.7107 108.402 12.3034 108.371 9.80104L109.75 9.75353C109.797 12.2876 109.853 14.7266 109.916 17.0705C109.98 19.4145 110.011 21.7506 110.011 24.0787C110.011 25.219 109.853 26.2801 109.536 27.2621C109.235 28.244 108.775 29.0913 108.157 29.804C107.554 30.5167 106.793 31.071 105.874 31.467C104.954 31.8787 103.876 32.0846 102.639 32.0846Z" fill="currentColor"/>
+        <path d="M112.783 35.2918L111.856 8.11433L124.982 8.47067L125.22 9.96733L115.47 9.6585L116.041 18.9948L123.484 19.4224L123.698 21.1566L116.16 20.6815L116.992 33.9614L129.691 35.268L130 37.0973L112.783 35.2918Z" fill="currentColor"/>
+      </svg>
+      </a>
+    </div>
+    <div class="footRow">
+      <a href="https://t.me/lednique" target="_blank" rel="noopener">Telegram</a>
+      <span style="color:#fff">·</span>
+      <a href="mailto:lednique@gmail.com">lednique@gmail.com</a>
+    </div>
+    <div class="footNote">Власов Виктор Викторович · ИНН 160101292015</div>
+    <div class="footRow">
+      <a href="/terms.html">Пользовательское соглашение</a>
+      <a href="/privacy.html">Политика обработки персональных данных</a>
+    </div>
+  </footer>
+
 </div>
+
+<script>
+/* Animated pattern background: 2 s domino build-up, 5 s hold, 2 s crossfade morph. */
+(function(){
+  var layers=[document.getElementById('bgA'),document.getElementById('bgB')];
+  var active=0,prevRgb=null;
+  var LOGO='M147.743 0L148.123 17.4785L148.115 17.4795C141.81 17.7267 135.522 18.1788 129.245 18.8291C99.5876 21.9016 68.3338 28.9385 43.0706 45.6631C31.2004 53.5214 6.65184 76.6465 21.9154 91.5332C31.4763 100.857 47.4502 100.691 60.0277 100.318C59.9115 76.1196 74.7146 58.4637 92.6312 50.4258C112.022 41.7268 137.492 43.489 151.661 62.9668C158.37 72.1881 159.389 84.5443 158.386 95.6006C158.087 98.9036 157.458 102.156 156.906 105.423C151.243 106.474 145.58 107.507 139.901 108.465C120.43 111.75 100.855 114.618 81.1898 116.443C85.7207 124.68 94.3642 130.346 106.725 133.588C123.89 138.089 146.621 137.267 169.489 132.052C192.294 126.85 214.218 117.508 229.746 105.946C245.6 94.1434 252.786 81.6832 251.446 70.2246C249.136 50.4766 227.434 38.5972 211.166 31.5293C201.614 27.3793 191.678 24.1185 181.595 21.5273L180.891 104.585C183.825 103.795 187.355 102.727 191.389 101.29L197.2 117.771C189.954 120.351 184.057 121.906 179.904 122.824C174.43 124.034 168.882 124.515 163.319 125.131L164.378 0.163086C182.811 3.50544 200.813 7.98237 218.072 15.4805C240.521 25.234 265.621 41.6501 268.725 68.1836C271.168 89.0719 257.694 106.899 240.104 119.995C222.189 133.333 197.884 143.503 173.338 149.102C148.854 154.686 123.108 155.952 102.331 150.504C84.24 145.759 68.7806 135.457 62.7669 117.714C44.6071 118.426 23.5483 117.489 9.79816 104.079C-14.5568 80.3255 11.5127 45.6187 33.4984 31.0635C61.1416 12.763 94.9654 4.80307 127.461 1.43652C134.2 0.738377 140.968 0.194353 147.743 0ZM137.618 73.2842C129.779 62.5091 114.203 59.8964 99.7239 66.3916C87.4769 71.886 77.7952 83.3018 77.4417 99.2266C98.8287 97.3422 120.117 94.1614 141.265 90.4951C141.423 84.7624 141.095 78.0651 137.618 73.2842Z';
+  var SHAPES={
+    circle:{vb:'0 0 100 100',body:'<circle cx="50" cy="50" r="38"/>'},
+    squircle:{vb:'0 0 100 100',body:'<rect x="13" y="13" width="74" height="74" rx="26"/>'},
+    star:{vb:'0 0 100 100',body:'<path d="M50 4 61 39 96 50 61 61 50 96 39 61 4 50 39 39Z"/>'},
+    heart:{vb:'0 0 100 100',body:'<path d="M50 88C22 66 8 48 8 32 8 18 19 8 32 8c8 0 14 4 18 11 4-7 10-11 18-11 13 0 24 10 24 24 0 16-14 34-42 56Z"/>'},
+    flower:{vb:'0 0 100 100',body:'<circle cx="50" cy="25" r="17"/><circle cx="75" cy="50" r="17"/><circle cx="50" cy="75" r="17"/><circle cx="25" cy="50" r="17"/><circle cx="50" cy="50" r="15"/>'},
+    moon:{vb:'0 0 100 100',body:'<path d="M66 6a46 46 0 1 0 0 88 38 38 0 1 1 0-88Z"/>'},
+    triangle:{vb:'0 0 100 100',body:'<path d="M50 10 88 76q5 10-6 10H18q-11 0-6-10Z"/>'},
+    ring:{vb:'0 0 100 100',body:'<path fill-rule="evenodd" d="M50 8a42 42 0 1 0 0 84 42 42 0 1 0 0-84Zm0 24a18 18 0 1 1 0 36 18 18 0 1 1 0-36Z"/>'},
+    plus:{vb:'0 0 100 100',body:'<path d="M36 8h28v28h28v28H64v28H36V64H8V36h28Z"/>'},
+    bolt:{vb:'0 0 100 100',body:'<path d="M58 4 18 56h20L40 96 82 42H60Z"/>'},
+    logo:{vb:'0 0 270 154',body:'<path d="'+LOGO+'"/>'}
+  };
+  var INTER={
+    dot:'<circle cx="50" cy="50" r="24"/>',
+    star:'<path d="M50 10 58 42 90 50 58 58 50 90 42 58 10 50 42 42Z"/>',
+    cross:'<path d="M24 34 34 24 50 40 66 24 76 34 60 50 76 66 66 76 50 60 34 76 24 66 40 50Z"/>'
+  };
+  var EMOJI=['✨','🌟','💫','🌸','🌼','🍀','🍋','🍓','💛','😊','😜','🐣','🫧','🎈','🎨'];
+  function rand(a,b){return a+Math.random()*(b-a);}
+  function pick(list){return list[Math.floor(Math.random()*list.length)];}
+  function hslToRgb(h,s,l){s/=100;l/=100;var k=function(n){return (n+h/30)%12;},a=s*Math.min(l,1-l);var f=function(n){return l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1)));};return [f(0),f(8),f(4)];}
+  function distance(a,b){if(!a||!b)return 1;var d=Math.sqrt(Math.pow(a[0]-b[0],2)+Math.pow(a[1]-b[1],2)+Math.pow(a[2]-b[2],2))/Math.sqrt(3);return d;}
+  function shapeSvg(key,color,size){
+    var s=SHAPES[key],h=key==='logo'?Math.round(size*154/270):size;
+    return '<svg viewBox="'+s.vb+'" width="'+size+'" height="'+h+'"><g opacity=".8" filter="url(#skinShadow)" fill="'+color+'">'+s.body+'</g></svg>';
+  }
+  function buildLayer(layer){
+    /* Random background at least 30% away from the previous one. */
+    var bgH,bgS,bgL,rgb,tries=0;
+    do{bgH=rand(0,360);bgS=rand(34,64);bgL=rand(20,42);rgb=hslToRgb(bgH,bgS,bgL);tries++;}while(distance(rgb,prevRgb)<0.3&&tries<40);
+    prevRgb=rgb;
+    var shapeH=(bgH+rand(110,250))%360,shapeColor='hsl('+Math.round(shapeH)+','+Math.round(rand(45,75))+'%,'+Math.round(rand(56,74))+'%)';
+    var altColor='hsl('+Math.round((shapeH+rand(40,90))%360)+','+Math.round(rand(45,75))+'%,'+Math.round(rand(50,70))+'%)';
+    var interColor=bgL>32?'hsla(0,0%,8%,.55)':'hsla(0,0%,100%,.75)';
+    var keys=Object.keys(SHAPES),mainShape=pick(keys),altShape=pick(keys);
+    var mode=pick(['grid','checker','checker2','rotate','shift']);
+    var withInter=Math.random()<0.45,withEmoji=Math.random()<0.4;
+    var baseRot=pick([0,0,0,45,15,-15]),step=pick([15,30,45,-15,-30]);
+    var W=window.innerWidth,H=window.innerHeight;
+    var cell=rand(150,210),cols=Math.ceil(W/cell)+2,rows=Math.ceil(H/cell)+2;
+    var delayStep=1400/(cols+rows);
+    layer.style.background='hsl('+Math.round(bgH)+','+Math.round(bgS)+'%,'+Math.round(bgL)+'%)';
+    layer.innerHTML='';
+    var html='';
+    for(var r=0;r<rows;r++){
+      for(var c=0;c<cols;c++){
+        if(mode==='checker'&&(r+c)%2===1)continue;
+        var alt=mode==='checker2'&&(r+c)%2===1;
+        var x=(c-1)*cell+(mode==='shift'&&r%2===1?cell*0.5:0);
+        var y=(r-1)*cell;
+        var rot=baseRot+(mode==='rotate'?(r+c)*step:(alt?180:0));
+        var delay=Math.round((r+c)*delayStep+rand(0,50));
+        var size=Math.round(cell*(alt?0.5:0.62));
+        var inner;
+        if(withEmoji&&Math.random()<0.09)inner='<span class="bgEmoji" style="font-size:'+Math.round(cell*0.44)+'px">'+pick(EMOJI)+'</span>';
+        else inner=shapeSvg(alt?altShape:mainShape,alt?altColor:shapeColor,size);
+        html+='<div class="bgShape" style="left:'+Math.round(x)+'px;top:'+Math.round(y)+'px;width:'+Math.round(cell)+'px;height:'+Math.round(cell)+'px;--rot:'+rot+'deg;transition-delay:'+delay+'ms">'+inner+'</div>';
+      }
+    }
+    if(withInter){
+      var interShape=pick(Object.keys(INTER)),iSize=Math.round(cell*0.2);
+      for(var ir=0;ir<=rows;ir++){
+        for(var ic=0;ic<=cols;ic++){
+          var ix=(ic-1)*cell-iSize/2,iy=(ir-1)*cell-iSize/2;
+          var iDelay=Math.round((ir+ic)*delayStep+rand(0,50));
+          html+='<div class="bgShape" style="left:'+Math.round(ix)+'px;top:'+Math.round(iy)+'px;width:'+iSize+'px;height:'+iSize+'px;--rot:0deg;transition-delay:'+iDelay+'ms">'+
+            '<svg viewBox="0 0 100 100" width="'+iSize+'" height="'+iSize+'" fill="'+interColor+'">'+INTER[interShape]+'</svg></div>';
+        }
+      }
+    }
+    layer.innerHTML=html;
+  }
+  function reveal(layer){
+    requestAnimationFrame(function(){requestAnimationFrame(function(){layer.classList.add('show','on');});});
+  }
+  function cycle(){
+    var next=1-active,oldLayer=layers[active],newLayer=layers[next];
+    buildLayer(newLayer);
+    reveal(newLayer);
+    oldLayer.classList.remove('show');
+    setTimeout(function(){oldLayer.classList.remove('on');oldLayer.innerHTML='';},2100);
+    active=next;
+  }
+  var reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  buildLayer(layers[0]);
+  reveal(layers[0]);
+  if(!reduced)setInterval(cycle,7000);
+  var resizeTimer=null;
+  window.addEventListener('resize',function(){clearTimeout(resizeTimer);resizeTimer=setTimeout(function(){buildLayer(layers[active]);layers[active].classList.add('show','on');},350);});
+})();
+</script>
+
 <script>
 (function(){
   var LANGS={"en":{"flag":"🇬🇧","label":"English"},"ru":{"flag":"🇷🇺","label":"Русский"},"it":{"flag":"🇮🇹","label":"Italiano"},"pt":{"flag":"🇵🇹","label":"Português"},"fr":{"flag":"🇫🇷","label":"Français"},"zh":{"flag":"🇨🇳","label":"中文"},"ja":{"flag":"🇯🇵","label":"日本語"}};
