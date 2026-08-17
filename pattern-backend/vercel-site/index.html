@@ -34,10 +34,14 @@
   /* The whole pattern morphs as one diagonal wave: each old figure shrinks,
      then the new one grows in its place. Scale only — no rotation. The hidden
      state is a small non-zero scale plus opacity 0: zero scale is never used,
-     so a skipped transition can never leave an invisible degenerate layer. */
+     so a skipped transition can never leave an invisible degenerate layer.
+     Shapes are intentionally not layer-promoted: a permanently promoted cell
+     would be rasterized once at the tiny initial scale and stretched, leaving
+     pixelated figures. With plain transitions the browser re-rasterizes the
+     vector shapes at full resolution once each cell settles at scale(1). */
   #bgPattern { position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none; transition:background-color 2s linear; }
   .bgLayer { position:absolute; inset:0; }
-  .bgShape { position:absolute; display:grid; place-items:center; will-change:transform,opacity; transform:scale(.14); opacity:0;
+  .bgShape { position:absolute; display:grid; place-items:center; transform:scale(.14); opacity:0;
     transition:transform .4s cubic-bezier(.55,.06,.68,.19), opacity .4s cubic-bezier(.55,.06,.68,.19); }
   .bgLayer.on .bgShape { transform:scale(1); opacity:1; transition:transform .55s cubic-bezier(.26,1.36,.5,1), opacity .3s linear; }
   .bgShape svg { display:block; overflow:visible; }

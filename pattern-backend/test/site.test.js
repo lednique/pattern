@@ -33,6 +33,7 @@ test(index.includes('size1:rand(')&&index.includes('size2:rand(')&&index.include
 test(index.includes("decor=Math.random()<0.06?{emoji:pick(EMOJI)}")&&index.includes("shiftX===0&&shiftY===0"),'emoji appears only as the plugin allows: an intersection symbol when offsets are 0');
 test(index.includes("fig1=Math.random()<0.03?{emoji:pick(EMOJI)}")&&index.includes("Math.random()<0.06?{emoji:pick(EMOJI)}"),'emojis stay possible but appear rarely (3% figure, 6% intersection)');
 test((index.match(/backdrop-filter:blur\(16px\)/g)||[]).length>=7,'translucent blocks use a plain 16px gaussian backdrop blur');
+test(!index.includes('will-change'),'background shapes are not layer-promoted, so vectors re-rasterize sharp at full scale');
 test(!index.includes('renderFrost')&&!index.includes('--frost'),'the canvas frost snapshot is removed: blur always matches the live pattern with no lag');
 test(index.includes('logo:{vb:')&&index.includes('M147.743 0L148.123'),'the provided Patternique logo participates in the background shapes');
 test(index.includes('class="featureBar"')&&index.includes('flex-direction:column')&&index.includes('grid-template-columns:1.15fr .85fr'),'feature blocks sit vertically to the right of the title as one figure');
