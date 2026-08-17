@@ -2,7 +2,7 @@
 # Requires macOS with Xcode Command Line Tools (xcode-select --install).
 #
 #   make           build Patternique.saver (universal: arm64 + x86_64)
-#   make install   build and copy into ~/Library/Screen Savers
+#   make install   build, install into ~/Library/Screen Savers, reset cache
 #   make clean
 
 NAME    = Patternique
@@ -31,6 +31,10 @@ $(BUNDLE): $(SRC) Info.plist $(HTML)
 install: all
 	rm -rf "$$HOME/Library/Screen Savers/$(BUNDLE)"
 	cp -R $(BUNDLE) "$$HOME/Library/Screen Savers/"
+	@# macOS keeps the old saver loaded inside legacyScreenSaver — kill the
+	@# cached hosts so the new build is actually used (they respawn safely).
+	-killall legacyScreenSaver 2>/dev/null || true
+	-killall "System Settings" 2>/dev/null || true
 	@echo "Installed. Choose Patternique in System Settings → Screen Saver."
 
 clean:
