@@ -75,9 +75,9 @@
   #langMenu button.active { background:rgba(222,221,116,.28); }
   .hidden { display:none !important; }
 
-  /* ---------- герой: один блок в цвете акцента — заголовок, текст справа, фичи горизонтально снизу ---------- */
-  .hero { margin-bottom:20px; background:linear-gradient(90deg, rgba(222,221,116,.16) 0%, rgba(222,221,116,.3) 100%); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-radius:36px; padding:24px 26px; position:relative; box-shadow:0 0 0 1px rgba(222,221,116,.45), 0 4px 18px rgba(222,221,116,.22); }
-  .hero::before { content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none; box-shadow:var(--card-inset); }
+  /* ---------- герой: один блок в насыщенном тёмном акценте, оформление как у карточек выбора лицензии ---------- */
+  .hero { margin-bottom:20px; background:linear-gradient(90deg, rgba(124,122,31,.62) 0%, rgba(166,165,72,.58) 100%); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-radius:36px; padding:24px 26px; position:relative; overflow:hidden; box-shadow:var(--pill-shadow), 0 0 0 1px rgba(222,221,116,.45), 0 4px 18px rgba(222,221,116,.22); }
+  .hero::after { content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none; box-shadow:0px -3px 1px rgba(255,255,255,.15) inset, 0px 2px 2px #fff inset; mix-blend-mode:plus-lighter; }
   .heroTop { display:grid; grid-template-columns:1.1fr .9fr; gap:20px; align-items:center; position:relative; }
   h1.heroTitle { margin:0; font-size:clamp(30px,5vw,48px); line-height:1; letter-spacing:-.05em; font-weight:550; }
   h1.heroTitle em { color:var(--accent-hi); font-style:normal; }
