@@ -1,3 +1,337 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Patternique — управление</title><style>:root{--a:#DEDD74;--bg:#050708;--card:#121516;--text:#f3f6f7;--muted:#879399}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:13px/1.5 Inter,system-ui,sans-serif}.wrap{width:min(980px,calc(100% - 28px));margin:35px auto}h1{font-size:25px}.bar,.panel{display:flex;gap:8px;padding:13px;border:1px solid #252b2d;border-radius:20px;background:var(--card);margin-bottom:12px}.panel{align-items:end;flex-wrap:wrap}input,select,button{height:38px;border:1px solid #2a3134;border-radius:999px;background:#090b0c;color:#fff;padding:0 14px}input{flex:1;min-width:160px}button{border:0;background:var(--a);font-weight:700;cursor:pointer}.ghost{background:#252b2d}.danger{background:#712e35}.field{display:flex;flex-direction:column;gap:4px;color:var(--muted);font-size:10px}.field input,.field select{min-width:150px}.table{overflow:auto;border:1px solid #252b2d;border-radius:20px}table{width:100%;border-collapse:collapse;min-width:780px;background:var(--card)}th,td{padding:11px;border-bottom:1px solid #252b2d;text-align:left}th{color:var(--muted);font-size:10px;text-transform:uppercase}.key{font-family:ui-monospace,monospace;color:#8ee2f5}.status{min-height:20px;color:#ff7680}</style></head><body><main class="wrap"><h1>Patternique · управление лицензиями</h1><div class="bar"><input id="password" type="password" placeholder="Пароль администратора"><button id="load">Войти / обновить</button><a href="/" style="margin:auto 12px;color:#DEDD74">На сайт</a></div><div class="panel"><div class="field">Тариф<select id="plan"><option value="annual">1 год</option><option value="lifetime">Бессрочно</option></select></div><div class="field">Email<input id="email" type="email" placeholder="необязательно"></div><div class="field">Срок вручную, дней<input id="days" type="number" min="1" max="3650" placeholder="по тарифу"></div><button id="create">Создать ключ</button></div><div class="status" id="status"></div><div class="table"><table><thead><tr><th>Ключ</th><th>Тариф</th><th>Статус</th><th>Email</th><th>Figma</th><th>Истекает</th><th></th></tr></thead><tbody id="rows"></tbody></table></div></main><script>
-(function(){var pass='';function api(method,body){return fetch('/api/admin-keys',{method:method,headers:{'Content-Type':'application/json','X-Admin-Pass':pass},body:body?JSON.stringify(body):undefined}).then(function(r){return r.json().then(function(d){if(!r.ok)throw new Error(d.error||r.status);return d;});});}function esc(v){return String(v||'').replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}function load(){pass=document.getElementById('password').value;api('GET').then(function(d){document.getElementById('rows').innerHTML=d.keys.map(function(k){return'<tr><td class="key">'+esc(k.key)+'</td><td>'+ (k.plan==='annual'?'1 год':'Бессрочно')+'</td><td>'+esc(k.status)+'</td><td>'+esc(k.email)+'</td><td>'+esc(k.figma_user_id)+'</td><td>'+esc(k.expires_at?new Date(k.expires_at).toLocaleDateString('ru-RU'):'—')+'</td><td><button class="ghost reset" data-key="'+esc(k.key)+'">Сброс</button> <button class="danger del" data-key="'+esc(k.key)+'">Удалить</button></td></tr>';}).join('');}).catch(show);}function show(e){document.getElementById('status').textContent=e.message||e;}document.getElementById('load').onclick=load;document.getElementById('create').onclick=function(){api('POST',{plan:document.getElementById('plan').value,email:document.getElementById('email').value||undefined,days:document.getElementById('days').value||undefined}).then(load).catch(show);};document.getElementById('rows').onclick=function(e){var key=e.target.dataset.key;if(!key)return;if(e.target.classList.contains('del')&&confirm('Удалить '+key+'?'))api('DELETE',{key:key}).then(load).catch(show);if(e.target.classList.contains('reset'))api('PATCH',{key:key,reset_activation:true}).then(load).catch(show);};})();
-</script></body></html>
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#050708">
+<title>Patternique — управление лицензиями</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent:#DEDD74; --accent-hi:#EFEEA2; --grad:#A6A548;
+    --bg:#050708; --card:#111415; --panel:#151817;
+    --text:#f4f7f8; --muted:#89959b; --soft:rgba(255,255,255,.05);
+    --ok:#37d98a; --err:#ff6c78;
+    --ease-out-back: cubic-bezier(0.25, 1.11, 0.5, 1.21);
+    --card-inset: 0px 3px 2px rgba(255,255,255,0.12) inset,
+      0px -3px 2px rgba(255,255,255,0.07) inset;
+    --font: 'Montserrat', system-ui, sans-serif;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font:14px/1.5 var(--font); min-height:100vh; position:relative; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+  ::selection { background:var(--accent); color:#25251f; }
+  .gradient { position:fixed; top:0; left:0; right:0; height:260px; background:linear-gradient(180deg, rgba(222,221,116,.30) 0%, rgba(222,221,116,0) 100%); pointer-events:none; z-index:0; }
+  .wrap { max-width:960px; margin:0 auto; padding:36px 20px 60px; position:relative; z-index:1; }
+  .head { display:flex; align-items:center; gap:14px; margin-bottom:24px; }
+  .brandIcon { flex:none; filter:drop-shadow(0 2px 8px rgba(222,221,116,.35)); }
+  .titleRow { display:flex; align-items:center; gap:12px; min-width:0; }
+  .head h1 { font-size:22px; font-weight:500; color:#fff; letter-spacing:.3px; white-space:nowrap; }
+  .licTag { font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:rgba(255,255,255,.7); white-space:nowrap; }
+  .head .sub { color:#cfd8e0; font-size:13px; margin-top:2px; }
+  .head a { color:var(--accent); text-decoration:none; }
+  .head a:hover { text-decoration:underline; }
+  .card { background:var(--card); border-radius:36px; padding:22px 24px; margin-bottom:16px; position:relative; overflow:hidden; }
+  .card::before { content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none; box-shadow:var(--card-inset); }
+  .card > * { position:relative; }
+  .label { font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:rgba(255,255,255,.7); margin:0 0 10px; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; }
+  .field { display:flex; flex-direction:column; gap:4px; }
+  .field label { font-size:11px; color:var(--muted); }
+  input, select, button { font:inherit; padding:11px 16px; border-radius:10000px; border:none; background:rgba(255,255,255,.05); color:var(--text); outline:none; height:44px; }
+  input:focus, select:focus { background:rgba(255,255,255,.09); }
+  select option { background:var(--panel); color:var(--text); }
+  button { cursor:pointer; font-weight:700; }
+  .btn { background:linear-gradient(90deg, rgba(222,221,116,.7) 0%, var(--accent) 100%); color:#2c2c1c; border-radius:10000px; letter-spacing:.12em; text-transform:uppercase; font-size:12px; font-weight:700; transition:transform 150ms var(--ease-out-back), background 150ms var(--ease-out-back); }
+  .btn:hover { transform:scale(1.03); background:linear-gradient(90deg, var(--accent) 0%, var(--accent-hi) 100%); }
+  .btn.ghost { background:rgba(255,255,255,.1); color:var(--text); }
+  .btn.ghost:hover { background:rgba(255,255,255,.2); }
+  .btn.danger { background:rgba(255,108,120,.15); color:var(--err); }
+  .btn.danger:hover { background:rgba(255,108,120,.28); color:#fff; }
+  .btn.small { padding:6px 14px; height:34px; font-size:11px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { text-align:left; padding:9px 8px; border-bottom:1px solid rgba(255,255,255,.08); vertical-align:middle; }
+  th { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.06em; font-weight:600; }
+  .mono { font-family:ui-monospace,Consolas,monospace; font-weight:700; letter-spacing:.4px; color:#e9e88f; }
+  .badge { display:inline-block; padding:3px 12px; border-radius:10000px; font-size:11px; font-weight:700; }
+  .badge.lifetime { background:rgba(222,221,116,.22); color:#efeea2; }
+  .badge.annual { background:rgba(255,255,255,.1); color:#b9c4ce; }
+  .badge.paid { background:rgba(55,217,138,.15); color:var(--ok); }
+  .badge.activated { background:rgba(222,221,116,.22); color:#efeea2; }
+  .badge.exp { background:rgba(255,108,120,.15); color:var(--err); }
+  .msg { margin-top:10px; font-size:13px; min-height:16px; }
+  .msg.err { color:var(--err); }
+  .msg.ok { color:var(--ok); }
+  #login { max-width:400px; margin:60px auto; text-align:center; }
+  #login input { width:100%; margin-bottom:10px; }
+  #login h1 { font-size:18px; font-weight:500; color:#fff; margin-bottom:14px; }
+  .hidden { display:none !important; }
+  .stats { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+  .stat { flex:1; min-width:120px; background:var(--panel); border-radius:24px; padding:12px 16px; position:relative; }
+  .stat::before { content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none; box-shadow:0px 3px 2px rgba(255,255,255,.08) inset, 0px -3px 2px rgba(255,255,255,.05) inset; }
+  .stat > * { position:relative; }
+  .stat b { font-size:20px; color:var(--accent); display:block; }
+  .stat span { font-size:11px; color:var(--muted); }
+  .editRow { display:none; }
+  tr.editing + tr.editRow, tr.editRow.editing { display:table-row; }
+  .tableScroll { overflow-x:auto; }
+  .foot { margin-top:28px; text-align:center; padding:14px 16px 20px; color:var(--muted); font-size:11px; }
+  .foot a { color:var(--accent); text-decoration:none; }
+  .foot a:hover { text-decoration:underline; }
+  @media (max-width:640px) { .head h1 { font-size:18px; } .card { padding:16px; border-radius:24px; } }
+</style>
+</head>
+<body>
+<div class="gradient"></div>
+<div class="wrap">
+
+  <div class="card hidden" id="login">
+    <h1>Patternique — управление лицензиями</h1>
+    <input type="password" id="pass" placeholder="Пароль администратора" autocomplete="current-password">
+    <button class="btn" style="width:100%" onclick="doLogin()">Войти</button>
+    <div class="msg err" id="loginMsg"></div>
+  </div>
+
+  <div class="head">
+    <svg class="brandIcon" width="58" height="34" viewBox="0 0 270 154" fill="none" aria-hidden="true"><path d="M147.743 0L148.123 17.4785L148.115 17.4795C141.81 17.7267 135.522 18.1788 129.245 18.8291C99.5876 21.9016 68.3338 28.9385 43.0706 45.6631C31.2004 53.5214 6.65184 76.6465 21.9154 91.5332C31.4763 100.857 47.4502 100.691 60.0277 100.318C59.9115 76.1196 74.7146 58.4637 92.6312 50.4258C112.022 41.7268 137.492 43.489 151.661 62.9668C158.37 72.188 159.389 84.5443 158.386 95.6006C158.087 98.9036 157.458 102.156 156.906 105.423C151.243 106.474 145.58 107.507 139.901 108.465C120.43 111.75 100.855 114.618 81.1898 116.443C85.7207 124.68 94.3642 130.346 106.725 133.588C123.89 138.089 146.621 137.267 169.489 132.052C192.294 126.85 214.218 117.508 229.746 105.946C245.6 94.1434 252.786 81.6832 251.446 70.2246C249.136 50.4766 227.434 38.5972 211.166 31.5293C201.614 27.3793 191.678 24.1185 181.595 21.5273L180.891 104.585C183.825 103.795 187.355 102.727 191.389 101.29L197.2 117.771C189.954 120.351 184.057 121.906 179.904 122.824C174.43 124.034 168.882 124.515 163.319 125.131L164.378 0.163086C182.811 3.50544 200.813 7.98237 218.072 15.4805C240.521 25.234 265.621 41.6501 268.725 68.1836C271.168 89.0719 257.694 106.899 240.104 119.995C222.189 133.333 197.884 143.503 173.338 149.102C148.854 154.686 123.108 155.952 102.331 150.504C84.24 145.759 68.7806 135.457 62.7669 117.714C44.6071 118.426 23.5483 117.489 9.79816 104.079C-14.5568 80.3255 11.5127 45.6187 33.4984 31.0635C61.1416 12.763 94.9654 4.80307 127.461 1.43652C134.2 0.738377 140.968 0.194353 147.743 0ZM137.618 73.2842C129.779 62.5091 114.203 59.8964 99.7239 66.3916C87.4769 71.886 77.7952 83.3018 77.4417 99.2266C98.8287 97.3422 120.117 94.1614 141.265 90.4951C141.423 84.7624 141.095 78.0651 137.618 73.2842Z" fill="#DEDD74"/></svg>
+    <div class="titleRow">
+      <h1>Patternique</h1>
+      <span class="licTag">Лицензии</span>
+    </div>
+    <div style="margin-left:auto;text-align:right">
+      <div class="sub hidden" id="whoRow"><span id="who"></span> · <a href="javascript:doLogout()">выйти</a></div>
+      <div class="sub"><a href="/">На сайт</a></div>
+    </div>
+  </div>
+
+  <div class="wrap-inner hidden" id="app">
+    <div class="card">
+      <div class="label">Добавить лицензионный ключ</div>
+      <div class="row">
+        <div class="field"><label>Тариф</label>
+          <select id="addPlan"><option value="lifetime">Бессрочно</option><option value="annual">1 год</option></select>
+        </div>
+        <div class="field"><label>Срок (дней, пусто = по тарифу)</label>
+          <input type="number" id="addDays" min="1" max="3650" placeholder="по тарифу">
+        </div>
+        <div class="field"><label>Email (необязательно)</label>
+          <input type="email" id="addEmail" placeholder="buyer@example.com">
+        </div>
+        <button class="btn" onclick="addKey()">Создать ключ</button>
+      </div>
+      <div class="msg" id="addMsg"></div>
+    </div>
+
+    <div class="card">
+      <div class="label">Промокоды</div>
+      <div class="row">
+        <div class="field"><label>Код</label><input type="text" id="cpCode" placeholder="SUMMER20" style="text-transform:uppercase"></div>
+        <div class="field"><label>Скидка %</label><input type="number" id="cpPercent" min="1" max="100" placeholder="20"></div>
+        <button class="btn" onclick="addCoupon()">Добавить промокод</button>
+      </div>
+      <div class="msg" id="cpMsg"></div>
+      <div class="tableScroll">
+        <table style="margin-top:14px">
+          <thead><tr><th>Код</th><th>Скидка</th><th>Создан</th><th></th></tr></thead>
+          <tbody id="cpRows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="stats" id="stats"></div>
+      <div class="tableScroll">
+        <table>
+          <thead><tr><th>Ключ</th><th>Тариф</th><th>Статус</th><th>Email</th><th>Создан</th><th>Истекает</th><th>Figma</th><th></th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <a href="https://lednique.ru" target="_blank" rel="noopener">LEDNIQUE</a> · Patternique ·
+    <a href="/terms.html">Пользовательское соглашение</a> ·
+    <a href="/privacy.html">Политика обработки персональных данных</a>
+  </footer>
+
+</div>
+<script>
+  var pass = '';
+  function api(opts) {
+    opts = opts || {};
+    opts.headers = Object.assign({ 'Content-Type': 'application/json', 'X-Admin-Pass': pass }, opts.headers || {});
+    return fetch('/api/admin-keys', opts).then(function (r) { return r.json(); });
+  }
+  function couponsApi(opts) {
+    opts = opts || {};
+    opts.headers = Object.assign({ 'Content-Type': 'application/json', 'X-Admin-Pass': pass }, opts.headers || {});
+    return fetch('/api/coupons', opts).then(function (r) { return r.json(); });
+  }
+  function doLogin() {
+    pass = document.getElementById('pass').value;
+    api().then(function (d) {
+      if (d.ok) { localStorage.setItem('pq_admin_pass', pass); showApp(); }
+      else { document.getElementById('loginMsg').textContent = 'Неверный пароль'; }
+    }).catch(function () { document.getElementById('loginMsg').textContent = 'Сервер недоступен'; });
+  }
+  function doLogout() { localStorage.removeItem('pq_admin_pass'); location.reload(); }
+  function showApp() {
+    document.getElementById('login').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+    document.getElementById('whoRow').classList.remove('hidden');
+    document.getElementById('who').textContent = 'admin';
+    refresh();
+    refreshCoupons();
+  }
+
+  function esc(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function fmt(d) { return d ? new Date(d).toLocaleString('ru-RU') : '—'; }
+  function planBadge(plan) { return '<span class="badge ' + (plan === 'lifetime' ? 'lifetime' : 'annual') + '">' + (plan === 'lifetime' ? 'Бессрочно' : '1 год') + '</span>'; }
+  function statusBadge(k) {
+    var expired = k.expires_at && new Date(k.expires_at).getTime() < Date.now();
+    if (expired) return '<span class="badge exp">истёк</span>';
+    if (k.status === 'activated') return '<span class="badge activated">активирован</span>';
+    return '<span class="badge paid">оплачен</span>';
+  }
+
+  /* ---------- ключи ---------- */
+  function refresh() {
+    api().then(function (d) {
+      if (!d.ok) return;
+      var keys = d.keys || [];
+      var active = keys.filter(function (k) { return !(k.expires_at && new Date(k.expires_at).getTime() < Date.now()); }).length;
+      document.getElementById('stats').innerHTML =
+        '<div class="stat"><b>' + keys.length + '</b><span>всего ключей</span></div>' +
+        '<div class="stat"><b>' + active + '</b><span>действующих</span></div>' +
+        '<div class="stat"><b>' + keys.filter(function (k) { return k.status === 'activated'; }).length + '</b><span>активировано</span></div>';
+      document.getElementById('rows').innerHTML = keys.map(function (k, i) {
+        return '<tr>' +
+          '<td class="mono">' + esc(k.key) + '</td>' +
+          '<td>' + planBadge(k.plan) + '</td>' +
+          '<td>' + statusBadge(k) + '</td>' +
+          '<td>' + esc(k.email || '—') + '</td>' +
+          '<td>' + fmt(k.created_at) + '</td>' +
+          '<td>' + fmt(k.expires_at) + '</td>' +
+          '<td class="mono" style="font-size:11px">' + esc(k.figma_user_id || '—') + '</td>' +
+          '<td><div style="display:flex;gap:4px">' +
+            '<button class="btn small ghost" data-act="edit" data-key="' + esc(k.key) + '">Изменить</button>' +
+            '<button class="btn small danger" data-act="del" data-key="' + esc(k.key) + '">Удалить</button>' +
+          '</div></td></tr>' +
+          '<tr class="editRow" id="edit-' + i + '" data-edit-key="' + esc(k.key) + '"><td colspan="8">' +
+            '<div class="row">' +
+              '<div class="field"><label>Тариф</label><select id="ePlan-' + i + '"><option value="annual"' + (k.plan === 'annual' ? ' selected' : '') + '>1 год</option><option value="lifetime"' + (k.plan === 'lifetime' ? ' selected' : '') + '>Бессрочно</option></select></div>' +
+              '<div class="field"><label>Продлить на дней (пусто = не менять)</label><input type="number" id="eDays-' + i + '" min="1" max="3650"></div>' +
+              '<div class="field"><label>Email</label><input type="email" id="eEmail-' + i + '" value="' + esc(k.email || '') + '"></div>' +
+              '<button class="btn small" data-act="save" data-key="' + esc(k.key) + '" data-i="' + i + '">Сохранить</button>' +
+              '<button class="btn small ghost" data-act="reset" data-key="' + esc(k.key) + '">Сброс активации</button>' +
+              '<button class="btn small ghost" data-act="close" data-i="' + i + '">Отмена</button>' +
+            '</div></td></tr>';
+      }).join('') || '<tr><td colspan="8" style="color:var(--muted)">Ключей пока нет</td></tr>';
+    });
+  }
+  function addKey() {
+    api({ method: 'POST', body: JSON.stringify({
+      plan: document.getElementById('addPlan').value,
+      days: document.getElementById('addDays').value ? parseInt(document.getElementById('addDays').value, 10) : undefined,
+      email: document.getElementById('addEmail').value.trim() || undefined
+    }) }).then(function (d) {
+      var m = document.getElementById('addMsg');
+      if (d.ok) { m.className = 'msg ok'; m.textContent = 'Ключ создан: ' + d.key.key; refresh(); }
+      else { m.className = 'msg err'; m.textContent = d.error || 'Ошибка'; }
+    });
+  }
+  function saveKey(key, i) {
+    var body = { key: key, plan: document.getElementById('ePlan-' + i).value, email: document.getElementById('eEmail-' + i).value.trim() };
+    var days = document.getElementById('eDays-' + i).value;
+    if (days) body.days = parseInt(days, 10);
+    api({ method: 'PATCH', body: JSON.stringify(body) }).then(function (d) {
+      if (d.ok) refresh(); else alert(d.error || 'Ошибка');
+    });
+  }
+  function resetKey(key) {
+    if (!confirm('Сбросить активацию ключа ' + key + '?')) return;
+    api({ method: 'PATCH', body: JSON.stringify({ key: key, reset_activation: true }) }).then(function (d) {
+      if (d.ok) refresh(); else alert(d.error || 'Ошибка');
+    });
+  }
+  function delKey(key) {
+    if (!confirm('Удалить ключ ' + key + '?')) return;
+    api({ method: 'DELETE', body: JSON.stringify({ key: key }) }).then(function () { refresh(); });
+  }
+  document.getElementById('rows').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-act]');
+    if (!b) return;
+    var act = b.dataset.act, key = b.dataset.key, i = b.dataset.i;
+    if (act === 'edit') { var row = b.closest('tr'); row.classList.add('editing'); }
+    if (act === 'close') document.getElementById('edit-' + i).previousElementSibling.classList.remove('editing');
+    if (act === 'save') saveKey(key, i);
+    if (act === 'reset') resetKey(key);
+    if (act === 'del') delKey(key);
+  });
+
+  /* ---------- промокоды ---------- */
+  function refreshCoupons() {
+    couponsApi().then(function (d) {
+      if (!d.ok) return;
+      document.getElementById('cpRows').innerHTML = (d.coupons || []).map(function (c, i) {
+        return '<tr><td class="mono">' + esc(c.code) + '</td><td>' + esc(c.percent) + '%</td><td>' + fmt(c.created_at) + '</td>' +
+          '<td><div style="display:flex;gap:4px">' +
+          '<button class="btn small ghost" data-act="edit" data-code="' + esc(c.code) + '">Изменить</button>' +
+          '<button class="btn small danger" data-act="del" data-code="' + esc(c.code) + '">Удалить</button>' +
+          '</div></td></tr>' +
+          '<tr class="editRow" id="editC-' + i + '"><td colspan="4"><div class="row">' +
+          '<div class="field"><label>Скидка %</label><input type="number" id="eCp-' + i + '" value="' + esc(c.percent) + '" min="1" max="100"></div>' +
+          '<button class="btn small" data-act="save" data-code="' + esc(c.code) + '" data-i="' + i + '">Сохранить</button>' +
+          '<button class="btn small ghost" data-act="close" data-i="' + i + '">Отмена</button>' +
+          '</div></td></tr>';
+      }).join('') || '<tr><td colspan="4" style="color:var(--muted)">Промокодов пока нет</td></tr>';
+    });
+  }
+  function addCoupon() {
+    var code = document.getElementById('cpCode').value.trim().toUpperCase();
+    var percent = parseInt(document.getElementById('cpPercent').value, 10);
+    var m = document.getElementById('cpMsg');
+    if (!code || !percent) { m.className = 'msg err'; m.textContent = 'Укажите код и процент'; return; }
+    couponsApi({ method: 'POST', body: JSON.stringify({ code: code, percent: percent }) }).then(function (d) {
+      if (d.ok) { m.className = 'msg ok'; m.textContent = 'Промокод создан: ' + d.coupon.code + ' (-' + d.coupon.percent + '%)'; refreshCoupons(); }
+      else { m.className = 'msg err'; m.textContent = d.error || 'Ошибка'; }
+    });
+  }
+  function saveCoupon(code, i) {
+    var percent = parseInt(document.getElementById('eCp-' + i).value, 10);
+    couponsApi({ method: 'PATCH', body: JSON.stringify({ code: code, percent: percent }) }).then(function (d) {
+      if (d.ok) refreshCoupons(); else alert(d.error || 'Ошибка');
+    });
+  }
+  function delCoupon(code) {
+    if (!confirm('Удалить промокод ' + code + '?')) return;
+    couponsApi({ method: 'DELETE', body: JSON.stringify({ code: code }) }).then(function () { refreshCoupons(); });
+  }
+  document.getElementById('cpRows').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-act]');
+    if (!b) return;
+    var act = b.dataset.act, code = b.dataset.code, i = b.dataset.i;
+    if (act === 'edit') b.closest('tr').classList.add('editing');
+    if (act === 'close') document.getElementById('editC-' + i).previousElementSibling.classList.remove('editing');
+    if (act === 'save') saveCoupon(code, i);
+    if (act === 'del') delCoupon(code);
+  });
+
+  document.getElementById('pass').addEventListener('keydown', function (e) { if (e.key === 'Enter') doLogin(); });
+
+  /* Панель управления не показывается до успешной проверки пароля. */
+  var saved = localStorage.getItem('pq_admin_pass');
+  if (saved) {
+    pass = saved;
+    api().then(function (d) {
+      if (d.ok) showApp();
+      else document.getElementById('login').classList.remove('hidden');
+    }).catch(function () { document.getElementById('login').classList.remove('hidden'); });
+  } else {
+    document.getElementById('login').classList.remove('hidden');
+  }
+</script>
+</body>
+</html>

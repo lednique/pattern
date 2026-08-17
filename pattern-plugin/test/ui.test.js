@@ -26,7 +26,10 @@ test(!source.includes('id="cellWidth"')&&!source.includes('id="cellHeight"'),'ce
 test(source.includes('id="halfGrid"')&&source.includes('id="halfHorizontal"')&&source.includes('id="halfVertical"'),'half-size grid has horizontal and vertical checkboxes');
 test(source.includes('id="shiftEnabled"')&&!source.includes('id="shiftMode"'),'alternate offset is a single both-directions checkbox');
 test(source.includes('checkerInline')&&source.includes('data-checker="1"')&&source.includes('data-checker="2"'),'checker layouts 1 and 2 are embedded in the mode button');
-test(source.includes("$('checkerSlot').appendChild($('decorationPanel'))"),'intersection controls move into checker mode settings');
+test(source.includes('id="decorationPanel"')&&!source.includes('checkerSlot'),'intersection card is always present instead of moving into checker mode');
+test(source.includes("shiftBlocked=s.shiftEnabled&&(s.shiftX!==0||s.shiftY!==0)")&&source.includes("$('decorNotice').classList.toggle('hidden',!shiftBlocked)"),'intersection card is only disabled by an active column offset');
+test(source.includes('id="decorationRotation" type="range" min="-180" max="180" step="5" value="0"'),'intersection element has a rotation slider');
+test(source.includes('id="decorDetails"')&&source.indexOf('id="background"')<source.indexOf('id="decorDetails"')&&source.indexOf('id="decorDetails"')<source.indexOf('id="decorationPanel"'),'element color, size, and rotation live in Objects and background after the background color');
 test(source.includes('class="objectGrid"')&&source.includes('objectPanel inactive'),'object settings use two persistent columns');
 test(!source.includes('selectionTitle')&&!source.includes('selectionMeta')&&!source.includes('selectionIcon'),'selection labels, dimensions, and icon are removed from preview');
 test(source.includes('viewBox="0 0 270 154"')&&source.includes('font-size:24px')&&source.includes('font-weight:500'),'provided header figure and black 24 px medium title are used');
@@ -37,7 +40,9 @@ test(source.includes('.activateBtn:hover:not(:disabled),.buyBtn:hover:not(:disab
 test(source.includes('0 3px 6px rgba(0,0,0,.2),1px 0 2px')&&source.includes('inset 0 2px 6px')&&source.includes('mix-blend-mode:lighten'),'active modes use requested shadows with lighten white highlights');
 test(source.includes('width:34px;height:26px')&&source.includes('__SLIDER_THUMB_B64__')&&sliderSvg.includes('width="22" height="14" rx="7"')&&sliderSvg.includes('mode="lighten"'),'slider thumb embeds the requested 22 × 14 pill and lighten-blended white shadows');
 test(source.includes('var state={mode:\'grid\',checkerLayout:1,decoration:\'star\'}')&&source.includes('id="shiftEnabled" type="checkbox" checked')&&source.includes('id="shiftX" type="range" min="-100" max="100" value="50"')&&source.includes('id="rotationStep" type="range" min="-180" max="180" step="15" value="-15"')&&source.includes('id="size1" type="range" min="10" max="150" value="70"')&&source.includes('id="size2" type="range" min="10" max="150" value="40"')&&source.includes('id="rotation2" type="range" min="-180" max="180" step="5" value="180"')&&source.includes('id="decorationSize" type="range" min="4" max="100" value="25"'),'all requested first-open defaults are present');
-test(source.includes('class="hidden" id="decorationHost"')&&!source.includes('id="decorationCard"')&&source.includes("state.mode==='checker'"),'inactive intersection card is removed and controls only appear in checker mode');
+test(!source.includes('id="decorationHost"')&&!source.includes('id="decorationCard"'),'legacy hidden intersection host is removed');
+test(source.includes('transition:left 150ms cubic-bezier(.25,1.11,.5,1.21),width 150ms cubic-bezier(.25,1.11,.5,1.21)'),'mode glider easing is softened about 4x at the start and end');
+test(source.includes('margin-top:-7.5px'),'slider thumb pill is vertically centered on the track');
 test(source.includes('--accent:#DEDD74')&&built.includes('data:image/png;base64,')&&!built.includes('__LEDNIQUE_B64__'),'new theme and footer branding are built');
 ['en','ru','it','pt','fr','zh','ja'].forEach((code)=>test(source.includes(code+':{subtitle:'),code+' plugin localization exists'));
 console.log('\nPlugin UI: '+passed+' checks passed.');

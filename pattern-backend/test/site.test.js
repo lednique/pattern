@@ -20,4 +20,15 @@ test(index.includes('--accent:#DEDD74')&&index.includes('rgba(222,221,116'),'pur
 ['en','ru','it','pt','fr','zh','ja'].forEach((code)=>test(index.includes('"'+code+'":{'),code+' purchase-site localization exists'));
 test(index.includes('id="langMenu"')&&index.includes('buildLangMenu'),'seven-language dropdown is rendered');
 ['terms.html','privacy.html','manage.html','404.html'].forEach((name)=>test(fs.existsSync(path.join(site,name)),name+' exists'));
+const manage=fs.readFileSync(path.join(site,'manage.html'),'utf8');
+test(manage.includes('class="card hidden" id="login"')&&manage.includes('id="app"')&&manage.includes('wrap-inner hidden'),'manage panel stays hidden until the password check succeeds');
+test(manage.includes("localStorage.getItem('pq_admin_pass')")&&manage.includes("if (d.ok) showApp();"),'saved admin session is re-verified against the API before the panel opens');
+test(manage.includes("fetch('/api/admin-keys'")&&manage.includes("'X-Admin-Pass': pass"),'keys are managed through the authenticated admin API');
+test(manage.includes("fetch('/api/coupons'")&&manage.includes('refreshCoupons'),'promo codes have their own management section like TraceBase');
+test(manage.includes('id="addPlan"')&&manage.includes('id="addDays"')&&manage.includes('id="addEmail"'),'key creation offers plan, validity days, and email like TraceBase');
+test(manage.includes('id="cpCode"')&&manage.includes('id="cpPercent"'),'promo creation offers code and discount percent');
+test(manage.includes('id="stats"')&&manage.includes('всего ключей'),'stats cards summarize total, active, and activated keys');
+test(manage.includes('editRow')&&manage.includes('reset_activation'),'inline key editing and activation reset are available');
+test(manage.includes('doLogout')&&manage.includes("localStorage.removeItem('pq_admin_pass')"),'logout clears the stored admin session');
+test(manage.includes('--accent:#DEDD74')&&manage.includes('Montserrat'),'manage panel uses the Patternique theme');
 console.log('\nSite: '+passed+' checks passed.');
