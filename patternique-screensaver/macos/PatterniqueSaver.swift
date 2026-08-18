@@ -79,6 +79,16 @@ public class PatterniqueSaverView: ScreenSaverView {
     private var previousRGB: (CGFloat, CGFloat, CGFloat)?
     private var cycleTimer: Timer?
 
+    /// Wallpaper mode ("Macintosh"-style): when false, the pattern does not
+    /// cycle on its own — it settles after each wave and stays still until
+    /// playOneTransition() is called (e.g. on screen unlock).
+    @objc public var autoCycles: Bool = true
+
+    /// Plays exactly one morph wave into a fresh random pattern.
+    @objc public func playOneTransition() {
+        cycle()
+    }
+
     // MARK: - Init
 
     public override init?(frame: NSRect, isPreview: Bool) {
@@ -121,6 +131,7 @@ public class PatterniqueSaverView: ScreenSaverView {
 
     private func scheduleCycle() {
         cycleTimer?.invalidate()
+        guard autoCycles else { return }
         let interval = holdDuration + waveDuration + gapDuration
         cycleTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
             self?.cycle()
