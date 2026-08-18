@@ -34,9 +34,18 @@ var PatternCore = (function () {
     var shiftY = clamp(source.shiftY === undefined ? 0 : source.shiftY, -100, 100);
     var halfEligible = columns >= 3 || rows >= 3;
     var halfGrid = halfEligible && (source.halfGrid === true || source.halfGrid === 'true');
+    var halfHorizontal = halfGrid && source.halfHorizontal !== false && source.halfHorizontal !== 'false';
+    var halfVertical = halfGrid && source.halfVertical !== false && source.halfVertical !== 'false';
+    // Half-size grid keeps the figure box math from the regular grid but lays
+    // the pattern out of gapless half-size containers across the whole tile.
+    var placeColumns = halfHorizontal ? columns * 2 : columns;
+    var placeRows = halfVertical ? rows * 2 : rows;
+    var shiftActive = shiftEnabled && (shiftX !== 0 || shiftY !== 0);
     var decorationChoice = ['none', 'cross', 'star', 'circle', 'symbol', 'line'].indexOf(source.decoration) >= 0
       ? source.decoration : 'star';
-    var decoration = mode === 'checker' ? decorationChoice : 'none';
+    // The intersection element works in every mode; only an active column
+    // offset breaks the intersection grid and disables it.
+    var decoration = shiftActive ? 'none' : decorationChoice;
 
     var checkerLayout = Number(source.checkerLayout || (source.checkerBehavior === 'variant' ? 2 : 1)) === 2 ? 2 : 1;
     return {
@@ -48,6 +57,10 @@ var PatternCore = (function () {
       rows: rows,
       cellWidth: TILE_SIZE / columns,
       cellHeight: TILE_SIZE / rows,
+      placeColumns: placeColumns,
+      placeRows: placeRows,
+      placeCellWidth: TILE_SIZE / placeColumns,
+      placeCellHeight: TILE_SIZE / placeRows,
       size1: clamp(source.size1 === undefined ? 70 : source.size1, 10, 150),
       size2: clamp(source.size2 === undefined ? 40 : source.size2, 10, 150),
       rotation1: clamp(source.rotation1 === undefined ? 0 : source.rotation1, -180, 180),
@@ -62,12 +75,13 @@ var PatternCore = (function () {
       shiftY: shiftY,
       halfGrid: halfGrid,
       halfEligible: halfEligible,
-      halfHorizontal: halfGrid && columns >= 3 && source.halfHorizontal !== false && source.halfHorizontal !== 'false',
-      halfVertical: halfGrid && rows >= 3 && source.halfVertical !== false && source.halfVertical !== 'false',
+      halfHorizontal: halfHorizontal,
+      halfVertical: halfVertical,
       decoration: decoration,
       decorationChoice: decorationChoice,
       decorationColor: validHex(source.decorationColor, '#5E5D22'),
       decorationSize: clamp(source.decorationSize === undefined ? 25 : source.decorationSize, 4, 100),
+      decorationRotation: clamp(source.decorationRotation === undefined ? 0 : source.decorationRotation, -180, 180),
       symbol: String(source.symbol || '✦').slice(0, 8)
     };
   }
@@ -101,19 +115,17 @@ var PatternCore = (function () {
   }
 
   function placementAt(settings, row, column, objectCount) {
-    var x = (column + 0.5) * settings.cellWidth;
-    var y = (row + 0.5) * settings.cellHeight;
+    // Placements walk a gapless container grid that spans the whole tile.
+    // With half-size grid the container (bounding box) shrinks to 50% along
+    // the checked axis, so neighbors sit twice as close while every figure
+    // keeps the dimensions of the regular full-size cell and may overlap.
+    var x = (column + 0.5) * settings.placeCellWidth;
+    var y = (row + 0.5) * settings.placeCellHeight;
+    if (settings.shiftEnabled && mod(row, 2) === 1) x += settings.placeCellWidth * settings.shiftX / 100;
+    if (settings.shiftEnabled && mod(column, 2) === 1) y += settings.placeCellHeight * settings.shiftY / 100;
 
-    // Half-size grid behaves like negative padding for every container. The
-    // complete existing grid is compressed to 50% around the tile center;
-    // figure dimensions stay controlled by the regular cell and may overlap.
-    if (settings.halfGrid && settings.halfHorizontal) x = TILE_SIZE / 2 + (x - TILE_SIZE / 2) * 0.5;
-    if (settings.halfGrid && settings.halfVertical) y = TILE_SIZE / 2 + (y - TILE_SIZE / 2) * 0.5;
-    if (settings.shiftEnabled && mod(row, 2) === 1) x += settings.cellWidth * settings.shiftX / 100;
-    if (settings.shiftEnabled && mod(column, 2) === 1) y += settings.cellHeight * settings.shiftY / 100;
-
-    var styleRow = mod(row, settings.rows);
-    var styleColumn = mod(column, settings.columns);
+    var styleRow = mod(row, settings.placeRows);
+    var styleColumn = mod(column, settings.placeColumns);
     var variant = variantAt(settings, styleRow, styleColumn, objectCount);
     variant.x = x;
     variant.y = y;
@@ -127,13 +139,9 @@ var PatternCore = (function () {
   function buildPlacements(input, objectCount) {
     var settings = normalizeSettings(input);
     var overscan = settings.shiftEnabled ? 2 : 1;
-    var rowStart = settings.halfGrid && settings.halfVertical ? 0 : -overscan;
-    var rowEnd = settings.halfGrid && settings.halfVertical ? settings.rows : settings.rows + overscan;
-    var columnStart = settings.halfGrid && settings.halfHorizontal ? 0 : -overscan;
-    var columnEnd = settings.halfGrid && settings.halfHorizontal ? settings.columns : settings.columns + overscan;
     var placements = [];
-    for (var row = rowStart; row < rowEnd; row++) {
-      for (var column = columnStart; column < columnEnd; column++) {
+    for (var row = -overscan; row < settings.placeRows + overscan; row++) {
+      for (var column = -overscan; column < settings.placeColumns + overscan; column++) {
         var item = placementAt(settings, row, column, objectCount || 1);
         if (item.visible) placements.push(item);
       }
@@ -388,15 +396,15 @@ function createRect(parent, x, y, width, height, color, angle) {
   return rect;
 }
 
-async function addDecoration(parent, kind, x, y, size, color, symbol, fontName) {
+async function addDecoration(parent, kind, x, y, size, color, symbol, fontName, rotation) {
+  var extraAngle = Number(rotation) || 0;
   if (kind === 'circle') {
     var ellipse = figma.createEllipse();
     parent.appendChild(ellipse);
     ellipse.resize(size, size);
     ellipse.fills = [{ type: 'SOLID', color: color }];
     ellipse.strokes = [];
-    ellipse.x = x - size / 2;
-    ellipse.y = y - size / 2;
+    placeAroundCenter(ellipse, x, y, size, size, extraAngle);
     ellipse.name = 'Intersection · circle';
     return;
   }
@@ -408,18 +416,18 @@ async function addDecoration(parent, kind, x, y, size, color, symbol, fontName) 
     star.resize(size, size);
     star.fills = [{ type: 'SOLID', color: color }];
     star.strokes = [];
-    placeAroundCenter(star, x, y, star.width, star.height, 45);
+    placeAroundCenter(star, x, y, star.width, star.height, 45 + extraAngle);
     star.name = 'Intersection · four-point star';
     return;
   }
   if (kind === 'cross') {
     var thickness = Math.max(1, size * 0.16);
-    createRect(parent, x, y, size, thickness, color, 45);
-    createRect(parent, x, y, size, thickness, color, -45);
+    createRect(parent, x, y, size, thickness, color, 45 + extraAngle);
+    createRect(parent, x, y, size, thickness, color, -45 + extraAngle);
     return;
   }
   if (kind === 'line') {
-    createRect(parent, x, y, size, Math.max(1, size * 0.12), color, -45);
+    createRect(parent, x, y, size, Math.max(1, size * 0.12), color, -45 + extraAngle);
     return;
   }
   if (kind === 'symbol') {
@@ -430,8 +438,7 @@ async function addDecoration(parent, kind, x, y, size, color, symbol, fontName) 
     text.fontSize = size;
     text.fills = [{ type: 'SOLID', color: color }];
     text.textAutoResize = 'WIDTH_AND_HEIGHT';
-    text.x = x - text.width / 2;
-    text.y = y - text.height / 2;
+    placeAroundCenter(text, x, y, text.width, text.height, extraAngle);
     text.name = 'Intersection · symbol';
   }
 }
@@ -500,10 +507,10 @@ async function createPattern(rawSettings, dropPosition) {
       var fontName = null;
       if (settings.decoration === 'symbol') fontName = await loadDecorationFont();
       var color = PatternCore.hexToRgb(settings.decorationColor);
-      for (var row = 0; row <= settings.rows; row++) {
-        for (var column = 0; column <= settings.columns; column++) {
-          await addDecoration(frame, settings.decoration, column * settings.cellWidth, row * settings.cellHeight,
-            settings.decorationSize, color, settings.symbol, fontName);
+      for (var row = 0; row <= settings.placeRows; row++) {
+        for (var column = 0; column <= settings.placeColumns; column++) {
+          await addDecoration(frame, settings.decoration, column * settings.placeCellWidth, row * settings.placeCellHeight,
+            settings.decorationSize, color, settings.symbol, fontName, settings.decorationRotation);
         }
       }
     }
