@@ -24,10 +24,15 @@ cd patternique-screensaver/macos
 make install
 ```
 
-`make install` собирает универсальный `Patternique.saver`
-(arm64 + x86_64), подписывает его ad-hoc подписью и кладёт в
+`make install` собирает `Patternique.saver` под архитектуру вашего Mac
+(arm64 на Apple Silicon), подписывает его ad-hoc подписью и кладёт в
 `~/Library/Screen Savers/`. После этого выберите **Patternique** в
 System Settings → Screen Saver.
+
+Универсальный бандл (arm64 + x86_64) — `make universal`: для него нужен
+полный Xcode, потому что отдельные Command Line Tools часто содержат
+только arm64-версии библиотек совместимости Swift, и линковка x86_64
+падает с ошибкой `__swift_FORCE_LOAD_$_swiftCompatibility56 … not found`.
 
 > macOS может спросить разрешение при первом запуске неподписанной
 > сторонней заставки — подтвердите её в System Settings →
