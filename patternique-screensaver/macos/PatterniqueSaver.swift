@@ -89,6 +89,38 @@ public class PatterniqueSaverView: ScreenSaverView {
         cycle()
     }
 
+    /// Renders the current (settled) pattern into a bitmap. The wallpaper app
+    /// writes this to disk and sets it as the real system wallpaper so the
+    /// same pattern shows natively on the lock screen and login window.
+    @objc public func snapshotImage() -> NSImage? {
+        let size = bounds.size
+        guard size.width > 0, size.height > 0 else { return nil }
+        let scale = window?.backingScaleFactor ?? (NSScreen.main?.backingScaleFactor ?? 2)
+        let pixelWidth = Int(size.width * scale)
+        let pixelHeight = Int(size.height * scale)
+        guard let rep = NSBitmapImageRep(bitmapDataPlanes: nil,
+                                         pixelsWide: pixelWidth,
+                                         pixelsHigh: pixelHeight,
+                                         bitsPerSample: 8,
+                                         samplesPerPixel: 4,
+                                         hasAlpha: true,
+                                         isPlanar: false,
+                                         colorSpaceName: .deviceRGB,
+                                         bytesPerRow: 0,
+                                         bitsPerPixel: 0),
+              let context = NSGraphicsContext(bitmapImageRep: rep) else { return nil }
+        let cg = context.cgContext
+        cg.scaleBy(x: scale, y: scale)
+        if let background = rootLayer.backgroundColor {
+            cg.setFillColor(background)
+            cg.fill(CGRect(origin: .zero, size: size))
+        }
+        rootLayer.render(in: cg)
+        let image = NSImage(size: size)
+        image.addRepresentation(rep)
+        return image
+    }
+
     // MARK: - Init
 
     public override init?(frame: NSRect, isPreview: Bool) {
