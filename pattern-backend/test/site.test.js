@@ -45,6 +45,12 @@ test(index.includes('.head { display:flex; align-items:center; gap:14px; margin-
 test(index.includes('.selected .price small, .selected .planDesc { color:var(--accent-hi); }'),'in the selected plan the currency and the text under the price share one readable color');
 test(index.includes('rgba(5,7,8,0) 400px, rgba(5,7,8,.55) 600px, #000 100%')&&index.includes('.bgDim { position:absolute'),'dimming: transparent 400px, 200px ramp, then densifies to 100% black by the page end, scrolling with the page');
 test(index.includes('.lead { color:#f2f5f7; font-size:16px')&&index.includes('.featureCell p { color:#e8ecee'),'hero lead is 16px and hero texts are lighter for readability');
+test(index.includes('id="moreBtn"')&&index.includes('.moreBtn { display:none')&&index.includes('.moreBtn { display:inline-block; }'),'mobile hides the features behind a small text more-button');
+test(index.includes('.featureBar { display:none; }')&&index.includes('.hero.expanded .featureBar { display:grid'),'the more-button expands the feature list on mobile');
+test(index.includes('.hero { padding:20px; margin-top:200px; }'),'the hero block is pushed 200px down on mobile so patterns stay visible');
+test(index.includes('.heroTop { grid-template-columns:1fr; gap:10px; }')&&index.includes('.lead { font-size:12px; }'),'mobile lead sits 10px under the title at 12px font size');
+test(index.includes('.titleRow { flex-direction:column; align-items:flex-start')&&index.includes("hero.classList.toggle('expanded')"),'the Figma-plugin tag moves under Patternique on mobile and the toggle works');
+test(['ru','en','it','pt','fr','zh','ja'].every(function(l){return index.indexOf('"'+l+'":{"more":')>0;}),'more/less labels are localized in all seven languages');
 test(index.includes('font-size:26px; }')&&!index.includes('font-size:17px; box-shadow:var(--pill-shadow); }'),'feature icons are 150% bigger with no shadow');
 test(!index.includes('class="eyebrow"')&&!index.includes('class="heroPrice"'),'the eyebrow badge and under-title prices are removed');
 test(index.includes('.plan.selected { background:linear-gradient(90deg, rgba(222,221,116,.16)')&&index.includes('--tint-dark:rgba(20,20,20,.55)')&&index.includes('.plan { border:none; border-radius:36px; padding:16px 18px; cursor:pointer; background:var(--tint-dark)'),'the selected plan is the colored card; unselected plans use the shared dark tint');
