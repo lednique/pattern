@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Patternique — Screensaver</title>
+<style>
+  /* Fully offline: no web fonts. Letters use the system font stack. */
+  :root { --font:'Montserrat',system-ui,-apple-system,sans-serif; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html, body { width:100%; height:100%; overflow:hidden; background:#050708; cursor:none; }
+/* ---------- animated pattern background ---------- */
+  /* The whole pattern morphs as one diagonal wave: each old figure shrinks,
+     then the new one grows in its place. Scale only — no rotation. The hidden
+     state is a small non-zero scale plus opacity 0: zero scale is never used,
+     so a skipped transition can never leave an invisible degenerate layer.
+     Shapes are intentionally not layer-promoted, and once a wave settles the
+     layer gets .settled, dropping transforms entirely (transform:none): an
+     untransformed cell is always painted in the main raster, so the browser
+     re-renders every SVG vector at native full resolution — no texture from
+     the scale animation is ever reused for the resting pattern. */
+  #bgPattern { position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none; transition:background-color 2s linear; }
+  .bgLayer { position:absolute; inset:0; }
+  .bgShape { position:absolute; display:grid; place-items:center; transform:scale(.14); opacity:0;
+    transition:transform .4s cubic-bezier(.55,.06,.68,.19), opacity .4s cubic-bezier(.55,.06,.68,.19); }
+  .bgLayer.on .bgShape { transform:scale(1); opacity:1; transition:transform .55s cubic-bezier(.26,1.36,.5,1), opacity .3s linear; }
+  .bgLayer.on.settled .bgShape { transform:none; transition:none; }
+  .bgShape svg { display:block; overflow:visible; }
+  .bgFig { display:grid; place-items:center; }
+  .bgEmoji { line-height:1; }
+  .bgLetter { line-height:1; font-weight:800; font-family:var(--font); opacity:.85; }
+</style>
+</head>
+<body>
+<div id="bgPattern"><div class="bgLayer" id="bgA"></div><div class="bgLayer" id="bgB"></div></div>
+<script>
+/* Animated pattern background.
+   It replays the plugin's own settings: repeat modes (grid, checker with one
+   or two objects, rotation, column offsets), figure sizes per object, and an
+   intersection element — which, exactly like the plugin, may be a symbol such
+   as an emoji. An emoji can also be the pattern's regular figure. No random
+   sprinkling: every cell follows the pattern's rules.
+   Morph: a diagonal wave travels from the top-left; in each cell the old
+   figure shrinks, then the new one grows with a soft back-out — scale only,
+   no rotation. Build-up ~2 s, hold ~5 s, morph ~2 s; the background color
+   crossfades underneath. */
+(function(){
+  var holder=document.getElementById('bgPattern');
+  var layers=[document.getElementById('bgA'),document.getElementById('bgB')];
+  var active=0,prevRgb=null;
+  var LOGO='M147.743 0L148.123 17.4785L148.115 17.4795C141.81 17.7267 135.522 18.1788 129.245 18.8291C99.5876 21.9016 68.3338 28.9385 43.0706 45.6631C31.2004 53.5214 6.65184 76.6465 21.9154 91.5332C31.4763 100.857 47.4502 100.691 60.0277 100.318C59.9115 76.1196 74.7146 58.4637 92.6312 50.4258C112.022 41.7268 137.492 43.489 151.661 62.9668C158.37 72.1881 159.389 84.5443 158.386 95.6006C158.087 98.9036 157.458 102.156 156.906 105.423C151.243 106.474 145.58 107.507 139.901 108.465C120.43 111.75 100.855 114.618 81.1898 116.443C85.7207 124.68 94.3642 130.346 106.725 133.588C123.89 138.089 146.621 137.267 169.489 132.052C192.294 126.85 214.218 117.508 229.746 105.946C245.6 94.1434 252.786 81.6832 251.446 70.2246C249.136 50.4766 227.434 38.5972 211.166 31.5293C201.614 27.3793 191.678 24.1185 181.595 21.5273L180.891 104.585C183.825 103.795 187.355 102.727 191.389 101.29L197.2 117.771C189.954 120.351 184.057 121.906 179.904 122.824C174.43 124.034 168.882 124.515 163.319 125.131L164.378 0.163086C182.811 3.50544 200.813 7.98237 218.072 15.4805C240.521 25.234 265.621 41.6501 268.725 68.1836C271.168 89.0719 257.694 106.899 240.104 119.995C222.189 133.333 197.884 143.503 173.338 149.102C148.854 154.686 123.108 155.952 102.331 150.504C84.24 145.759 68.7806 135.457 62.7669 117.714C44.6071 118.426 23.5483 117.489 9.79816 104.079C-14.5568 80.3255 11.5127 45.6187 33.4984 31.0635C61.1416 12.763 94.9654 4.80307 127.461 1.43652C134.2 0.738377 140.968 0.194353 147.743 0ZM137.618 73.2842C129.779 62.5091 114.203 59.8964 99.7239 66.3916C87.4769 71.886 77.7952 83.3018 77.4417 99.2266C98.8287 97.3422 120.117 94.1614 141.265 90.4951C141.423 84.7624 141.095 78.0651 137.618 73.2842Z';
+  var SHAPES={
+    circle:{vb:'0 0 100 100',body:'<circle cx="50" cy="50" r="46"/>'},
+    squircle:{vb:'0 0 100 100',body:'<rect x="4" y="4" width="92" height="92" rx="30"/>'},
+    star:{vb:'0 0 100 100',body:'<path d="M50 0 62 38 100 50 62 62 50 100 38 62 0 50 38 38Z"/>'},
+    heart:{vb:'0 0 100 100',body:'<path d="M50 92C20 68 4 48 4 30 4 15 16 4 30 4c9 0 16 4 20 12 4-8 11-12 20-12 14 0 26 11 26 26 0 18-16 38-46 62Z"/>'},
+    flower:{vb:'0 0 100 100',body:'<circle cx="50" cy="21" r="19"/><circle cx="79" cy="50" r="19"/><circle cx="50" cy="79" r="19"/><circle cx="21" cy="50" r="19"/><circle cx="50" cy="50" r="17"/>'},
+    moon:{vb:'0 0 100 100',body:'<path d="M68 2a50 50 0 1 0 0 96 41 41 0 1 1 0-96Z"/>'},
+    triangle:{vb:'0 0 100 100',body:'<path d="M50 4 94 82q5 10-6 10H12q-11 0-6-10Z"/>'},
+    ring:{vb:'0 0 100 100',body:'<path fill-rule="evenodd" d="M50 2a48 48 0 1 0 0 96 48 48 0 1 0 0-96Zm0 27a21 21 0 1 1 0 42 21 21 0 1 1 0-42Z"/>'},
+    plus:{vb:'0 0 100 100',body:'<path d="M34 2h32v32h32v32H66v32H34V66H2V34h32Z"/>'},
+    bolt:{vb:'0 0 100 100',body:'<path d="M60 0 14 58h24L40 100 88 40H64Z"/>'},
+    logo:{vb:'0 0 270 154',body:'<path d="'+LOGO+'"/>'}
+  };
+  /* Intersection elements mirror the plugin: cross, star, circle, line — or a symbol (emoji). */
+  var INTER={
+    circle:'<circle cx="50" cy="50" r="34"/>',
+    star:'<path d="M50 4 60 40 96 50 60 60 50 96 40 60 4 50 40 40Z"/>',
+    cross:'<path d="M22 32 32 22 50 40 68 22 78 32 60 50 78 68 68 78 50 60 32 78 22 68 40 50Z"/>',
+    line:'<rect x="8" y="44" width="84" height="12" rx="6" transform="rotate(-45 50 50)"/>'
+  };
+  var EMOJI=['✨','🌟','💫','🌸','🌼','🍀','🍋','🍓','💛','😊','🐣','🎈'];
+  /* Letters and symbols of every supported language, used as pattern figures
+     with the same probability as emojis. */
+  var LETTERS={
+    en:'ABCDEFGHKMNPRSTUWXYZ&@#?!',
+    ru:'АБВГДЖЗИКЛМНПРСТУФЦЧШЭЮЯ',
+    it:'ÀÈÉÌÒÙ',
+    pt:'ÃÁÂÇÉÊÕÚ',
+    fr:'ÀÂÇÉÈÊËÎÔŒÙ',
+    zh:'花样图案形色美丽云星月光',
+    ja:'あいうかきくさしすなにぬパターン柄和'
+  };
+  function pickLetter(){var langs=Object.keys(LETTERS),alphabet=LETTERS[pick(langs)];return alphabet.charAt(Math.floor(Math.random()*alphabet.length));}
+  /* Emojis and letters each appear on roughly every 3rd–6th slide: 18% per
+     figure roll gives ~20–30% per pattern including checker and decor rolls. */
+  function rollFigure(keys){var r=Math.random();if(r<0.18)return{emoji:pick(EMOJI)};if(r<0.36)return{text:pickLetter()};return{shape:pick(keys)};}
+  function rand(a,b){return a+Math.random()*(b-a);}
+  function pick(list){return list[Math.floor(Math.random()*list.length)];}
+  function hslToRgb(h,sa,l){sa/=100;l/=100;var k=function(n){return (n+h/30)%12;},a=sa*Math.min(l,1-l);var f=function(n){return l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1)));};return [f(0),f(8),f(4)];}
+  function distance(a,b){if(!a||!b)return 1;return Math.sqrt(Math.pow(a[0]-b[0],2)+Math.pow(a[1]-b[1],2)+Math.pow(a[2]-b[2],2))/Math.sqrt(3);}
+  function figureHtml(fig,color,px,angle){
+    var rot=angle?' style="transform:rotate('+angle+'deg)"':'';
+    if(fig.emoji)return '<span class="bgFig"'+rot+'><span class="bgEmoji" style="font-size:'+Math.round(px*.92)+'px">'+fig.emoji+'</span></span>';
+    if(fig.text)return '<span class="bgFig"'+rot+'><span class="bgLetter" style="font-size:'+Math.round(px*.92)+'px;color:'+color+'">'+fig.text+'</span></span>';
+    var sh=SHAPES[fig.shape],h=fig.shape==='logo'?Math.round(px*154/270):px;
+    /* Figures render as plain vectors — no SVG filter. Filters force each
+       shape through an intermediate raster buffer that browsers may compute
+       at reduced resolution, which pixelated the pattern. */
+    return '<span class="bgFig"'+rot+'><svg viewBox="'+sh.vb+'" width="'+px+'" height="'+h+'"><g opacity=".85" fill="'+color+'">'+sh.body+'</g></svg></span>';
+  }
+  function makePattern(){
+    /* Random background at least 30% away from the previous one. */
+    var bgH,bgS,bgL,rgb,tries=0;
+    do{bgH=rand(0,360);bgS=rand(34,64);bgL=rand(20,42);rgb=hslToRgb(bgH,bgS,bgL);tries++;}while(distance(rgb,prevRgb)<0.3&&tries<40);
+    prevRgb=rgb;
+    var shapeH=(bgH+rand(110,250))%360;
+    var keys=Object.keys(SHAPES);
+    /* The regular figure may be an emoji or a letter/symbol of a supported
+       language — each with the same probability, exactly like any object. */
+    var fig1=rollFigure(keys);
+    var fig2=rollFigure(keys);
+    var mode=pick(['grid','grid','checker','checker2','rotate']);
+    /* Column offsets like the plugin: odd rows shift horizontally, odd columns vertically. */
+    var shiftX=pick([0,0,0,.5,.5,.25,-.5]),shiftY=pick([0,0,0,.5,.25]);
+    /* The intersection element is only available when offsets are 0 — as in the plugin. */
+    var decor=null;
+    if(shiftX===0&&shiftY===0&&Math.random()<0.55){
+      var dr=Math.random();
+      decor=dr<0.18?{emoji:pick(EMOJI)}:dr<0.36?{text:pickLetter()}:{shape:pick(Object.keys(INTER))};
+    }
+    return {
+      bg:'hsl('+Math.round(bgH)+','+Math.round(bgS)+'%,'+Math.round(bgL)+'%)',
+      color1:'hsl('+Math.round(shapeH)+','+Math.round(rand(45,75))+'%,'+Math.round(rand(56,74))+'%)',
+      color2:'hsl('+Math.round((shapeH+rand(40,90))%360)+','+Math.round(rand(45,75))+'%,'+Math.round(rand(50,70))+'%)',
+      interColor:bgL>32?'hsla(0,0%,8%,.55)':'hsla(0,0%,100%,.78)',
+      fig1:fig1,fig2:fig2,mode:mode,shiftX:shiftX,shiftY:shiftY,decor:decor,
+      /* Different object sizes every pattern, like the plugin's per-object size
+         sliders. Sizes are clamped well above zero so figures never vanish. */
+      size1:rand(.46,.88),size2:rand(.36,.66),
+      /* Static per-object rotation, like the plugin's rotation sliders. */
+      rot1:pick([0,0,0,15,45,-15,90]),rot2:pick([0,0,180,45,-45]),
+      cell:rand(130,200),baseRot:0,rotStep:pick([15,30,45,-15,-30])
+    };
+  }
+  /* HOLD is the pause between patterns (4 s); each cycle adds the wave time on top. */
+  var WAVE=1300,GAP=430,HOLD=4000;
+  function buildLayer(layer,pat){
+    var W=window.innerWidth,H=window.innerHeight;
+    var cell=pat.cell,cols=Math.ceil(W/cell)+2,rows=Math.ceil(H/cell)+2;
+    var stepMs=WAVE/(cols+rows);
+    var html='';
+    for(var r=0;r<rows;r++){
+      for(var c=0;c<cols;c++){
+        if(pat.mode==='checker'&&(r+c)%2===1)continue;
+        var alt=pat.mode==='checker2'&&(r+c)%2===1;
+        var x=(c-1)*cell+(r%2===1?cell*pat.shiftX:0);
+        var y=(r-1)*cell+(c%2===1?cell*pat.shiftY:0);
+        /* Static angles come from the pattern settings (rotation mode steps or
+           per-object rotation sliders); the morph itself never rotates. */
+        var angle=pat.mode==='rotate'?pat.baseRot+(r+c)*pat.rotStep:(alt?pat.rot2:pat.rot1);
+        var d=Math.round((r+c)*stepMs);
+        var size=Math.max(24,Math.round(cell*(alt?pat.size2:pat.size1)));
+        var inner=figureHtml(alt?pat.fig2:pat.fig1,alt?pat.color2:pat.color1,size,angle);
+        html+='<div class="bgShape" data-d="'+d+'" style="left:'+Math.round(x)+'px;top:'+Math.round(y)+'px;width:'+Math.round(cell)+'px;height:'+Math.round(cell)+'px">'+inner+'</div>';
+      }
+    }
+    if(pat.decor){
+      var iSize=Math.max(16,Math.round(cell*0.2));
+      for(var ir=0;ir<=rows;ir++){
+        for(var ic=0;ic<=cols;ic++){
+          var ix=(ic-1)*cell-iSize/2,iy=(ir-1)*cell-iSize/2;
+          var idl=Math.round((ir+ic)*stepMs);
+          var iInner=pat.decor.emoji
+            ?'<span class="bgEmoji" style="font-size:'+Math.round(iSize*.92)+'px">'+pat.decor.emoji+'</span>'
+            :pat.decor.text
+            ?'<span class="bgLetter" style="font-size:'+Math.round(iSize*.92)+'px;color:'+pat.interColor+'">'+pat.decor.text+'</span>'
+            :'<svg viewBox="0 0 100 100" width="'+iSize+'" height="'+iSize+'" fill="'+pat.interColor+'">'+INTER[pat.decor.shape]+'</svg>';
+          html+='<div class="bgShape" data-d="'+idl+'" style="left:'+Math.round(ix)+'px;top:'+Math.round(iy)+'px;width:'+iSize+'px;height:'+iSize+'px">'+iInner+'</div>';
+        }
+      }
+    }
+    layer.innerHTML=html;
+  }
+  function setDelays(layer,offset){
+    var shapes=layer.children;
+    for(var i=0;i<shapes.length;i++)shapes[i].style.transitionDelay=(Number(shapes[i].dataset.d)+offset)+'ms';
+  }
+  function show(layer,offset){
+    setDelays(layer,offset);
+    requestAnimationFrame(function(){requestAnimationFrame(function(){layer.classList.add('on');});});
+  }
+  /* Once the grow wave has fully finished, .settled drops all transforms so
+     every figure is repainted as untransformed vectors at full native
+     resolution — the scale-animation texture is never left on screen. */
+  var settleTimer=null;
+  function settleAfter(layer,ms){
+    clearTimeout(settleTimer);
+    settleTimer=setTimeout(function(){if(layer.classList.contains('on'))layer.classList.add('settled');},ms);
+  }
+  /* The next pattern is randomized and its DOM is fully built during the
+     hold time — the swap itself only flips classes, so nothing loads or
+     computes while the morph wave is running. */
+  var pending=null,cycleTimer=null,cleanupTimer=null,prepareTimer=null;
+  function clearTimers(){
+    clearTimeout(cycleTimer);clearTimeout(cleanupTimer);clearTimeout(prepareTimer);clearTimeout(settleTimer);
+    cycleTimer=cleanupTimer=prepareTimer=settleTimer=null;
+  }
+  function prepareNext(){
+    var next=1-active,layer=layers[next];
+    var pat=makePattern();
+    buildLayer(layer,pat);
+    setDelays(layer,GAP);
+    pending={pat:pat,index:next};
+  }
+  function scheduleNext(){
+    clearTimeout(cycleTimer);
+    cycleTimer=setTimeout(cycle,HOLD+WAVE+GAP);
+  }
+  function cycle(){
+    /* Never start a morph in a hidden tab: transitions would not play and
+       both layers would end up overlapping. The wave resumes on return. */
+    if(document.hidden)return;
+    if(!pending)prepareNext();
+    var oldLayer=layers[active],newLayer=layers[pending.index];
+    holder.style.backgroundColor=pending.pat.bg;
+    /* Per cell: the old figure shrinks at its wave time, the new one grows right after it. */
+    setDelays(oldLayer,0);
+    oldLayer.classList.remove('settled');
+    oldLayer.classList.remove('on');
+    requestAnimationFrame(function(){requestAnimationFrame(function(){newLayer.classList.add('on');});});
+    settleAfter(newLayer,WAVE+GAP+700);
+    active=pending.index;
+    pending=null;
+    clearTimeout(cleanupTimer);
+    cleanupTimer=setTimeout(function(){oldLayer.innerHTML='';oldLayer.classList.remove('on');prepareNext();},WAVE+GAP+900);
+    scheduleNext();
+  }
+  /* Fresh start of the whole background: the current pattern appears with its
+     wave, the next one is prebuilt. Used on load, resize, and tab return. */
+  function restart(){
+    clearTimers();
+    pending=null;
+    layers[0].classList.remove('on','settled');layers[1].classList.remove('on','settled');
+    layers[0].innerHTML='';layers[1].innerHTML='';
+    active=0;
+    var pat=makePattern();
+    buildLayer(layers[0],pat);
+    holder.style.backgroundColor=pat.bg;
+    show(layers[0],0);
+    settleAfter(layers[0],WAVE+700);
+    prepareTimer=setTimeout(prepareNext,WAVE+300);
+    if(!reduced)scheduleNext();
+  }
+  var reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  restart();
+  /* Tab switching: pause everything on hide (throttled timers and skipped
+     transitions would freeze or overlap the layers), rebuild cleanly and
+     resume on return. */
+  document.addEventListener('visibilitychange',function(){
+    if(document.hidden)clearTimers();
+    else restart();
+  });
+  window.addEventListener('pageshow',function(event){if(event.persisted)restart();});
+  var resizeTimer=null;
+  window.addEventListener('resize',function(){clearTimeout(resizeTimer);resizeTimer=setTimeout(restart,350);});
+  /* Watchdog: the background must always show a full pattern during every
+     pass. If any stray state leaves the visible layer empty or hidden,
+     rebuild immediately. */
+  setInterval(function(){
+    if(document.hidden)return;
+    var visible=layers[active];
+    if(!visible.childElementCount||!visible.classList.contains('on'))restart();
+    else if(!reduced&&!cycleTimer)restart();
+  },2500);
+})();
+</script>
+</body>
+</html>

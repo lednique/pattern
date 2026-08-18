@@ -210,15 +210,15 @@ function createRect(parent, x, y, width, height, color, angle) {
   return rect;
 }
 
-async function addDecoration(parent, kind, x, y, size, color, symbol, fontName) {
+async function addDecoration(parent, kind, x, y, size, color, symbol, fontName, rotation) {
+  var extraAngle = Number(rotation) || 0;
   if (kind === 'circle') {
     var ellipse = figma.createEllipse();
     parent.appendChild(ellipse);
     ellipse.resize(size, size);
     ellipse.fills = [{ type: 'SOLID', color: color }];
     ellipse.strokes = [];
-    ellipse.x = x - size / 2;
-    ellipse.y = y - size / 2;
+    placeAroundCenter(ellipse, x, y, size, size, extraAngle);
     ellipse.name = 'Intersection · circle';
     return;
   }
@@ -230,18 +230,18 @@ async function addDecoration(parent, kind, x, y, size, color, symbol, fontName) 
     star.resize(size, size);
     star.fills = [{ type: 'SOLID', color: color }];
     star.strokes = [];
-    placeAroundCenter(star, x, y, star.width, star.height, 45);
+    placeAroundCenter(star, x, y, star.width, star.height, 45 + extraAngle);
     star.name = 'Intersection · four-point star';
     return;
   }
   if (kind === 'cross') {
     var thickness = Math.max(1, size * 0.16);
-    createRect(parent, x, y, size, thickness, color, 45);
-    createRect(parent, x, y, size, thickness, color, -45);
+    createRect(parent, x, y, size, thickness, color, 45 + extraAngle);
+    createRect(parent, x, y, size, thickness, color, -45 + extraAngle);
     return;
   }
   if (kind === 'line') {
-    createRect(parent, x, y, size, Math.max(1, size * 0.12), color, -45);
+    createRect(parent, x, y, size, Math.max(1, size * 0.12), color, -45 + extraAngle);
     return;
   }
   if (kind === 'symbol') {
@@ -252,8 +252,7 @@ async function addDecoration(parent, kind, x, y, size, color, symbol, fontName) 
     text.fontSize = size;
     text.fills = [{ type: 'SOLID', color: color }];
     text.textAutoResize = 'WIDTH_AND_HEIGHT';
-    text.x = x - text.width / 2;
-    text.y = y - text.height / 2;
+    placeAroundCenter(text, x, y, text.width, text.height, extraAngle);
     text.name = 'Intersection · symbol';
   }
 }
@@ -322,10 +321,10 @@ async function createPattern(rawSettings, dropPosition) {
       var fontName = null;
       if (settings.decoration === 'symbol') fontName = await loadDecorationFont();
       var color = PatternCore.hexToRgb(settings.decorationColor);
-      for (var row = 0; row <= settings.rows; row++) {
-        for (var column = 0; column <= settings.columns; column++) {
-          await addDecoration(frame, settings.decoration, column * settings.cellWidth, row * settings.cellHeight,
-            settings.decorationSize, color, settings.symbol, fontName);
+      for (var row = 0; row <= settings.placeRows; row++) {
+        for (var column = 0; column <= settings.placeColumns; column++) {
+          await addDecoration(frame, settings.decoration, column * settings.placeCellWidth, row * settings.placeCellHeight,
+            settings.decorationSize, color, settings.symbol, fontName, settings.decorationRotation);
         }
       }
     }
