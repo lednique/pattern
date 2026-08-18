@@ -14,9 +14,9 @@ test(source.includes('.previewStage')&&source.includes('box-shadow:none')&&sourc
 test(source.includes('.previewDock{position:sticky;top:5px;z-index:35')&&source.includes('.previewDock+.card{position:relative;z-index:16'),'sticky preview stays above repeat-mode cards');
 test(source.includes('var display=256+(172-256)*previewProgress')&&source.includes('top:-100px;width:100%;height:356px'),'full preview renders the central tile at 100% scale and 100 px higher');
 test(source.includes('.previewDock+.card')&&source.includes('margin-top:-100px'),'settings are raised 100 px over the preview continuation');
-test(source.includes("ctx.lineWidth=3")&&source.includes("ctx.strokeStyle='#D9D9D9'")&&source.includes('radius=8+(22-8)*previewProgress'),'central tile has a #D9D9D9 3 px border and 8 px starting radius');
+test(source.includes("ctx.lineWidth=3")&&source.includes("ctx.strokeStyle='#555555'")&&source.includes('radius=8+(22-8)*previewProgress'),'central tile has a dark-grey 3 px border and 8 px starting radius');
 test(source.includes("makeTile(settings,null,false,512)"),'central preview tile renders at 512 × 512 px while the export stays 256 px');
-test(source.includes("ctx.fillStyle='#FFFFFF'")&&source.includes('Empty state keeps the same white card'),'empty selection shows a white tile with the same #D9D9D9 border');
+test(source.includes("ctx.fillStyle='#FFFFFF'")&&source.includes('Empty state keeps the same white card'),'empty selection shows a white tile with the same dark-grey border');
 test(source.includes('for(var row=startRow;row<=endRow;row++)')&&source.includes('ctx.drawImage(ghost,originX+column*256'),'background repeats are transparent theme-colored figures across the full plugin width');
 test(source.includes("out.contentEditable='true'")&&source.includes("input.value=value"),'slider values support direct keyboard entry');
 test(!source.includes('stopImmediatePropagation')&&!source.includes('thumb/2+3'),'clicking anywhere on a slider is no longer blocked');
@@ -49,6 +49,12 @@ test(source.includes('var state={mode:\'grid\',checkerLayout:1,decoration:\'star
 test(!source.includes('id="decorationHost"')&&!source.includes('id="decorationCard"'),'legacy hidden intersection host is removed');
 test(source.includes('transition:left 150ms cubic-bezier(.25,1.11,.5,1.21),width 150ms cubic-bezier(.25,1.11,.5,1.21)'),'mode glider easing is softened about 4x at the start and end');
 test(source.includes('margin-top:-7.5px'),'slider thumb pill is vertically centered on the track');
+test(source.includes('id="presetsBtn"')&&source.includes('id="randomBtn"')&&source.includes('.previewTool{position:absolute;z-index:6;top:104px;width:48px;height:48px'),'two 48px round tool buttons flank the central preview');
+test(source.includes('inset 0 2px 12px rgba(0,0,0,.42)')&&source.includes('.previewTool:hover svg{transform:scale(1.15)}'),'tool buttons reuse the active repeat-mode treatment with the centered hover');
+test(source.includes('var PRESETS=')&&source.includes('grid-template-columns:repeat(3,90px)')&&source.includes('gap:15px')&&source.includes('makeTile(settings,null,false,90)'),'presets overlay renders 30 templates in a 3-wide grid of 90px tiles at 90px resolution');
+test(source.includes('border:3px solid #555555;border-radius:8px')&&source.includes('transform:scale(.14);opacity:0')&&source.includes('.presetGrid.on .presetTile{transform:scale(1);opacity:1}'),'preset tiles have the dark-grey 3px outline and animate in like the site background figures');
+test(source.includes('function randomizeSettings()')&&source.includes('columns:cur.columns,rows:cur.rows'),'the randomizer shuffles every setting except columns and rows');
+test(source.includes('<span class="createText" data-i18n="create">CREATE</span>')&&source.includes("create:'CREATE'")&&source.includes('padding:13px;font-weight:800;letter-spacing:.08em')&&source.includes('.createBtn:hover:not(:disabled) .createText{transform:scale(1.08)}'),'CREATE hugs its label with equal padding, mode-style shadows, and the centered hover');
 test(source.includes('--accent:#DEDD74')&&built.includes('data:image/png;base64,')&&!built.includes('__LEDNIQUE_B64__'),'new theme and footer branding are built');
 ['en','ru','it','pt','fr','zh','ja'].forEach((code)=>test(source.includes(code+':{subtitle:'),code+' plugin localization exists'));
 console.log('\nPlugin UI: '+passed+' checks passed.');
