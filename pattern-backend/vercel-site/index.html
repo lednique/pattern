@@ -379,7 +379,8 @@
       size1:rand(.46,.88),size2:rand(.36,.66),
       /* Static per-object rotation, like the plugin's rotation sliders. */
       rot1:pick([0,0,0,15,45,-15,90]),rot2:pick([0,0,180,45,-45]),
-      cell:rand(130,200),baseRot:0,rotStep:pick([15,30,45,-15,-30])
+      /* На мобильных узор в два раза мельче: та же сетка, половинный масштаб ячейки. */
+      cell:rand(130,200)*(window.innerWidth<=640?0.5:1),baseRot:0,rotStep:pick([15,30,45,-15,-30])
     };
   }
   /* HOLD is the pause between patterns (4 s); each cycle adds the wave time on top. */

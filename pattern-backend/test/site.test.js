@@ -48,6 +48,7 @@ test(index.includes('.lead { color:#f2f5f7; font-size:16px')&&index.includes('.f
 test(index.includes('id="moreBtn"')&&index.includes('.moreBtn { display:none')&&index.includes('.moreBtn { display:inline-block; }'),'mobile hides the features behind a small text more-button');
 test(index.includes('.featureBar { display:none; }')&&index.includes('.hero.expanded .featureBar { display:grid'),'the more-button expands the feature list on mobile');
 test(index.includes('.hero { padding:20px; margin-top:200px; }'),'the hero block is pushed 200px down on mobile so patterns stay visible');
+test(index.includes('cell:rand(130,200)*(window.innerWidth<=640?0.5:1)'),'mobile patterns render at half scale');
 test(index.includes('.heroTop { grid-template-columns:1fr; gap:10px; }')&&index.includes('.lead { font-size:12px; }'),'mobile lead sits 10px under the title at 12px font size');
 test(index.includes('.titleRow { flex-direction:column; align-items:flex-start')&&index.includes("hero.classList.toggle('expanded')"),'the Figma-plugin tag moves under Patternique on mobile and the toggle works');
 test(['ru','en','it','pt','fr','zh','ja'].every(function(l){return index.indexOf('"'+l+'":{"more":')>0;}),'more/less labels are localized in all seven languages');
