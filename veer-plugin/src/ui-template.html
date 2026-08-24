@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Veer</title>
+<style>
+/*__MONT_CSS__*/
+:root{
+  --accent:#F2A24C;--accent-hi:#F9C787;--accent-deep:#A96A1F;--grad:#D98E3B;
+  --bg:#f8f5ee;--card:#fff;--soft:#f4ecdf;--border:#eadfc9;
+  --text:#2b2118;--muted:#8a7a66;--danger:#d64f5c;--ok:#4e8d55;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--text);font:13px/1.45 'Montserrat',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;user-select:none;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+button,input,select{font:inherit}button{color:inherit}.hidden{display:none!important}
+.baseGradient{position:fixed;z-index:0;inset:0 0 auto;height:200px;background:linear-gradient(180deg,var(--grad) 0,rgba(217,142,59,0) 100%);pointer-events:none}
+.page{position:relative;z-index:2;padding:12px 12px 90px}
+.header{position:relative;z-index:50;height:48px;display:flex;align-items:center;gap:10px;margin-bottom:8px;color:#202020}
+.brandLogo{width:58px;height:34px;display:block;flex:none;filter:drop-shadow(0 3px 8px rgba(0,0,0,.12))}
+.headText{min-width:0;flex:1}.headText h1{margin:0;font-size:24px;line-height:1.05;font-weight:500;letter-spacing:.1px}.headText p{margin:2px 0 0;font-size:11.5px;white-space:nowrap;color:#202020}
+.langWrap{position:relative}.langBtn{display:flex;align-items:center;gap:4px;height:29px;border:1px solid rgba(32,32,32,.18);border-radius:999px;background:rgba(255,255,255,.28);color:#202020;padding:0 8px;cursor:pointer;font-size:11px;font-weight:700}
+.langMenu{position:absolute;right:0;top:35px;width:184px;padding:4px;border:1px solid var(--border);border-radius:13px;background:#fff;box-shadow:0 12px 28px rgba(58,42,20,.18);z-index:30}
+.langMenu button{display:flex;width:100%;align-items:center;gap:8px;border:0;border-radius:9px;background:transparent;padding:7px 9px;text-align:left;cursor:pointer;font-size:11.5px}.langMenu button:hover,.langMenu button.active{background:var(--soft)}
+.badge{min-width:54px;text-align:center;border-radius:999px;padding:4px 8px;background:rgba(255,255,255,.2);font-size:9px;line-height:1.1}.badge b{display:block;font-size:11px}.badge.licensed{background:#fff;color:var(--accent-deep)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:36px;padding:12px 14px;margin-bottom:10px;box-shadow:0 4px 16px rgba(84,56,24,.05)}
+.sectionTitle{margin:0 0 8px;font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.07em;text-transform:uppercase}
+
+/* Sticky preview: the full fan first, only the centered square while scrolling. */
+.previewDock{position:sticky;top:5px;z-index:35;height:460px;margin:0 0 10px;display:flex;justify-content:center;pointer-events:none;--preview-progress:0}
+.scrollPreviewGlow{position:absolute;z-index:0;left:-12px;right:-12px;top:-5px;height:200px;background:linear-gradient(180deg,rgba(242,162,76,.88),rgba(242,162,76,0));opacity:var(--preview-progress);pointer-events:none}
+.previewStage{position:absolute;z-index:1;left:50%;top:-100px;width:100%;height:460px;overflow:hidden;border-radius:8px;background:transparent;transform:translateX(-50%);box-shadow:none}
+#preview{display:block;width:100%;height:100%;pointer-events:auto;touch-action:none}
+.previewDock+.card{position:relative;z-index:16;margin-top:-100px}
+/* Round tool buttons beside the preview, styled like the active direction button. */
+.previewTool{position:absolute;z-index:6;top:110px;width:48px;height:48px;border:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;pointer-events:auto;color:#3a2508;background:var(--accent);box-shadow:0 3px 6px rgba(0,0,0,.2),2px 0 1px rgba(0,0,0,.3),-2px 0 1px rgba(0,0,0,.3),inset 0 2px 12px rgba(0,0,0,.42);transition:opacity .2s linear}
+.previewTool svg{transform-origin:center;transition:transform 150ms cubic-bezier(.01,1.43,.46,1.85)}
+.previewTool:hover svg{transform:scale(1.15)}
+#presetsBtn{left:4px}#randomBtn{right:4px}
+.previewDock.toolsHidden .previewTool{opacity:0;pointer-events:none}
+.countChip{position:absolute;z-index:6;top:8px;right:6px;height:26px;display:flex;align-items:center;gap:5px;padding:0 11px;border:1px solid rgba(32,32,32,.18);border-radius:999px;background:rgba(255,255,255,.28);color:#202020;font-size:11px;font-weight:700;transition:opacity .2s linear}
+.countChip.capped{color:var(--accent-deep);background:#fff}
+.previewDock.toolsHidden .countChip{opacity:0}
+/* Preset templates overlay: dimmed backdrop, 5 × 2 grid of 90 px tiles 15 px apart. */
+.presetOverlay{position:fixed;inset:0;z-index:120;overflow-y:auto;background:rgba(0,0,0,.5);display:flex;justify-content:center}
+.presetGrid{display:grid;grid-template-columns:repeat(5,90px);gap:15px;margin:24px auto;padding-bottom:24px;height:max-content}
+.presetTile{box-sizing:border-box;width:90px;height:90px;padding:0;border:3px solid #555555;border-radius:8px;overflow:hidden;background:#fff;cursor:pointer;transform:scale(.14);opacity:0;transition:transform .55s cubic-bezier(.26,1.36,.5,1),opacity .3s linear}
+.presetGrid.on .presetTile{transform:scale(1);opacity:1}
+.presetTile canvas{display:block;width:84px;height:84px}
+.previewHint{position:absolute;left:50%;top:100px;transform:translateX(-50%);width:256px;height:256px;display:grid;place-items:center;padding:18px;border:0;border-radius:0;background:transparent;color:var(--muted);font-size:11px;text-align:center}
+
+.segment{display:flex;gap:2px;padding:3px;border-radius:999px;background:var(--soft)}
+.segment>button{position:relative;flex:1;min-width:0;border:0;border-radius:999px;background:transparent;color:var(--muted);padding:7px 5px;cursor:pointer;font-size:12.5px;font-weight:700}
+.segment>button.active{background:var(--accent);color:#3a2508;box-shadow:0 3px 6px rgba(0,0,0,.2),2px 0 1px rgba(0,0,0,.3),-2px 0 1px rgba(0,0,0,.3),inset 0 2px 12px rgba(0,0,0,.42)}
+.segment>button.active:after,.dirGlider:after,.activateBtn:after,.buyBtn:after,.previewTool:after,.createBtn:after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;box-shadow:inset 0 -2px 1px rgba(255,255,255,.15),inset 0 2px 2px rgba(255,255,255,1);mix-blend-mode:lighten}
+.dirSegment{position:relative}.dirGlider{position:absolute;z-index:1;top:3px;bottom:3px;left:3px;width:calc((100% - 8px)/2);border-radius:999px;background:var(--accent);box-shadow:0 3px 6px rgba(0,0,0,.2),2px 0 1px rgba(0,0,0,.3),-2px 0 1px rgba(0,0,0,.3),inset 0 2px 12px rgba(0,0,0,.42);transition:left 150ms cubic-bezier(.25,1.11,.5,1.21),width 150ms cubic-bezier(.25,1.11,.5,1.21)}
+.dirSegment>button{height:36px;z-index:2}.dirSegment>button.active{background:transparent;box-shadow:none}.dirSegment>button.active:after{display:none}
+.dirText{display:inline-flex;align-items:center;justify-content:center;gap:5px;transform-origin:center;transition:transform 150ms cubic-bezier(.01,1.43,.46,1.85)}
+.dirSegment>button:hover .dirText{transform:scale(1.08)}
+.subCard{margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+/* Settings live in two compact columns. */
+.cols2{display:grid;grid-template-columns:1fr 1fr;gap:2px 16px}
+.controlRow{display:grid;grid-template-columns:96px 1fr 40px;gap:8px;align-items:center;min-height:32px}.controlRow+.controlRow{margin-top:2px}.controlRow .name{font-size:12px;font-weight:600}
+output{text-align:right;color:var(--accent-deep);font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;cursor:text;border:1px solid transparent;border-radius:6px;padding:2px}output[contenteditable=true]{outline:0;border-color:var(--accent-deep);background:#fff;color:var(--text);text-align:center}
+input[type=range]{-webkit-appearance:none;width:100%;height:26px;margin:0;padding:6px 0;background:transparent;cursor:pointer;touch-action:none;overflow:visible}
+input[type=range]::-webkit-slider-runnable-track{height:5px;border-radius:999px;background:linear-gradient(to right,var(--accent) 0,var(--accent) var(--fill,50%),#e6d6bd var(--fill,50%),#e6d6bd 100%)}
+/* The embedded SVG keeps black shadows normal and blends white highlights with lighten. */
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:34px;height:26px;margin-top:-7.5px;border:0;border-radius:0;background:transparent url("data:image/svg+xml;base64,__SLIDER_THUMB_B64__") center/34px 26px no-repeat;box-shadow:none;opacity:1;cursor:grab;transform-origin:center;transition:transform 150ms cubic-bezier(.01,1.43,.46,1.85)}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.08)}
+input[type=range].dragging::-webkit-slider-thumb{cursor:grabbing}
+.toggleLine{display:flex;align-items:center;gap:9px;min-height:30px;cursor:pointer}.toggleLine.disabled{opacity:.4;pointer-events:none}.toggleLine input{display:none}
+.checkBox{width:18px;height:18px;border:1.5px solid #d4c4a8;border-radius:6px;background:#fff;display:grid;place-items:center;flex:none}
+.toggleLine input:checked+.checkBox{background:var(--accent);border-color:var(--accent-deep)}
+.toggleLine input:checked+.checkBox:after{content:'✓';font-size:12px;font-weight:800;color:#3a2508}
+.toggleLabel{font-size:12px;font-weight:600}
+.toggleHint{margin:2px 0 0 27px;color:var(--muted);font-size:10px;line-height:1.35}
+.chipLine{display:flex;align-items:center;min-height:32px}.countValue{display:inline-flex;align-items:center;height:24px;padding:0 11px;border-radius:999px;background:var(--soft);color:var(--accent-deep);font-size:11px;font-weight:800;font-variant-numeric:tabular-nums}
+.disabledPanel{opacity:.42;pointer-events:none}
+.footer{display:flex;justify-content:center;margin:13px 0 2px}.footer img{height:30px;opacity:.7;cursor:pointer}
+/* Bottom padding trimmed by 10px so the CREATE button sits 10px lower. */
+.stickyBottom{position:fixed;z-index:20;left:0;right:0;bottom:0;padding:10px 12px 2px;text-align:center;background:linear-gradient(0deg,var(--bg) 72%,rgba(248,245,238,0))}
+.buyBtn,.activateBtn{width:100%;border:0;border-radius:999px;cursor:pointer;padding:13px;font-weight:800}
+/* CREATE hugs its label: equal 13px padding on every side, sits 10px lower, active-mode shadows over the silver gradient. */
+.createBtn{position:relative;display:inline-block;width:auto;border:0;border-radius:999px;cursor:pointer;padding:13px;font-weight:800;letter-spacing:.08em;color:#333;background:linear-gradient(90deg,#858585,#e7e7e7,#929292);background-size:200% 100%;box-shadow:0 3px 6px rgba(0,0,0,.2),2px 0 1px rgba(0,0,0,.3),-2px 0 1px rgba(0,0,0,.3),inset 0 2px 12px rgba(0,0,0,.42)}
+.createBtn:disabled:after{display:none}
+.createBtn .createText{display:inline-block;transform-origin:center;transition:transform 150ms cubic-bezier(.01,1.43,.46,1.85)}
+.createBtn:hover:not(:disabled){animation:shine 1.8s linear infinite}.createBtn:hover:not(:disabled) .createText{transform:scale(1.08)}
+.createBtn:disabled{background:#e3d9c6;color:#fff;cursor:not-allowed;box-shadow:none}@keyframes shine{to{background-position:200% 0}}
+.status{min-height:14px;margin:4px 10px 0;text-align:center;font-size:10px;color:var(--muted)}.status.error{color:var(--danger)}.status.ok{color:var(--ok)}
+.lockCard{text-align:center;padding:25px 18px}.lockIcon{width:54px;height:54px;margin:0 auto 12px;border-radius:18px;display:grid;place-items:center;background:var(--accent);color:#3a2508}.lockCard h2{font-size:16px;margin:0 0 5px}.lockCard p{color:var(--muted);margin:0 auto 13px;max-width:280px}
+.keyInput{width:100%;height:41px;border:1.5px solid var(--border);border-radius:999px;outline:0;text-align:center;text-transform:uppercase;letter-spacing:.11em;font-family:ui-monospace,monospace;font-weight:700}.keyInput:focus{border-color:var(--accent-deep)}
+.activateBtn{margin-top:8px;background:var(--accent);color:#3a2508}.buyBtn{margin-top:8px;background:var(--soft)}
+.activateBtn,.buyBtn{position:relative;box-shadow:0 3px 6px rgba(0,0,0,.2),2px 0 1px rgba(0,0,0,.3),-2px 0 1px rgba(0,0,0,.3),inset 0 2px 12px rgba(0,0,0,.42);transition:transform 150ms cubic-bezier(.01,1.43,.46,1.85)}
+.activateBtn:hover:not(:disabled),.buyBtn:hover:not(:disabled){transform:scale(1.035) translateY(-1px)}
+.licenseMessage{min-height:17px;margin-top:7px;font-size:10.5px}.licenseMessage.error{color:var(--danger)}.licenseMessage.ok{color:var(--ok)}
+</style>
+</head>
+<body>
+<div class="baseGradient"></div>
+<div class="page">
+  <header class="header">
+    <svg class="brandLogo" viewBox="0 0 270 154" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M147.743 0L148.123 17.4785L148.115 17.4795C141.81 17.7267 135.522 18.1788 129.245 18.8291C99.5876 21.9016 68.3338 28.9385 43.0706 45.6631C31.2004 53.5214 6.65184 76.6465 21.9154 91.5332C31.4763 100.857 47.4502 100.691 60.0277 100.318C59.9115 76.1196 74.7146 58.4637 92.6312 50.4258C112.022 41.7268 137.492 43.489 151.661 62.9668C158.37 72.188 159.389 84.5443 158.386 95.6006C158.087 98.9036 157.458 102.156 156.906 105.423C151.243 106.474 145.58 107.507 139.901 108.465C120.43 111.75 100.855 114.618 81.1898 116.443C85.7207 124.68 94.3642 130.346 106.725 133.588C123.89 138.089 146.621 137.267 169.489 132.052C192.294 126.85 214.218 117.508 229.746 105.946C245.6 94.1434 252.786 81.6832 251.446 70.2246C249.136 50.4766 227.434 38.5972 211.166 31.5293C201.614 27.3793 191.678 24.1185 181.595 21.5273L180.891 104.585C183.825 103.795 187.355 102.727 191.389 101.29L197.2 117.771C189.954 120.351 184.057 121.906 179.904 122.824C174.43 124.034 168.882 124.515 163.319 125.131L164.378 0.163086C182.811 3.50544 200.813 7.98237 218.072 15.4805C240.521 25.234 265.621 41.6501 268.725 68.1836C271.168 89.0719 257.694 106.899 240.104 119.995C222.189 133.333 197.884 143.503 173.338 149.102C148.854 154.686 123.108 155.952 102.331 150.504C84.24 145.759 68.7806 135.457 62.7669 117.714C44.6071 118.426 23.5483 117.489 9.79816 104.079C-14.5568 80.3255 11.5127 45.6187 33.4984 31.0635C61.1416 12.763 94.9654 4.80307 127.461 1.43652C134.2 0.738377 140.968 0.194353 147.743 0ZM137.618 73.2842C129.779 62.5091 114.203 59.8964 99.7239 66.3916C87.4769 71.886 77.7952 83.3018 77.4417 99.2266C98.8287 97.3422 120.117 94.1614 141.265 90.4951C141.423 84.7624 141.095 78.0651 137.618 73.2842Z" fill="#202020"/></svg>
+    <div class="headText"><h1>Veer</h1><p data-i18n="subtitle">Image fan maker</p></div>
+    <div class="langWrap"><button class="langBtn" id="langBtn"><span id="langFlag">🇷🇺</span><span id="langCode">RU</span><span>▾</span></button><div class="langMenu hidden" id="langMenu"></div></div>
+    <div class="badge" id="licenseBadge"><b>…</b></div>
+  </header>
+
+  <div id="lockScreen" class="card lockCard hidden">
+    <div class="lockIcon"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 018 0v3"/></svg></div>
+    <h2 data-i18n="trialEnded">Free creations used up</h2><p data-i18n="trialEndedText">Activate a key to create unlimited fans.</p>
+    <input class="keyInput" id="licenseKey" placeholder="XXXX-XXXX-XXXX-XXXX" maxlength="19" spellcheck="false">
+    <button class="activateBtn" id="activateBtn" data-i18n="activate">Activate</button><div class="licenseMessage" id="licenseMessage"></div>
+    <button class="buyBtn" id="buyBtn" data-i18n="buy">Buy a license</button>
+  </div>
+
+  <main id="editor">
+    <div class="previewDock" id="previewDock">
+      <div class="scrollPreviewGlow" id="scrollPreviewGlow"></div>
+      <div class="previewStage" id="previewStage"><canvas id="preview"></canvas><div class="previewHint" id="previewHint" data-i18n="previewHint">Select up to 12 images in Figma</div></div>
+      <div class="countChip" id="countChip"><span id="countChipText">0 / 12</span></div>
+      <button class="previewTool" id="presetsBtn" type="button" title="Presets" aria-label="Presets"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="6.5" height="6.5" rx="1.6"/><rect x="11.5" y="2" width="6.5" height="6.5" rx="1.6"/><rect x="2" y="11.5" width="6.5" height="6.5" rx="1.6"/><rect x="11.5" y="11.5" width="6.5" height="6.5" rx="1.6"/></svg></button>
+      <button class="previewTool" id="randomBtn" type="button" title="Randomize" aria-label="Randomize"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3h4v4"/><path d="M17 3 3 17"/><path d="M13 17h4v-4"/><path d="m17 17-4.2-4.2"/><path d="M3 3l4.2 4.2"/></svg></button>
+    </div>
+
+    <section class="card">
+      <div class="sectionTitle" data-i18n="fanTitle">Fan</div>
+      <div class="segment dirSegment" id="dirSegment">
+        <span class="dirGlider" id="dirGlider"></span>
+        <button data-value="left"><span class="dirText">← <span data-i18n="dirLeft">Left</span></span></button>
+        <button class="active" data-value="right"><span class="dirText"><span data-i18n="dirRight">Right</span> →</span></button>
+      </div>
+      <div class="subCard">
+        <div class="cols2">
+          <div class="controlRow"><span class="name" data-i18n="startAngle">Start position</span><input id="startAngle" type="range" min="0" max="360" step="5" value="0"><output id="startAngleOut">0°</output></div>
+          <div class="controlRow"><span class="name" data-i18n="bendAngle">Bend angle</span><input id="bend" type="range" min="0" max="360" step="5" value="140"><output id="bendOut">140°</output></div>
+          <div class="controlRow"><span class="name" data-i18n="overlap">Overlap</span><input id="overlap" type="range" min="0" max="90" step="1" value="50"><output id="overlapOut">50%</output></div>
+          <div class="controlRow"><span class="name" data-i18n="imagesCount">Images</span><div class="chipLine"><span class="countValue" id="countValue">0 / 12</span></div></div>
+        </div>
+      </div>
+      <div class="subCard cols2">
+        <div>
+          <label class="toggleLine"><input id="alternate" type="checkbox"><span class="checkBox"></span><span class="toggleLabel" data-i18n="throughOne">Shift every other image</span></label>
+          <div class="toggleHint" data-i18n="throughOneHint">Every second image of the stack steps away from the fan centre.</div>
+        </div>
+        <div>
+          <label class="toggleLine"><input id="crop" type="checkbox" checked><span class="checkBox"></span><span class="toggleLabel" data-i18n="cropCard">Crop to a uniform card</span></label>
+          <div class="toggleHint" data-i18n="cropHint">All images are centre-cropped to the average card size.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="sectionTitle" data-i18n="chaosTitle">Randomness</div>
+      <div class="cols2">
+        <div class="controlRow"><span class="name" data-i18n="chaosShift">Shift</span><input id="chaosShift" type="range" min="0" max="100" step="1" value="0"><output id="chaosShiftOut">0%</output></div>
+        <div class="controlRow"><span class="name" data-i18n="chaosSize">Size</span><input id="chaosSize" type="range" min="0" max="100" step="1" value="0"><output id="chaosSizeOut">0%</output></div>
+        <div class="controlRow"><span class="name" data-i18n="chaosRotate">Rotation</span><input id="chaosRotate" type="range" min="0" max="100" step="1" value="0"><output id="chaosRotateOut">0%</output></div>
+      </div>
+    </section>
+
+    <div class="footer"><img id="footerLogo" alt="LEDNIQUE" src="data:image/png;base64,__LEDNIQUE_B64__"></div>
+  </main>
+</div>
+
+<div class="stickyBottom" id="stickyBottom"><button class="createBtn" id="createBtn" disabled><span class="createText" data-i18n="create">CREATE</span></button><div class="status" id="status"></div></div>
+<div class="presetOverlay hidden" id="presetOverlay"><div class="presetGrid" id="presetGrid"></div></div>
+
+<script>
+/*__VEER_CORE__*/
+var SITE_URL='https://pattern.lednique.ru',ACTIVATE_URL=SITE_URL,TRIAL_LIMIT=5;
+var LANGS={en:{flag:'🇬🇧',label:'English'},ru:{flag:'🇷🇺',label:'Русский'},it:{flag:'🇮🇹',label:'Italiano'},pt:{flag:'🇵🇹',label:'Português'},fr:{flag:'🇫🇷',label:'Français'},zh:{flag:'🇨🇳',label:'中文'},ja:{flag:'🇯🇵',label:'日本語'}};
+var language=(function(){var code=(navigator.language||'en').toLowerCase().slice(0,2);return LANGS[code]?code:'en';})();
+var state={direction:'right',order:null};
+var selection={valid:false,count:0,capped:false,items:[],thumbs:[]};
+var license={userId:null,licensed:false,plan:null,expiresAt:null,remaining:TRIAL_LIMIT,locked:false};
+var createPending=false,saveTimer=null,pendingCache={};
+
+var I18N={
+ en:{subtitle:'Image fan maker',previewHint:'Select up to 12 images in Figma',fanTitle:'Fan',direction:'Direction',dirLeft:'Left',dirRight:'Right',startAngle:'Start position',bendAngle:'Bend angle',overlap:'Overlap',imagesCount:'Images',throughOne:'Shift every other image',throughOneHint:'Every second image of the stack steps away from the fan centre.',cropCard:'Crop to a uniform card',cropHint:'All images are centre-cropped to the average card size.',chaosTitle:'Randomness',chaosShift:'Shift',chaosSize:'Size',chaosRotate:'Rotation',cappedHint:'Only the first 12 of {n} images are used',create:'CREATE',creating:'Building the fan…',created:'Fan created',unsupported:'This layer type is not supported',selectionChanged:'Select the source images again.',genericError:'Could not build the fan',trial:'TRIAL',forever:'FOREVER',annual:'1 YEAR',noKey:'Enter a license key',badKey:'Check the key format',activating:'Checking key…',activated:'License activated',keyError:'Key not found, expired, or bound to another account.',networkError:'License server is unavailable',trialEnded:'Free creations used up',trialEndedText:'Activate a key to create unlimited fans.',activate:'Activate',buy:'Buy a license'},
+ ru:{subtitle:'Веер из изображений',previewHint:'Выберите до 12 изображений в Figma',fanTitle:'Веер',direction:'Направление',dirLeft:'Влево',dirRight:'Вправо',startAngle:'Начальная позиция',bendAngle:'Угол сгиба',overlap:'Наложение',imagesCount:'Изображения',throughOne:'Сдвиг «через 1»',throughOneHint:'Каждое второе изображение стопки отступает от центра веера.',cropCard:'Обрезка до единой карточки',cropHint:'Все изображения обрезаются по центру до среднего размера карточки.',chaosTitle:'Случайность',chaosShift:'Сдвиг',chaosSize:'Размер',chaosRotate:'Поворот',cappedHint:'Используются только первые 12 из {n} изображений',create:'CREATE',creating:'Собираем веер…',created:'Веер создан',unsupported:'Этот тип слоя не поддерживается',selectionChanged:'Снова выберите исходные изображения.',genericError:'Не удалось собрать веер',trial:'ПРОБА',forever:'НАВСЕГДА',annual:'1 ГОД',noKey:'Введите ключ лицензии',badKey:'Проверьте формат ключа',activating:'Проверяем ключ…',activated:'Лицензия активирована',keyError:'Ключ не найден, истёк или привязан к другому аккаунту.',networkError:'Нет связи с сервером лицензий',trialEnded:'Пробные создания закончились',trialEndedText:'Активируйте ключ, чтобы собирать веера без ограничений.',activate:'Активировать',buy:'Купить лицензию'},
+ it:{subtitle:'Ventaglio di immagini',previewHint:'Seleziona fino a 12 immagini in Figma',fanTitle:'Ventaglio',direction:'Direzione',dirLeft:'Sinistra',dirRight:'Destra',startAngle:'Posizione iniziale',bendAngle:'Angolo di curvatura',overlap:'Sovrapposizione',imagesCount:'Immagini',throughOne:'Sposta una sì e una no',throughOneHint:'Ogni seconda immagine della pila si scosta dal centro del ventaglio.',cropCard:'Ritaglia a scheda uniforme',cropHint:'Tutte le immagini sono ritagliate al centro alle dimensioni medie.',chaosTitle:'Casualità',chaosShift:'Spostamento',chaosSize:'Dimensione',chaosRotate:'Rotazione',cappedHint:'Vengono usate solo le prime 12 di {n} immagini',create:'CREATE',creating:'Creazione del ventaglio…',created:'Ventaglio creato',unsupported:'Tipo di livello non supportato',selectionChanged:'Seleziona di nuovo le immagini sorgente.',genericError:'Impossibile creare il ventaglio',trial:'PROVA',forever:'PER SEMPRE',annual:'1 ANNO',noKey:'Inserisci una chiave',badKey:'Controlla il formato',activating:'Verifica chiave…',activated:'Licenza attivata',keyError:'Chiave non trovata, scaduta o già associata.',networkError:'Server licenze non disponibile',trialEnded:'Creazioni gratuite esaurite',trialEndedText:'Attiva una chiave per creare ventagli senza limiti.',activate:'Attiva',buy:'Acquista licenza'},
+ pt:{subtitle:'Leque de imagens',previewHint:'Selecione até 12 imagens no Figma',fanTitle:'Leque',direction:'Direção',dirLeft:'Esquerda',dirRight:'Direita',startAngle:'Posição inicial',bendAngle:'Ângulo de curvatura',overlap:'Sobreposição',imagesCount:'Imagens',throughOne:'Alternar deslocamento',throughOneHint:'Cada segunda imagem da pilha se afasta do centro do leque.',cropCard:'Cortar em cartão uniforme',cropHint:'Todas as imagens são cortadas ao centro no tamanho médio.',chaosTitle:'Aleatoriedade',chaosShift:'Deslocamento',chaosSize:'Tamanho',chaosRotate:'Rotação',cappedHint:'Apenas as primeiras 12 de {n} imagens são usadas',create:'CREATE',creating:'Montando o leque…',created:'Leque criado',unsupported:'Tipo de camada não suportado',selectionChanged:'Selecione novamente as imagens de origem.',genericError:'Não foi possível criar o leque',trial:'TESTE',forever:'PARA SEMPRE',annual:'1 ANO',noKey:'Digite uma chave',badKey:'Verifique o formato',activating:'Verificando…',activated:'Licença ativada',keyError:'Chave não encontrada, expirada ou vinculada.',networkError:'Servidor de licenças indisponível',trialEnded:'Criações gratuitas esgotadas',trialEndedText:'Ative uma chave para criar leques ilimitados.',activate:'Ativar',buy:'Comprar licença'},
+ fr:{subtitle:'Éventail d’images',previewHint:'Sélectionnez jusqu’à 12 images dans Figma',fanTitle:'Éventail',direction:'Direction',dirLeft:'Gauche',dirRight:'Droite',startAngle:'Position de départ',bendAngle:'Angle de courbure',overlap:'Chevauchement',imagesCount:'Images',throughOne:'Décaler une image sur deux',throughOneHint:'Une image sur deux s’écarte du centre de l’éventail.',cropCard:'Rogner en carte uniforme',cropHint:'Toutes les images sont rognées au centre à la taille moyenne.',chaosTitle:'Aléatoire',chaosShift:'Décalage',chaosSize:'Taille',chaosRotate:'Rotation',cappedHint:'Seules les 12 premières images sur {n} sont utilisées',create:'CREATE',creating:'Création de l’éventail…',created:'Éventail créé',unsupported:'Type de calque non pris en charge',selectionChanged:'Sélectionnez à nouveau les images source.',genericError:'Impossible de créer l’éventail',trial:'ESSAI',forever:'À VIE',annual:'1 AN',noKey:'Saisissez une clé',badKey:'Vérifiez le format',activating:'Vérification…',activated:'Licence activée',keyError:'Clé introuvable, expirée ou déjà liée.',networkError:'Serveur de licences indisponible',trialEnded:'Créations gratuites épuisées',trialEndedText:'Activez une clé pour créer des éventails illimités.',activate:'Activer',buy:'Acheter une licence'},
+ zh:{subtitle:'图片扇形拼贴',previewHint:'在 Figma 中选择最多 12 张图片',fanTitle:'扇形',direction:'方向',dirLeft:'向左',dirRight:'向右',startAngle:'起始位置',bendAngle:'弯曲角度',overlap:'重叠度',imagesCount:'图片',throughOne:'隔一张偏移',throughOneHint:'堆叠中每隔一张图片向外偏离扇形中心。',cropCard:'裁剪为统一卡片',cropHint:'所有图片按中心裁剪到平均卡片尺寸。',chaosTitle:'随机度',chaosShift:'位移',chaosSize:'大小',chaosRotate:'旋转',cappedHint:'仅使用前 12 张图片（共 {n} 张）',create:'CREATE',creating:'正在生成扇形…',created:'扇形已创建',unsupported:'不支持此图层类型',selectionChanged:'请重新选择源图片。',genericError:'无法创建扇形',trial:'试用',forever:'永久',annual:'1 年',noKey:'请输入许可证密钥',badKey:'请检查密钥格式',activating:'正在验证…',activated:'许可证已激活',keyError:'密钥不存在、已过期或已绑定。',networkError:'许可证服务器不可用',trialEnded:'免费创建次数已用完',trialEndedText:'激活密钥即可无限创建扇形。',activate:'激活',buy:'购买许可证'},
+ ja:{subtitle:'画像の扇形コラージュ',previewHint:'Figmaで最大12枚の画像を選択',fanTitle:'扇形',direction:'方向',dirLeft:'左',dirRight:'右',startAngle:'開始位置',bendAngle:'曲げ角度',overlap:'重なり',imagesCount:'画像',throughOne:'1枚おきにシフト',throughOneHint:'重なりの1枚おきの画像が扇の中心から外側へずれます。',cropCard:'統一カードに切り抜き',cropHint:'すべての画像を平均カードサイズに中心から切り抜きます。',chaosTitle:'ランダム度',chaosShift:'シフト',chaosSize:'サイズ',chaosRotate:'回転',cappedHint:'先頭の12枚のみ使用します（全{n}枚）',create:'CREATE',creating:'扇形を作成中…',created:'扇形を作成しました',unsupported:'このレイヤー形式は未対応です',selectionChanged:'元の画像を再選択してください。',genericError:'扇形を作成できませんでした',trial:'試用',forever:'永久',annual:'1年',noKey:'ライセンスキーを入力',badKey:'キー形式を確認してください',activating:'確認中…',activated:'ライセンスを有効化しました',keyError:'キーがない、期限切れ、または別アカウントに紐付いています。',networkError:'ライセンスサーバーに接続できません',trialEnded:'無料作成回数を使い切りました',trialEndedText:'キーを有効化すると無制限に作成できます。',activate:'有効化',buy:'ライセンスを購入'}
+};
+function $(id){return document.getElementById(id)}
+function t(key,vars){var text=(I18N[language]&&I18N[language][key])||I18N.en[key]||key;Object.keys(vars||{}).forEach(function(k){text=text.split('{'+k+'}').join(vars[k])});return text}
+function applyLanguage(){document.documentElement.lang=language;document.querySelectorAll('[data-i18n]').forEach(function(el){el.textContent=t(el.dataset.i18n)});$('langFlag').textContent=LANGS[language].flag;$('langCode').textContent=language.toUpperCase();document.querySelectorAll('#langMenu button').forEach(function(b){b.classList.toggle('active',b.dataset.lang===language)});updateCountUI();updateLicenseUI()}
+function buildLangMenu(){var menu=$('langMenu');Object.keys(LANGS).forEach(function(code){var b=document.createElement('button');b.dataset.lang=code;b.innerHTML='<span>'+LANGS[code].flag+'</span>'+LANGS[code].label;b.addEventListener('click',function(){language=code;applyLanguage();cacheSave('lang',code);menu.classList.add('hidden')});menu.appendChild(b)})}
+$('langBtn').addEventListener('click',function(e){e.stopPropagation();$('langMenu').classList.toggle('hidden')});
+document.addEventListener('click',function(){$('langMenu').classList.add('hidden')});
+buildLangMenu();
+
+/* ---------- Direction segment ---------- */
+function updateDirGlider(){var active=document.querySelector('#dirSegment>button.active'),glider=$('dirGlider');if(!active||!glider)return;glider.style.left=active.offsetLeft+'px';glider.style.width=active.offsetWidth+'px'}
+function setDirection(value){state.direction=value==='left'?'left':'right';document.querySelectorAll('#dirSegment>button').forEach(function(b){b.classList.toggle('active',b.dataset.value===state.direction)});requestAnimationFrame(updateDirGlider);changed()}
+$('dirSegment').addEventListener('click',function(e){var button=e.target.closest('button[data-value]');if(button)setDirection(button.dataset.value)});
+
+/* ---------- Sliders ---------- */
+function paintRange(id,suffix){var input=$(id),out=$(id+'Out'),pct=((+input.value-+input.min)/(+input.max-+input.min))*100;input.style.setProperty('--fill',pct+'%');if(out)out.textContent=input.value+(suffix||'')}
+var ranges=[['startAngle','°'],['bend','°'],['overlap','%'],['chaosShift','%'],['chaosSize','%'],['chaosRotate','%']];
+ranges.forEach(function(entry){var input=$(entry[0]),out=$(entry[0]+'Out');paintRange(entry[0],entry[1]);input.addEventListener('wheel',function(){input.blur()},{passive:true});input.addEventListener('pointerdown',function(){input.classList.add('dragging')});input.addEventListener('pointerup',function(){input.classList.remove('dragging')});input.addEventListener('pointercancel',function(){input.classList.remove('dragging')});input.addEventListener('input',function(){paintRange(entry[0],entry[1]);changed(false)});
+if(out){out.tabIndex=0;out.title='Click to type';out.addEventListener('click',function(){if(out.isContentEditable)return;out.contentEditable='true';out.textContent=input.value;out.focus();var range=document.createRange();range.selectNodeContents(out);var sel=window.getSelection();sel.removeAllRanges();sel.addRange(range)});function commit(cancel){if(!out.isContentEditable)return;var value=cancel?+input.value:parseFloat(out.textContent);if(!Number.isFinite(value))value=+input.value;value=Math.max(+input.min,Math.min(+input.max,value));var step=+input.step||1;value=Math.round(value/step)*step;input.value=value;out.contentEditable='false';paintRange(entry[0],entry[1]);changed(false)}out.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();commit(false)}if(e.key==='Escape'){e.preventDefault();commit(true)}});out.addEventListener('blur',function(){commit(false)})}});
+['alternate','crop'].forEach(function(id){$(id).addEventListener('input',changed)});
+
+/* ---------- Settings ---------- */
+function readSettings(){return{direction:state.direction,startAngle:$('startAngle').value,bend:$('bend').value,overlap:$('overlap').value,chaosShift:$('chaosShift').value,chaosSize:$('chaosSize').value,chaosRotate:$('chaosRotate').value,alternate:$('alternate').checked,crop:$('crop').checked,seed:(typeof state.seed==='number'?state.seed:1),order:state.order?state.order.slice():null}}
+function applySettings(saved){if(!saved)return;if(saved.direction)state.direction=saved.direction==='left'?'left':'right';state.seed=Number(saved.seed)||1;state.order=Array.isArray(saved.order)?saved.order.slice():null;['startAngle','bend','overlap','chaosShift','chaosSize','chaosRotate'].forEach(function(id){if(saved[id]!==undefined)$(id).value=saved[id]});['alternate','crop'].forEach(function(id){if(saved[id]!==undefined)$(id).checked=!!saved[id]});document.querySelectorAll('#dirSegment>button').forEach(function(b){b.classList.toggle('active',b.dataset.value===state.direction)});ranges.forEach(function(x){paintRange(x[0],x[1])});requestAnimationFrame(updateDirGlider)}
+function changed(animate){if(animate===undefined)animate=true;renderFan(animate);clearTimeout(saveTimer);saveTimer=setTimeout(function(){cacheSave('settings',readSettings())},250)}
+
+/* ---------- Counters ---------- */
+function updateCountUI(){var text=Math.min(selection.count,12)+' / 12';$('countChipText').textContent=text;$('countValue').textContent=text;$('countChip').classList.toggle('capped',selection.capped);$('countChip').title=selection.capped?t('cappedHint',{n:selection.count}):''}
+
+/* ---------- Preview canvas ---------- */
+var previewProgress=0;
+function fanRect(){var stage=$('previewStage'),w=stage.clientWidth||576,h=stage.clientHeight||460;return{x:0,y:100*(1-previewProgress),w:w,h:h-100*(1-previewProgress)}}
+function roundedRect(ctx,x,y,w,h,r){var radius=Math.max(0,Math.min(r,w/2,h/2));ctx.beginPath();ctx.moveTo(x+radius,y);ctx.arcTo(x+w,y,x+w,y+h,radius);ctx.arcTo(x+w,y+h,x,y+h,radius);ctx.arcTo(x,y+h,x,y,radius);ctx.arcTo(x,y,x+w,y,radius);ctx.closePath()}
+function easeOutBack(t){var c1=1.70158,c3=c1+1;return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2)}
+
+/* Live render state per stack slot: current transform + optional transition. */
+var view={built:null,k:1,ox:0,oy:0,placed:[],hover:-1,dropTarget:-1,drag:null,raf:0};
+function fanItems(){return selection.items.length?selection.items:[{width:400,height:280}]}
+function computeLayout(){var settings=VeerCore.normalizeSettings(readSettings()),items=fanItems();var built=VeerCore.buildFan(settings,items);var rect=fanRect(),pad=Math.max(14,28-14*previewProgress),bw=Math.max(1,built.bbox.width),bh=Math.max(1,built.bbox.height);var k=Math.min((rect.w-pad*2)/bw,(rect.h-pad*2)/bh);if(!Number.isFinite(k)||k<=0)k=1;view.built=built;view.k=k;view.ox=rect.x+(rect.w-bw*k)/2-built.bbox.x*k;view.oy=rect.y+(rect.h-bh*k)/2-built.bbox.y*k}
+function slotTargets(){var built=view.built,targets=[];if(!built)return targets;built.cards.forEach(function(card){var isDrag=view.drag&&view.drag.slot===card.slot,isHover=view.hover===card.slot,isDrop=view.dropTarget===card.slot;targets[card.slot]={x:view.ox+card.x*view.k,y:view.oy+card.y*view.k,angle:card.angle,scale:isDrag||isHover?1.08:1,hl:isDrag?1:(isHover?1:(isDrop?0.45:0))}});return targets}
+function startTransition(placed,from,to,dur){placed.trans={from:{x:from.x,y:from.y,angle:from.angle,scale:from.scale,hl:from.hl},to:to,t0:performance.now(),dur:dur||260}}
+function retarget(animate,dur){var targets=slotTargets();view.placed.forEach(function(placed){if(!placed)return;var to=targets[placed.slot];if(!to)return;
+ /* The card being dragged follows the pointer directly, without transitions. */
+ if(view.drag&&view.drag.slot===placed.slot){placed.trans=null;if(view.drag.moved){placed.scale=to.scale;placed.hl=to.hl}else Object.assign(placed,to);return}
+ if(!animate){placed.trans=null;Object.assign(placed,to)}else if(!placed.trans||placed.trans.to.x!==to.x||placed.trans.to.y!==to.y||placed.trans.to.angle!==to.angle||placed.trans.to.scale!==to.scale||placed.trans.to.hl!==to.hl){startTransition(placed,placed,to,dur)}});kickFrame()}
+function syncPlaced(){var count=view.built?view.built.cards.length:0;view.placed=[];for(var slot=0;slot<count;slot++)view.placed.push({slot:slot,x:0,y:0,angle:0,scale:1,hl:0,trans:null})}
+function renderFan(animate){if(animate===undefined)animate=true;computeLayout();if(!view.built)return;if(!view.placed.length||view.placed.length!==view.built.cards.length){syncPlaced();animate=false}retarget(animate===true)}
+function drawCard(ctx,slot){var placed=view.placed[slot],card=view.built.cards[slot];if(!placed||!card)return;var thumb=selection.thumbs[card.source],s=placed;ctx.save();ctx.translate(s.x,s.y);ctx.rotate(s.angle*Math.PI/180);var w=card.width*view.k*s.scale,h=card.height*view.k*s.scale,iw=card.imageWidth*view.k*s.scale,ih=card.imageHeight*view.k*s.scale;
+ if(view.drag&&view.drag.slot===slot&&view.drag.moved){ctx.save();ctx.shadowColor='rgba(43,33,24,.32)';ctx.shadowBlur=22;ctx.shadowOffsetY=8;ctx.fillStyle='#fff';ctx.fillRect(-w/2,-h/2,w,h);ctx.restore()}
+ if(card.crop){ctx.beginPath();ctx.rect(-w/2,-h/2,w,h);ctx.clip()}
+ if(thumb){try{ctx.drawImage(thumb,-iw/2,-ih/2,iw,ih)}catch(error){}}else{ctx.fillStyle='#E9DFCE';ctx.fillRect(-w/2,-h/2,w,h);ctx.fillStyle='#A96A1F';ctx.font='700 '+Math.max(9,Math.round(w*.22))+'px Montserrat,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(card.source+1),0,0)}
+ if(s.hl>0.01){ctx.fillStyle='rgba(255,255,255,'+(0.4*s.hl).toFixed(3)+')';ctx.fillRect(-w/2,-h/2,w,h)}
+ ctx.restore()}
+function drawPreview(){var canvas=$('preview'),stage=$('previewStage'),ratio=window.devicePixelRatio||1,w=stage.clientWidth||576,h=stage.clientHeight||460;if(canvas.width!==Math.round(w*ratio)||canvas.height!==Math.round(h*ratio)){canvas.width=Math.round(w*ratio);canvas.height=Math.round(h*ratio)}var ctx=canvas.getContext('2d');ctx.setTransform(ratio,0,0,ratio,0,0);ctx.clearRect(0,0,w,h);var rect=fanRect(),radius=8+(22-8)*previewProgress;
+ /* White artboard card with the dark-grey border, like the Patternique preview. */
+ ctx.save();roundedRect(ctx,rect.x,rect.y,rect.w,rect.h,radius);ctx.fillStyle='#FFFFFF';ctx.fill();ctx.restore();
+ if(selection.valid&&view.built){var order=view.built.cards.map(function(c){return c.slot}).filter(function(slot){return !(view.drag&&view.drag.slot===slot&&view.drag.moved)});order.forEach(function(slot){drawCard(ctx,slot)});if(view.drag&&view.drag.moved)drawCard(ctx,view.drag.slot)}
+ ctx.save();ctx.lineWidth=3;ctx.strokeStyle='#555555';roundedRect(ctx,rect.x+1.5,rect.y+1.5,rect.w-3,rect.h-3,Math.max(2,radius-1.5));ctx.stroke();ctx.restore();
+ var hint=$('previewHint');hint.style.left=rect.x+'px';hint.style.top=rect.y+'px';hint.style.width=rect.w+'px';hint.style.height=rect.h+'px';hint.style.borderRadius=radius+'px';hint.style.transform='none';hint.classList.toggle('hidden',selection.valid)}
+function tick(){view.raf=0;var active=false,now=performance.now();view.placed.forEach(function(placed){if(!placed||!placed.trans)return;var tr=placed.trans,t=Math.min(1,(now-tr.t0)/tr.dur),e=easeOutBack(t);['x','y','angle','scale','hl'].forEach(function(key){placed[key]=tr.from[key]+(tr.to[key]-tr.from[key])*e});if(t>=1){placed.trans=null;Object.assign(placed,tr.to)}else active=true});drawPreview();if(active||view.drag)view.raf=requestAnimationFrame(tick)}
+function kickFrame(){if(!view.raf)view.raf=requestAnimationFrame(tick)}
+
+/* ---------- Pointer interactions: hover highlight + drag to reorder ---------- */
+function localPoint(event){var canvas=$('preview'),rect=canvas.getBoundingClientRect();return{x:event.clientX-rect.left,y:event.clientY-rect.top}}
+function fanPoint(p){return{x:(p.x-view.ox)/view.k,y:(p.y-view.oy)/view.k}}
+function cardAt(point,excludeSlot){if(!view.built||!selection.valid)return -1;var cards=view.built.cards;for(var slot=cards.length-1;slot>=0;slot--){if(slot===excludeSlot)continue;var card=cards[slot],radians=card.angle*Math.PI/180,cos=Math.cos(-radians),sin=Math.sin(-radians),dx=point.x-card.x,dy=point.y-card.y,lx=dx*cos-dy*sin,ly=dx*sin+dy*cos;if(Math.abs(lx)<=card.width/2&&Math.abs(ly)<=card.height/2)return slot}return -1}
+function updateHover(event){if(!selection.valid||view.drag){return}var slot=cardAt(fanPoint(localPoint(event)));if(slot!==view.hover){view.hover=slot;var canvas=$('preview');canvas.style.cursor=slot>=0?'grab':'default';retarget(true,200)}}
+$('preview').addEventListener('pointermove',function(event){
+ if(view.drag){if(!view.drag.moved&&Math.hypot(event.clientX-view.drag.startX,event.clientY-view.drag.startY)>4)view.drag.moved=true;
+  if(view.drag.moved){var p=localPoint(event),placed=view.placed[view.drag.slot];if(placed){placed.trans=null;placed.x=p.x;placed.y=p.y}var target=cardAt(fanPoint(p),view.drag.slot);if(target!==view.dropTarget){view.dropTarget=target;retarget(true,180)}kickFrame();return}
+  return}
+ updateHover(event)});
+$('preview').addEventListener('pointerdown',function(event){if(!selection.valid)return;var slot=cardAt(fanPoint(localPoint(event)));if(slot<0)return;view.drag={slot:slot,startX:event.clientX,startY:event.clientY,moved:false};view.hover=-1;view.dropTarget=-1;this.setPointerCapture(event.pointerId);this.style.cursor='grabbing';retarget(true,180);kickFrame()});
+function finishDrag(){var drag=view.drag;if(!drag)return;view.drag=null;var canvas=$('preview');canvas.style.cursor='default';if(drag.moved&&drag.slot>=0&&view.built){var order=view.built.order.slice(),moving=order[drag.slot];if(view.dropTarget>=0&&view.dropTarget!==drag.slot){order.splice(drag.slot,1);order.splice(view.dropTarget,0,moving)}state.order=order}view.hover=-1;view.dropTarget=-1;changed(true)}
+$('preview').addEventListener('pointerup',finishDrag);
+$('preview').addEventListener('pointercancel',finishDrag);
+$('preview').addEventListener('pointerleave',function(){if(!view.drag&&view.hover>=0){view.hover=-1;this.style.cursor='default';retarget(true,200)}});
+
+/* ---------- Scroll collapse of the preview stage ---------- */
+function updatePreviewProgress(){var dock=$('previewDock'),stage=$('previewStage'),fullWidth=dock.clientWidth||576;previewProgress=Math.max(0,Math.min(1,window.scrollY/180));var width=fullWidth+(172-fullWidth)*previewProgress,height=460+(172-460)*previewProgress,top=-100*(1-previewProgress),radius=8+(22-8)*previewProgress;dock.style.setProperty('--preview-progress',previewProgress.toFixed(3));dock.classList.toggle('toolsHidden',previewProgress>0.15);stage.style.width=width+'px';stage.style.height=height+'px';stage.style.top=top+'px';stage.style.borderRadius=radius+'px';renderFan(false)}
+var previewFrame=0;function schedulePreviewProgress(){if(previewFrame)return;previewFrame=requestAnimationFrame(function(){previewFrame=0;updatePreviewProgress()})}
+window.addEventListener('scroll',schedulePreviewProgress,{passive:true});
+window.addEventListener('resize',function(){schedulePreviewProgress();updateDirGlider()});
+
+/* ---------- Selection ---------- */
+function updateSelectionUI(reason){$('previewHint').textContent=selection.valid?'':t(reason==='unsupported'?'unsupported':'previewHint');$('previewHint').classList.toggle('hidden',selection.valid);$('createBtn').disabled=!selection.valid||createPending||license.locked;updateCountUI();view.hover=-1;view.dropTarget=-1;view.drag=null;renderFan(false)}
+function bytesToImage(bytes){return new Promise(function(resolve){if(!bytes)return resolve(null);var url=URL.createObjectURL(new Blob([new Uint8Array(bytes)],{type:'image/png'})),image=new Image();image.onload=function(){URL.revokeObjectURL(url);resolve(image)};image.onerror=function(){URL.revokeObjectURL(url);resolve(null)};image.src=url})}
+
+/* ---------- Cache / license (same flow as Patternique) ---------- */
+function cacheSave(key,value){parent.postMessage({pluginMessage:{type:'cache-set',key:key,value:value}},'*')}
+function cacheLoad(key){return new Promise(function(resolve){var timer=setTimeout(function(){delete pendingCache[key];resolve(null)},1200);pendingCache[key]=function(value){clearTimeout(timer);delete pendingCache[key];resolve(value)};parent.postMessage({pluginMessage:{type:'cache-get',key:key}},'*')})}
+function updateLicenseUI(){var b=$('licenseBadge');if(license.licensed){b.className='badge licensed';b.innerHTML='<b>'+(license.plan==='lifetime'?t('forever'):t('annual'))+'</b>'}else{b.className='badge';b.innerHTML='<b>'+license.remaining+'/'+TRIAL_LIMIT+'</b>'+t('trial')}$('lockScreen').classList.toggle('hidden',!license.locked);$('editor').classList.toggle('hidden',license.locked);$('stickyBottom').classList.toggle('hidden',license.locked);$('createBtn').disabled=!selection.valid||createPending||license.locked}
+async function initLicense(){var savedLang=await cacheLoad('lang');if(LANGS[savedLang]){language=savedLang;applyLanguage()}applySettings(await cacheLoad('settings'));renderFan(false);var saved=await cacheLoad('license');if(saved&&saved.plan){var expires=saved.expiresAt?new Date(saved.expiresAt).getTime():null;if(!expires||expires>Date.now()){license.licensed=true;license.plan=saved.plan;license.expiresAt=saved.expiresAt||null}else cacheSave('license',null)}var trial=await cacheLoad('trial');license.remaining=Math.max(0,TRIAL_LIMIT-(trial&&trial.count||0));license.locked=!license.licensed&&license.remaining<=0;updateLicenseUI();if(license.licensed&&saved&&saved.key&&license.userId)verifyLicense(saved)}
+async function verifyLicense(saved){try{var r=await fetch(ACTIVATE_URL+'/api/activate-key',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:saved.key,figma_user_id:license.userId})}),d=await r.json();if(!d.ok){license.licensed=false;cacheSave('license',null);var trial=await cacheLoad('trial');license.remaining=Math.max(0,TRIAL_LIMIT-(trial&&trial.count||0));license.locked=license.remaining<=0;updateLicenseUI()}}catch(e){}}
+async function consumeTrial(){if(license.licensed)return;var trial=await cacheLoad('trial')||{count:0};trial.count=Math.min(TRIAL_LIMIT,trial.count+1);trial.lastAt=new Date().toISOString();cacheSave('trial',trial);license.remaining=Math.max(0,TRIAL_LIMIT-trial.count);license.locked=license.remaining<=0;updateLicenseUI()}
+async function activateLicense(){var key=$('licenseKey').value.trim().toUpperCase(),msg=$('licenseMessage');msg.className='licenseMessage';msg.textContent='';if(!key){msg.className+=' error';msg.textContent=t('noKey');return}if(!/^[A-Z2-9]{4}(?:-[A-Z2-9]{4}){3}$/.test(key)){msg.className+=' error';msg.textContent=t('badKey');return}$('activateBtn').disabled=true;$('activateBtn').textContent=t('activating');try{var r=await fetch(ACTIVATE_URL+'/api/activate-key',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:key,figma_user_id:license.userId})}),d=await r.json();if(d.ok){license.licensed=true;license.plan=d.plan||'lifetime';license.expiresAt=d.expires_at||null;license.locked=false;cacheSave('license',{key:key,plan:license.plan,expiresAt:license.expiresAt});msg.className+=' ok';msg.textContent=t('activated');updateLicenseUI()}else{msg.className+=' error';msg.textContent=t('keyError')}}catch(e){msg.className+=' error';msg.textContent=t('networkError')}$('activateBtn').disabled=false;$('activateBtn').textContent=t('activate')}
+$('activateBtn').addEventListener('click',activateLicense);
+$('licenseKey').addEventListener('keydown',function(e){if(e.key==='Enter')activateLicense()});
+$('buyBtn').addEventListener('click',function(){parent.postMessage({pluginMessage:{type:'open-url',url:SITE_URL}},'*')});
+$('footerLogo').addEventListener('click',function(){parent.postMessage({pluginMessage:{type:'open-url',url:'https://lednique.ru'}},'*')});
+
+/* ---------- Create ---------- */
+$('createBtn').addEventListener('click',function(){if(!selection.valid||createPending||license.locked)return;createPending=true;this.disabled=true;this.querySelector('.createText').textContent=t('creating');$('status').className='status';$('status').textContent='';parent.postMessage({pluginMessage:{type:'create-fan',settings:readSettings()}},'*')});
+function finishCreate(){createPending=false;$('createBtn').querySelector('.createText').textContent=t('create');$('createBtn').disabled=!selection.valid||license.locked}
+window.addEventListener('message',async function(e){var m=e.data.pluginMessage;if(!m)return;
+ if(m.type==='cache-get'&&pendingCache[m.key]){pendingCache[m.key](m.value);return}
+ if(m.type==='user'){license.userId=m.id;return}
+ if(m.type==='selection'){selection.valid=!!m.valid;selection.count=m.count||0;selection.capped=!!m.capped;selection.items=m.items||[];selection.thumbs=[];if(!state.order||state.order.length!==selection.items.length)state.order=null;updateSelectionUI(m.reason);return}
+ if(m.type==='selection-thumbs'){selection.thumbs=await Promise.all((m.items||[]).map(function(item){return bytesToImage(item.bytes)}));renderFan(false);return}
+ if(m.type==='fan-created'){finishCreate();await consumeTrial();$('status').className='status ok';$('status').textContent=t('created');return}
+ if(m.type==='fan-error'){finishCreate();$('status').className='status error';$('status').textContent=m.error==='selection-changed'?t('selectionChanged'):t('genericError');return}
+});
+
+/* ---------- Presets and randomizer ---------- */
+/* Preset tiles are schematic: five cards filled from white (nearest layer)
+   to dark grey (farthest) — the selected images are never used. */
+function drawSchematic(canvas,template){var ratio=window.devicePixelRatio||1,size=84;canvas.width=canvas.height=Math.round(size*ratio);var ctx=canvas.getContext('2d');ctx.setTransform(ratio,0,0,ratio,0,0);var items=[],i;for(i=0;i<5;i++)items.push({width:96,height:64});var built=VeerCore.buildFan(template,items),pad=10,k=Math.min((size-pad*2)/Math.max(1,built.bbox.width),(size-pad*2)/Math.max(1,built.bbox.height));var ox=(size-built.bbox.width*k)/2-built.bbox.x*k,oy=(size-built.bbox.height*k)/2-built.bbox.y*k;built.cards.forEach(function(card){var shade=Math.round(77+(255-77)*card.slot/4);ctx.save();ctx.translate(ox+card.x*k,oy+card.y*k);ctx.rotate(card.angle*Math.PI/180);var w=card.width*k,h=card.height*k;ctx.beginPath();ctx.rect(-w/2,-h/2,w,h);ctx.fillStyle='rgb('+shade+','+shade+','+shade+')';ctx.fill();ctx.lineWidth=1;ctx.strokeStyle='rgba(0,0,0,.16)';ctx.stroke();ctx.restore()})}
+function openPresets(){var overlay=$('presetOverlay'),grid=$('presetGrid');grid.innerHTML='';grid.classList.remove('on');VeerCore.TEMPLATES.forEach(function(template,index){var button=document.createElement('button');button.type='button';button.className='presetTile';button.dataset.preset=index;var row=Math.floor(index/5),column=index%5;button.style.transitionDelay=Math.round((row+column)*45)+'ms';var canvas=document.createElement('canvas');drawSchematic(canvas,template);button.appendChild(canvas);grid.appendChild(button)});overlay.classList.remove('hidden');requestAnimationFrame(function(){requestAnimationFrame(function(){grid.classList.add('on')})})}
+function closePresets(){$('presetOverlay').classList.add('hidden')}
+$('presetsBtn').addEventListener('click',openPresets);
+$('presetOverlay').addEventListener('click',function(e){var tile=e.target.closest('.presetTile');if(tile){var template=Object.assign({},VeerCore.TEMPLATES[+tile.dataset.preset]);/* The crop toggle stays the user's choice, like colors in Patternique presets. */template.crop=$('crop').checked;applySettings(template);changed(true);closePresets();return}if(e.target===this||e.target===$('presetGrid'))closePresets()});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closePresets()});
+/* Randomizer: reshuffles the fan geometry and the chaos seed. */
+function randPick(list){return list[Math.floor(Math.random()*list.length)]}
+function randInt(a,b){return Math.round(a+Math.random()*(b-a))}
+function randomizeSettings(){var next={direction:randPick(['left','right']),startAngle:randPick([0,15,30,45,60,90,135,180,225,270,315]),bend:randPick([0,20,45,60,90,120,140,180,220,270,360]),overlap:randInt(0,90),alternate:Math.random()<0.3,chaosShift:Math.random()<0.55?0:randInt(10,100),chaosSize:Math.random()<0.65?0:randInt(10,60),chaosRotate:Math.random()<0.65?0:randInt(10,50),seed:randInt(1,99999),crop:$('crop').checked};applySettings(next);changed(true)}
+$('randomBtn').addEventListener('click',randomizeSettings);
+
+applyLanguage();updateSelectionUI();updateDirGlider();updatePreviewProgress();updateLicenseUI();parent.postMessage({pluginMessage:{type:'get-user'}},'*');initLicense();
+</script>
+</body>
+</html>
