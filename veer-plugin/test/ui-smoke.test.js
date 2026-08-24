@@ -38,12 +38,12 @@ function makeEl(tag, id) {
     addEventListener(type, fn) { (this._l = this._l || {})[type] = (this._l[type] || []).concat(fn); },
     dispatch(type, event) { (this._l && this._l[type] || []).forEach(fn => fn.call(this, event || {})); },
     setPointerCapture() {}, releasePointerCapture() {},
-    getBoundingClientRect() { return { left: 0, top: 0, width: 576, height: 460 }; },
+    getBoundingClientRect() { return { left: 0, top: 0, width: 576, height: 506 }; },
     getContext() { return makeContext(); },
     focus() {}, blur() {},
     closest(selector) { return null; },
     querySelector() { return null; },
-    offsetLeft: 0, offsetWidth: 96, clientWidth: 576, clientHeight: 460, width: 0, height: 0,
+    offsetLeft: 0, offsetWidth: 96, clientWidth: 576, clientHeight: 506, width: 0, height: 0,
     isContentEditable: false, contentEditable: 'false', draggable: false
   };
   if (id) registry[id] = el;
@@ -59,8 +59,8 @@ makeEl('div', 'alternateShiftRow');
 ['startAngle', 'bend', 'hierarchy', 'alternateShift', 'chaosShift', 'chaosSize', 'chaosRotate'].forEach(id => { registry[id].min = '-100'; registry[id].max = '100'; });
 registry.overlap.min = '0'; registry.overlap.max = '90';
 registry.preview.tagName = 'CANVAS';
-registry.previewStage.clientWidth = 576; registry.previewStage.clientHeight = 460;
-registry.preview.clientWidth = 576; registry.preview.clientHeight = 460;
+registry.previewStage.clientWidth = 576; registry.previewStage.clientHeight = 506;
+registry.preview.clientWidth = 576; registry.preview.clientHeight = 506;
 /* Two direction buttons inside the segment. */
 [['left', false], ['right', true]].forEach(([value, active]) => {
   const button = makeEl('button', 'dirBtn-' + value);
@@ -144,6 +144,11 @@ vm.runInContext(script, sandbox);
   registry.preview.dispatch('pointermove', { clientX: view().ox + middle.x * view().k, clientY: view().oy + middle.y * view().k });
   pump(8);
   assert.equal(view().hover, 2, 'hover finds the card under the pointer');
+
+  /* Stray slider input without a held mouse button is reverted instantly. */
+  registry.bend.value = '90';
+  registry.bend.dispatch('input', {});
+  assert.equal(registry.bend.value, '40', 'hover-induced slider ticks are reverted to the last committed value');
 
   /* Drag with live insertion: pick slot 0, the stack opens between cards 3 and 4. */
   const point = card => ({ clientX: view().ox + card.x * view().k, clientY: view().oy + card.y * view().k });

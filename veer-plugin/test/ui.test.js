@@ -22,7 +22,8 @@ test(['startAngle', 'bend', 'hierarchy', 'alternateShift', 'chaosShift', 'chaosS
 test(source.includes('id="overlap" type="range" min="0" max="90"'), 'overlap keeps its 0…90 range');
 test(source.includes('input[type=range].bipolar::-webkit-slider-runnable-track') && source.includes('--fill-lo') && source.includes('--fill-hi'), 'bipolar tracks fill from the centre towards the thumb');
 test(source.includes('<h1>Veer</h1>') && source.includes('class="brandLogo"'), 'the header keeps the brand logo next to the Veer title');
-test(source.includes('.previewDock{position:sticky;top:5px;z-index:35') && source.includes('height:460px'), 'the sticky preview is taller for the wide fan stage');
+test(source.includes('.previewDock{position:sticky;top:5px;z-index:35') && source.includes('height:506px'), 'the full-size preview grew 10% taller (506 px)');
+test(source.includes('height=506+(241-506)*previewProgress') && source.includes('width=fullWidth+(241-fullWidth)*previewProgress'), 'the compact preview grew 40% (241 px square)');
 test(source.includes("previewProgress=Math.max(0,Math.min(1,window.scrollY/180))") && source.includes('dock.classList.toggle(\'toolsHidden\',previewProgress>0.15)'), 'the preview keeps collapsing into a centered square on scroll');
 test(source.includes('#presetsBtn{left:4px}#randomBtn{right:4px}'), 'template and random buttons flank the preview');
 test(source.includes('grid-template-columns:repeat(5,90px)') && source.includes('VeerCore.TEMPLATES.forEach'), 'the preset overlay shows the 20 templates in a 5 × 4 grid');
@@ -32,6 +33,8 @@ test(source.includes('Math.min(12,Math.min(w,h)/2)'), 'interface cards are round
 test(!source.includes("fillStyle='#FFFFFF'") && !source.includes("strokeStyle='#555555'"), 'the preview background is fully transparent');
 test(source.includes('insertionIndexAt') && source.includes('applyLiveInsertion') && source.includes('pointSegmentDistance'), 'dragging opens the stack and inserts the card between its neighbours');
 test(source.includes('document.activeElement===this') && source.includes("'ArrowLeft'"), 'sliders ignore the wheel and arrow keys: they change only while the mouse button is held');
+test(source.includes('if(!pointerHeld){input.value=lastValues[id];paintRange(id);return}') && source.includes('document.addEventListener(\'pointerdown\',function(){pointerHeld=true},true)'), 'stray input events without a pressed pointer are reverted instantly');
+test(!source.includes('throughOneHint'), 'the «через 1» explanation hint under the parameter is removed');
 test(source.includes('easeOutBack') && source.includes('scale:isDrag||isHover?1.08:1'), 'hover and drag animate from the card centre like the UI buttons');
 test(source.includes('setPointerCapture') && source.includes('order.splice(drag.insert,0,source)'), 'dragging a card reorders the stack');
 test(!source.includes('pluginDrop') && !source.includes('dragstart') && !codeSource.includes("figma.on('drop'"), 'the preview has no drag and drop into the Figma scene');
