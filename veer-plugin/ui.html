@@ -116,10 +116,13 @@ button,input,select{font:inherit}button{color:inherit}.hidden{display:none!impor
 .subCard{margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
 /* Settings live in two compact columns. */
 .cols2{display:grid;grid-template-columns:1fr 1fr;gap:2px 16px}
-.controlRow{display:grid;grid-template-columns:96px 1fr 40px;gap:8px;align-items:center;min-height:32px}.controlRow+.controlRow{margin-top:2px}.controlRow .name{font-size:12px;font-weight:600}
+.controlRow{display:grid;grid-template-columns:96px 1fr 40px;gap:8px;align-items:center;min-height:32px}.controlRow+.controlRow{margin-top:2px}.controlRow .name{font-size:12px;font-weight:600}.controlRow.disabled{opacity:.4;pointer-events:none}
+.gridHint{margin:4px 0 0 3px;color:var(--muted);font-size:10px;line-height:1.35}
 output{text-align:right;color:var(--accent-deep);font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;cursor:text;border:1px solid transparent;border-radius:6px;padding:2px}output[contenteditable=true]{outline:0;border-color:var(--accent-deep);background:#fff;color:var(--text);text-align:center}
 input[type=range]{-webkit-appearance:none;width:100%;height:26px;margin:0;padding:6px 0;background:transparent;cursor:pointer;touch-action:none;overflow:visible}
 input[type=range]::-webkit-slider-runnable-track{height:5px;border-radius:999px;background:linear-gradient(to right,var(--accent) 0,var(--accent) var(--fill,50%),#e6d6bd var(--fill,50%),#e6d6bd 100%)}
+/* Bipolar sliders fill from the centre notch towards the thumb. */
+input[type=range].bipolar::-webkit-slider-runnable-track{background:linear-gradient(to right,#e6d6bd 0,#e6d6bd var(--fill-lo,50%),var(--accent) var(--fill-lo,50%),var(--accent) var(--fill-hi,50%),#e6d6bd var(--fill-hi,50%),#e6d6bd 100%)}
 /* The embedded SVG keeps black shadows normal and blends white highlights with lighten. */
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:34px;height:26px;margin-top:-7.5px;border:0;border-radius:0;background:transparent url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzQiIGhlaWdodD0iMjYiIHZpZXdCb3g9IjAgMCAzNCAyNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8ZyBvcGFjaXR5PSIwLjgiIGZpbHRlcj0idXJsKCNmaWx0ZXIwX2RkZGlpaV8xMjZfMTUzKSI+CiAgICA8cmVjdCB4PSI2IiB5PSIzIiB3aWR0aD0iMjIiIGhlaWdodD0iMTQiIHJ4PSI3IiBmaWxsPSJ1cmwoI3BhaW50MF9saW5lYXJfMTI2XzE1MykiIHNoYXBlLXJlbmRlcmluZz0iY3Jpc3BFZGdlcyIvPgogIDwvZz4KICA8ZGVmcz4KICAgIDxmaWx0ZXIgaWQ9ImZpbHRlcjBfZGRkaWlpXzEyNl8xNTMiIHg9IjAiIHk9IjAiIHdpZHRoPSIzNCIgaGVpZ2h0PSIyNiIgZmlsdGVyVW5pdHM9InVzZXJTcGFjZU9uVXNlIiBjb2xvci1pbnRlcnBvbGF0aW9uLWZpbHRlcnM9InNSR0IiPgogICAgICA8ZmVGbG9vZCBmbG9vZC1vcGFjaXR5PSIwIiByZXN1bHQ9IkJhY2tncm91bmRJbWFnZUZpeCIvPgogICAgICA8ZmVDb2xvck1hdHJpeCBpbj0iU291cmNlQWxwaGEiIHR5cGU9Im1hdHJpeCIgdmFsdWVzPSIwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAxMjcgMCIgcmVzdWx0PSJoYXJkQWxwaGEiLz4KICAgICAgPGZlT2Zmc2V0IGR5PSIzIi8+CiAgICAgIDxmZUdhdXNzaWFuQmx1ciBzdGREZXZpYXRpb249IjMiLz4KICAgICAgPGZlQ29tcG9zaXRlIGluMj0iaGFyZEFscGhhIiBvcGVyYXRvcj0ib3V0Ii8+CiAgICAgIDxmZUNvbG9yTWF0cml4IHR5cGU9Im1hdHJpeCIgdmFsdWVzPSIwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwLjIgMCIvPgogICAgICA8ZmVCbGVuZCBtb2RlPSJub3JtYWwiIGluMj0iQmFja2dyb3VuZEltYWdlRml4IiByZXN1bHQ9ImVmZmVjdDFfZHJvcFNoYWRvd18xMjZfMTUzIi8+CiAgICAgIDxmZUNvbG9yTWF0cml4IGluPSJTb3VyY2VBbHBoYSIgdHlwZT0ibWF0cml4IiB2YWx1ZXM9IjAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDEyNyAwIiByZXN1bHQ9ImhhcmRBbHBoYSIvPgogICAgICA8ZmVPZmZzZXQgZHg9IjEiLz4KICAgICAgPGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMC41Ii8+CiAgICAgIDxmZUNvbXBvc2l0ZSBpbjI9ImhhcmRBbHBoYSIgb3BlcmF0b3I9Im91dCIvPgogICAgICA8ZmVDb2xvck1hdHJpeCB0eXBlPSJtYXRyaXgiIHZhbHVlcz0iMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMC4zIDAiLz4KICAgICAgPGZlQmxlbmQgbW9kZT0ibm9ybWFsIiBpbjI9ImVmZmVjdDFfZHJvcFNoYWRvd18xMjZfMTUzIiByZXN1bHQ9ImVmZmVjdDJfZHJvcFNoYWRvd18xMjZfMTUzIi8+CiAgICAgIDxmZUNvbG9yTWF0cml4IGluPSJTb3VyY2VBbHBoYSIgdHlwZT0ibWF0cml4IiB2YWx1ZXM9IjAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDEyNyAwIiByZXN1bHQ9ImhhcmRBbHBoYSIvPgogICAgICA8ZmVPZmZzZXQgZHg9Ii0xIi8+CiAgICAgIDxmZUdhdXNzaWFuQmx1ciBzdGREZXZpYXRpb249IjAuNSIvPgogICAgICA8ZmVDb21wb3NpdGUgaW4yPSJoYXJkQWxwaGEiIG9wZXJhdG9yPSJvdXQiLz4KICAgICAgPGZlQ29sb3JNYXRyaXggdHlwZT0ibWF0cml4IiB2YWx1ZXM9IjAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAuMyAwIi8+CiAgICAgIDxmZUJsZW5kIG1vZGU9Im5vcm1hbCIgaW4yPSJlZmZlY3QyX2Ryb3BTaGFkb3dfMTI2XzE1MyIgcmVzdWx0PSJlZmZlY3QzX2Ryb3BTaGFkb3dfMTI2XzE1MyIvPgogICAgICA8ZmVCbGVuZCBtb2RlPSJub3JtYWwiIGluPSJTb3VyY2VHcmFwaGljIiBpbjI9ImVmZmVjdDNfZHJvcFNoYWRvd18xMjZfMTUzIiByZXN1bHQ9InNoYXBlIi8+CiAgICAgIDxmZUNvbG9yTWF0cml4IGluPSJTb3VyY2VBbHBoYSIgdHlwZT0ibWF0cml4IiB2YWx1ZXM9IjAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDEyNyAwIiByZXN1bHQ9ImhhcmRBbHBoYSIvPgogICAgICA8ZmVPZmZzZXQgZHk9IjEiLz4KICAgICAgPGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIvPgogICAgICA8ZmVDb21wb3NpdGUgaW4yPSJoYXJkQWxwaGEiIG9wZXJhdG9yPSJhcml0aG1ldGljIiBrMj0iLTEiIGszPSIxIi8+CiAgICAgIDxmZUNvbG9yTWF0cml4IHR5cGU9Im1hdHJpeCIgdmFsdWVzPSIwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAxIDAiLz4KICAgICAgPGZlQmxlbmQgbW9kZT0ibm9ybWFsIiBpbjI9InNoYXBlIiByZXN1bHQ9ImVmZmVjdDRfaW5uZXJTaGFkb3dfMTI2XzE1MyIvPgogICAgICA8ZmVDb2xvck1hdHJpeCBpbj0iU291cmNlQWxwaGEiIHR5cGU9Im1hdHJpeCIgdmFsdWVzPSIwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAxMjcgMCIgcmVzdWx0PSJoYXJkQWxwaGEiLz4KICAgICAgPGZlT2Zmc2V0IGR5PSItMiIvPgogICAgICA8ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIwLjUiLz4KICAgICAgPGZlQ29tcG9zaXRlIGluMj0iaGFyZEFscGhhIiBvcGVyYXRvcj0iYXJpdGhtZXRpYyIgazI9Ii0xIiBrMz0iMSIvPgogICAgICA8ZmVDb2xvck1hdHJpeCB0eXBlPSJtYXRyaXgiIHZhbHVlcz0iMCAwIDAgMCAxIDAgMCAwIDAgMSAwIDAgMCAwIDEgMCAwIDAgMC4zIDAiLz4KICAgICAgPGZlQmxlbmQgbW9kZT0ibGlnaHRlbiIgaW4yPSJlZmZlY3Q0X2lubmVyU2hhZG93XzEyNl8xNTMiIHJlc3VsdD0iZWZmZWN0NV9pbm5lclNoYWRvd18xMjZfMTUzIi8+CiAgICAgIDxmZUNvbG9yTWF0cml4IGluPSJTb3VyY2VBbHBoYSIgdHlwZT0ibWF0cml4IiB2YWx1ZXM9IjAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDEyNyAwIiByZXN1bHQ9ImhhcmRBbHBoYSIvPgogICAgICA8ZmVPZmZzZXQgZHk9IjEiLz4KICAgICAgPGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMC41Ii8+CiAgICAgIDxmZUNvbXBvc2l0ZSBpbjI9ImhhcmRBbHBoYSIgb3BlcmF0b3I9ImFyaXRobWV0aWMiIGsyPSItMSIgazM9IjEiLz4KICAgICAgPGZlQ29sb3JNYXRyaXggdHlwZT0ibWF0cml4IiB2YWx1ZXM9IjAgMCAwIDAgMSAwIDAgMCAwIDEgMCAwIDAgMCAxIDAgMCAwIDEgMCIvPgogICAgICA8ZmVCbGVuZCBtb2RlPSJsaWdodGVuIiBpbjI9ImVmZmVjdDVfaW5uZXJTaGFkb3dfMTI2XzE1MyIgcmVzdWx0PSJlZmZlY3Q2X2lubmVyU2hhZG93XzEyNl8xNTMiLz4KICAgIDwvZmlsdGVyPgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDBfbGluZWFyXzEyNl8xNTMiIHgxPSI2IiB5MT0iMTAiIHgyPSIyOCIgeTI9IjEwIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CiAgICAgIDxzdG9wIHN0b3AtY29sb3I9IndoaXRlIiBzdG9wLW9wYWNpdHk9IjAuMyIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IndoaXRlIiBzdG9wLW9wYWNpdHk9IjAuNiIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+Cjwvc3ZnPgo=") center/34px 26px no-repeat;box-shadow:none;opacity:1;cursor:grab;transform-origin:center;transition:transform 150ms cubic-bezier(.01,1.43,.46,1.85)}
 input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.08)}
@@ -130,7 +133,6 @@ input[type=range].dragging::-webkit-slider-thumb{cursor:grabbing}
 .toggleLine input:checked+.checkBox:after{content:'✓';font-size:12px;font-weight:800;color:#3a2508}
 .toggleLabel{font-size:12px;font-weight:600}
 .toggleHint{margin:2px 0 0 27px;color:var(--muted);font-size:10px;line-height:1.35}
-.chipLine{display:flex;align-items:center;min-height:32px}.countValue{display:inline-flex;align-items:center;height:24px;padding:0 11px;border-radius:999px;background:var(--soft);color:var(--accent-deep);font-size:11px;font-weight:800;font-variant-numeric:tabular-nums}
 .disabledPanel{opacity:.42;pointer-events:none}
 .footer{display:flex;justify-content:center;margin:13px 0 2px}.footer img{height:30px;opacity:.7;cursor:pointer}
 /* Bottom padding trimmed by 10px so the CREATE button sits 10px lower. */
@@ -187,16 +189,18 @@ input[type=range].dragging::-webkit-slider-thumb{cursor:grabbing}
       </div>
       <div class="subCard">
         <div class="cols2">
-          <div class="controlRow"><span class="name" data-i18n="startAngle">Start position</span><input id="startAngle" type="range" min="0" max="360" step="5" value="0"><output id="startAngleOut">0°</output></div>
-          <div class="controlRow"><span class="name" data-i18n="bendAngle">Bend angle</span><input id="bend" type="range" min="0" max="360" step="5" value="140"><output id="bendOut">140°</output></div>
+          <div class="controlRow"><span class="name" data-i18n="startAngle">Start position</span><input id="startAngle" type="range" min="-100" max="100" step="1" value="0"><output id="startAngleOut">0°</output></div>
+          <div class="controlRow"><span class="name" data-i18n="bendAngle">Bend angle</span><input id="bend" type="range" min="-100" max="100" step="1" value="40"><output id="bendOut">144°</output></div>
           <div class="controlRow"><span class="name" data-i18n="overlap">Overlap</span><input id="overlap" type="range" min="0" max="90" step="1" value="50"><output id="overlapOut">50%</output></div>
-          <div class="controlRow"><span class="name" data-i18n="imagesCount">Images</span><div class="chipLine"><span class="countValue" id="countValue">0 / 12</span></div></div>
+          <div class="controlRow"><span class="name" data-i18n="hierarchySize">Size</span><input id="hierarchy" type="range" min="-100" max="100" step="1" value="0"><output id="hierarchyOut">0%</output></div>
         </div>
+        <div class="gridHint" data-i18n="hierarchyHint">Positive values shrink every next card of the hierarchy; negative values enlarge it.</div>
       </div>
       <div class="subCard cols2">
         <div>
           <label class="toggleLine"><input id="alternate" type="checkbox"><span class="checkBox"></span><span class="toggleLabel" data-i18n="throughOne">Shift every other image</span></label>
-          <div class="toggleHint" data-i18n="throughOneHint">Every second image of the stack steps away from the fan centre.</div>
+          <div class="controlRow disabled" id="alternateShiftRow"><span class="name" data-i18n="shiftAmount">Shift</span><input id="alternateShift" type="range" min="-100" max="100" step="1" value="50" disabled><output id="alternateShiftOut">50%</output></div>
+          <div class="toggleHint" data-i18n="throughOneHint">Every second image of the stack steps along the radius: outward (+) or inward (−).</div>
         </div>
         <div>
           <label class="toggleLine"><input id="crop" type="checkbox" checked><span class="checkBox"></span><span class="toggleLabel" data-i18n="cropCard">Crop to a uniform card</span></label>
@@ -208,9 +212,9 @@ input[type=range].dragging::-webkit-slider-thumb{cursor:grabbing}
     <section class="card">
       <div class="sectionTitle" data-i18n="chaosTitle">Randomness</div>
       <div class="cols2">
-        <div class="controlRow"><span class="name" data-i18n="chaosShift">Shift</span><input id="chaosShift" type="range" min="0" max="100" step="1" value="0"><output id="chaosShiftOut">0%</output></div>
-        <div class="controlRow"><span class="name" data-i18n="chaosSize">Size</span><input id="chaosSize" type="range" min="0" max="100" step="1" value="0"><output id="chaosSizeOut">0%</output></div>
-        <div class="controlRow"><span class="name" data-i18n="chaosRotate">Rotation</span><input id="chaosRotate" type="range" min="0" max="100" step="1" value="0"><output id="chaosRotateOut">0%</output></div>
+        <div class="controlRow"><span class="name" data-i18n="chaosShift">Shift</span><input id="chaosShift" type="range" min="-100" max="100" step="1" value="0"><output id="chaosShiftOut">0%</output></div>
+        <div class="controlRow"><span class="name" data-i18n="chaosSize">Size</span><input id="chaosSize" type="range" min="-100" max="100" step="1" value="0"><output id="chaosSizeOut">0%</output></div>
+        <div class="controlRow"><span class="name" data-i18n="chaosRotate">Rotation</span><input id="chaosRotate" type="range" min="-100" max="100" step="1" value="0"><output id="chaosRotateOut">0%</output></div>
       </div>
     </section>
 
@@ -227,10 +231,11 @@ input[type=range].dragging::-webkit-slider-thumb{cursor:grabbing}
 
 var VeerCore = (function () {
   var MAX_IMAGES = 12;
-  var CHAOS_SHIFT_SPAN = 2.5;    /* random shift lives within ±250% of the card container */
+  var CHAOS_SHIFT_SPAN = 1.25;   /* random shift lives within ±125% of the card container */
   var CHAOS_SIZE_RANGE = 0.7;    /* ±70% size deviation at full chaos */
   var CHAOS_ROTATE_RANGE = 180;  /* ±180° extra rotation at full chaos */
-  var ALTERNATE_OFFSET = 0.5;    /* «через 1» radial offset as a share of the card height */
+  var ALTERNATE_SHIFT_RANGE = 1; /* «через 1» offset at ±100 equals one card height */
+  var HIERARCHY_RANGE = 0.6;     /* hierarchy size at ±100 fades the farthest card to 40% / 160% */
   var NAME_PREFIX = '_veer_';
 
   function clamp(value, min, max) {
@@ -258,17 +263,26 @@ var VeerCore = (function () {
 
   function normalizeSettings(input) {
     var source = input || {};
+    /* Sliders are bipolar −100…+100 with 0 in the middle: a negative value
+       gives the opposite effect of the positive one. Angles map 1 unit = 1.8°
+       for the start position and 3.6° for the bend, so +100 = +180° / +360°. */
     return {
       direction: source.direction === 'left' ? 'left' : 'right',
-      /* Clock convention: 0° = top, 90° = right, 180° = bottom, 270° = left. */
-      startAngle: Math.round(clamp(source.startAngle === undefined ? 0 : source.startAngle, 0, 360)),
-      /* 0° = straight line of images, 360° = the line curls into a full circle. */
-      bend: Math.round(clamp(source.bend === undefined ? 140 : source.bend, 0, 360)),
+      /* Clock convention: 0° = top, 90° = right, ±180° = bottom. */
+      startAngle: Math.round(clamp(source.startAngle === undefined ? 0 : source.startAngle, -180, 180)),
+      /* 0° = straight line of images, ±360° = the line curls into a full
+         circle; the sign flips the bend to the opposite side. */
+      bend: Math.round(clamp(source.bend === undefined ? 144 : source.bend, -360, 360)),
       overlap: Math.round(clamp(source.overlap === undefined ? 50 : source.overlap, 0, 90)),
-      chaosShift: Math.round(clamp(source.chaosShift === undefined ? 0 : source.chaosShift, 0, 100)),
-      chaosSize: Math.round(clamp(source.chaosSize === undefined ? 0 : source.chaosSize, 0, 100)),
-      chaosRotate: Math.round(clamp(source.chaosRotate === undefined ? 0 : source.chaosRotate, 0, 100)),
+      chaosShift: Math.round(clamp(source.chaosShift === undefined ? 0 : source.chaosShift, -100, 100)),
+      chaosSize: Math.round(clamp(source.chaosSize === undefined ? 0 : source.chaosSize, -100, 100)),
+      chaosRotate: Math.round(clamp(source.chaosRotate === undefined ? 0 : source.chaosRotate, -100, 100)),
       alternate: source.alternate === true || source.alternate === 'true',
+      /* «Через 1» step size: +100 = one card height outward, −100 = inward. */
+      alternateShift: Math.round(clamp(source.alternateShift === undefined ? 50 : source.alternateShift, -100, 100)),
+      /* Hierarchy size: positive shrinks every next card of the stack,
+         negative enlarges it; 0 keeps all cards equal. */
+      hierarchy: Math.round(clamp(source.hierarchy === undefined ? 0 : source.hierarchy, -100, 100)),
       crop: source.crop === undefined ? true : (source.crop === true || source.crop === 'true'),
       seed: Math.round(clamp(source.seed === undefined ? 1 : source.seed, 1, 999999)),
       order: normalizeOrder(source.order)
@@ -367,14 +381,18 @@ var VeerCore = (function () {
     var step = average.width * (1 - settings.overlap / 100);
     var arcLength = (count - 1) * step;
     var bendRad = settings.bend * Math.PI / 180;
-    var straight = settings.bend < 0.5 || count < 2;
-    var radius = straight ? 0 : arcLength / bendRad;
+    var bendMagnitude = Math.abs(bendRad);
+    var straight = bendMagnitude < 0.5 * Math.PI / 180 || count < 2;
+    var radius = straight ? 0 : arcLength / bendMagnitude;
     var startRad = (settings.startAngle - 90) * Math.PI / 180;
-    var sweep = settings.direction === 'left' ? -1 : 1;
+    /* Direction and the bend sign both flip the sweep, so a negative bend
+       curls the fan to the opposite side of the same start position. */
+    var sweep = (settings.direction === 'left' ? -1 : 1) * (settings.bend < 0 ? -1 : 1);
     var tangent = { x: sweep * -Math.sin(startRad), y: sweep * Math.cos(startRad) };
 
     /* Randomness is tied to the source image, not the slot: reordering images
-       in the stack keeps each picture's own drift and jitter. */
+       in the stack keeps each picture's own drift and jitter. A negative chaos
+       value mirrors the positive drift of the same seed. */
     var random = mulberry32(settings.seed);
     var drift = [];
     for (var source = 0; source < count; source++) {
@@ -392,7 +410,7 @@ var VeerCore = (function () {
       var sourceIndex = order[slot];
       var container = containers[sourceIndex];
       var t = count > 1 ? slot / (count - 1) : 0;
-      var angleRad = startRad + sweep * bendRad * t;
+      var angleRad = startRad + sweep * bendMagnitude * t;
       var x, y, baseRotation;
       if (straight) {
         x = slot * step * tangent.x;
@@ -403,18 +421,22 @@ var VeerCore = (function () {
         y = radius * Math.sin(angleRad);
         baseRotation = angleRad;
       }
-      /* «Через 1»: every second image of the stack steps away from the pivot. */
+      /* «Через 1»: every second image of the stack steps along the radius;
+         the signed shift drives it outward (+) or inward (−). */
       if (settings.alternate && slot % 2 === 1) {
         var outwardX = straight ? Math.cos(startRad) : Math.cos(angleRad);
         var outwardY = straight ? Math.sin(startRad) : Math.sin(angleRad);
-        var offset = ALTERNATE_OFFSET * average.height;
+        var offset = (settings.alternateShift / 100) * ALTERNATE_SHIFT_RANGE * average.height;
         x += outwardX * offset;
         y += outwardY * offset;
       }
+      /* Hierarchy: every next card of the stack is a bit smaller (+) or
+         larger (−) than the previous one. */
+      var hierarchyScale = Math.max(0.05, 1 - (settings.hierarchy / 100) * HIERARCHY_RANGE * t);
       var chaos = drift[sourceIndex];
       x += chaos.dx;
       y += chaos.dy;
-      var factor = Math.max(0.05, chaos.factor);
+      var factor = Math.max(0.05, chaos.factor) * hierarchyScale;
       cards.push({
         slot: slot,
         source: sourceIndex,
@@ -447,24 +469,35 @@ var VeerCore = (function () {
     return String(Math.abs(Math.round(index)) + 1).padStart(2, '0') + NAME_PREFIX;
   }
 
-  /* Ten built-in templates. The preset overlay previews them schematically. */
+  /* Twenty built-in templates. The preset overlay previews them schematically. */
   var TEMPLATES = [
-    { direction: 'right', startAngle: 0, bend: 140, overlap: 55, alternate: false, crop: true,  chaosShift: 0,  chaosSize: 0,  chaosRotate: 0,  seed: 1 },  /* classic fan */
-    { direction: 'right', startAngle: 90, bend: 0, overlap: 35, alternate: false, crop: true,  chaosShift: 0,  chaosSize: 0,  chaosRotate: 0,  seed: 1 },  /* straight row */
-    { direction: 'right', startAngle: 0, bend: 360, overlap: 62, alternate: false, crop: true,  chaosShift: 0,  chaosSize: 0,  chaosRotate: 0,  seed: 1 },  /* full circle */
-    { direction: 'left',  startAngle: 90, bend: 180, overlap: 45, alternate: false, crop: true,  chaosShift: 0,  chaosSize: 0,  chaosRotate: 0,  seed: 1 },  /* left half-arc */
-    { direction: 'right', startAngle: 30, bend: 60, overlap: 25, alternate: false, crop: true,  chaosShift: 0,  chaosSize: 0,  chaosRotate: 0,  seed: 1 },  /* gentle arc */
-    { direction: 'right', startAngle: 0, bend: 90, overlap: 60, alternate: false, crop: true,  chaosShift: 55, chaosSize: 35, chaosRotate: 45, seed: 7 },  /* chaotic scatter */
-    { direction: 'right', startAngle: 270, bend: 210, overlap: 72, alternate: true,  crop: true,  chaosShift: 0,  chaosSize: 0,  chaosRotate: 0,  seed: 1 },  /* two-row fan */
-    { direction: 'right', startAngle: 270, bend: 24, overlap: 86, alternate: false, crop: true,  chaosShift: 0,  chaosSize: 0,  chaosRotate: 0,  seed: 1 },  /* tight stack */
-    { direction: 'right', startAngle: 270, bend: 180, overlap: 0, alternate: false, crop: true,  chaosShift: 0,  chaosSize: 0,  chaosRotate: 0,  seed: 1 },  /* open half, no overlap */
-    { direction: 'right', startAngle: 45, bend: 360, overlap: 40, alternate: true,  crop: true,  chaosShift: 0,  chaosSize: 15, chaosRotate: 0,  seed: 3 }   /* alternating wreath */
+    { direction: 'right', startAngle: 0, bend: 140, overlap: 55, alternate: false, alternateShift: 50, hierarchy: 0, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 1 },   /* classic fan */
+    { direction: 'right', startAngle: 90, bend: 0, overlap: 35, alternate: false, alternateShift: 50, hierarchy: 0, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 1 },   /* straight row */
+    { direction: 'right', startAngle: 0, bend: 360, overlap: 62, alternate: false, alternateShift: 50, hierarchy: 0, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 1 },   /* full circle */
+    { direction: 'left', startAngle: 90, bend: 180, overlap: 45, alternate: false, alternateShift: 50, hierarchy: 0, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 1 },   /* left half-arc */
+    { direction: 'right', startAngle: 30, bend: 60, overlap: 25, alternate: false, alternateShift: 50, hierarchy: 0, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 1 },   /* gentle arc */
+    { direction: 'right', startAngle: 0, bend: 90, overlap: 60, alternate: false, alternateShift: 50, hierarchy: 0, crop: true, chaosShift: 55, chaosSize: 35, chaosRotate: 45, seed: 7 }, /* chaotic scatter */
+    { direction: 'right', startAngle: -90, bend: 210, overlap: 72, alternate: true, alternateShift: 50, hierarchy: 0, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 1 },  /* two-row fan */
+    { direction: 'right', startAngle: -90, bend: 24, overlap: 86, alternate: false, alternateShift: 50, hierarchy: 0, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 1 },  /* tight stack */
+    { direction: 'right', startAngle: -90, bend: 180, overlap: 0, alternate: false, alternateShift: 50, hierarchy: 0, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 1 },  /* open half */
+    { direction: 'right', startAngle: 45, bend: 360, overlap: 40, alternate: true, alternateShift: 50, hierarchy: 15, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 3 },  /* alternating wreath */
+    { direction: 'left', startAngle: 0, bend: 140, overlap: 55, alternate: false, alternateShift: 50, hierarchy: 0, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 1 },    /* mirrored classic */
+    { direction: 'right', startAngle: 90, bend: 0, overlap: 30, alternate: false, alternateShift: 50, hierarchy: 70, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 1 },   /* receding row */
+    { direction: 'right', startAngle: 0, bend: 360, overlap: 55, alternate: false, alternateShift: 50, hierarchy: 60, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 1 },  /* shrinking circle */
+    { direction: 'right', startAngle: -90, bend: 180, overlap: 70, alternate: true, alternateShift: -50, hierarchy: 0, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 1 }, /* inward two-row */
+    { direction: 'right', startAngle: 0, bend: 60, overlap: 40, alternate: false, alternateShift: 50, hierarchy: 0, crop: true, chaosShift: 40, chaosSize: 0, chaosRotate: 90, seed: 12 }, /* spinning scatter */
+    { direction: 'right', startAngle: 90, bend: 0, overlap: 70, alternate: false, alternateShift: 50, hierarchy: 0, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 1 },    /* tight row */
+    { direction: 'right', startAngle: -90, bend: 80, overlap: 10, alternate: false, alternateShift: 50, hierarchy: 0, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 1 },  /* wide arc from the left */
+    { direction: 'right', startAngle: 90, bend: 0, overlap: 45, alternate: false, alternateShift: 50, hierarchy: 50, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 1 },   /* vertical cascade */
+    { direction: 'right', startAngle: 0, bend: 360, overlap: 25, alternate: true, alternateShift: 70, hierarchy: 0, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 1 },    /* wide two-row ring */
+    { direction: 'left', startAngle: 0, bend: 160, overlap: 65, alternate: false, alternateShift: 50, hierarchy: 50, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 1 }    /* perspective fan */
   ];
 
   return {
     MAX_IMAGES: MAX_IMAGES,
     CHAOS_SHIFT_SPAN: CHAOS_SHIFT_SPAN,
-    ALTERNATE_OFFSET: ALTERNATE_OFFSET,
+    ALTERNATE_SHIFT_RANGE: ALTERNATE_SHIFT_RANGE,
+    HIERARCHY_RANGE: HIERARCHY_RANGE,
     TEMPLATES: TEMPLATES,
     clamp: clamp,
     mod: mod,
@@ -490,13 +523,13 @@ var license={userId:null,licensed:false,plan:null,expiresAt:null,remaining:TRIAL
 var createPending=false,saveTimer=null,pendingCache={};
 
 var I18N={
- en:{subtitle:'Image fan maker',previewHint:'Select up to 12 images in Figma',fanTitle:'Fan',direction:'Direction',dirLeft:'Left',dirRight:'Right',startAngle:'Start position',bendAngle:'Bend angle',overlap:'Overlap',imagesCount:'Images',throughOne:'Shift every other image',throughOneHint:'Every second image of the stack steps away from the fan centre.',cropCard:'Crop to a uniform card',cropHint:'All images are centre-cropped to the average card size.',chaosTitle:'Randomness',chaosShift:'Shift',chaosSize:'Size',chaosRotate:'Rotation',cappedHint:'Only the first 12 of {n} images are used',create:'CREATE',creating:'Building the fan…',created:'Fan created',unsupported:'This layer type is not supported',selectionChanged:'Select the source images again.',genericError:'Could not build the fan',trial:'TRIAL',forever:'FOREVER',annual:'1 YEAR',noKey:'Enter a license key',badKey:'Check the key format',activating:'Checking key…',activated:'License activated',keyError:'Key not found, expired, or bound to another account.',networkError:'License server is unavailable',trialEnded:'Free creations used up',trialEndedText:'Activate a key to create unlimited fans.',activate:'Activate',buy:'Buy a license'},
- ru:{subtitle:'Веер из изображений',previewHint:'Выберите до 12 изображений в Figma',fanTitle:'Веер',direction:'Направление',dirLeft:'Влево',dirRight:'Вправо',startAngle:'Начальная позиция',bendAngle:'Угол сгиба',overlap:'Наложение',imagesCount:'Изображения',throughOne:'Сдвиг «через 1»',throughOneHint:'Каждое второе изображение стопки отступает от центра веера.',cropCard:'Обрезка до единой карточки',cropHint:'Все изображения обрезаются по центру до среднего размера карточки.',chaosTitle:'Случайность',chaosShift:'Сдвиг',chaosSize:'Размер',chaosRotate:'Поворот',cappedHint:'Используются только первые 12 из {n} изображений',create:'CREATE',creating:'Собираем веер…',created:'Веер создан',unsupported:'Этот тип слоя не поддерживается',selectionChanged:'Снова выберите исходные изображения.',genericError:'Не удалось собрать веер',trial:'ПРОБА',forever:'НАВСЕГДА',annual:'1 ГОД',noKey:'Введите ключ лицензии',badKey:'Проверьте формат ключа',activating:'Проверяем ключ…',activated:'Лицензия активирована',keyError:'Ключ не найден, истёк или привязан к другому аккаунту.',networkError:'Нет связи с сервером лицензий',trialEnded:'Пробные создания закончились',trialEndedText:'Активируйте ключ, чтобы собирать веера без ограничений.',activate:'Активировать',buy:'Купить лицензию'},
- it:{subtitle:'Ventaglio di immagini',previewHint:'Seleziona fino a 12 immagini in Figma',fanTitle:'Ventaglio',direction:'Direzione',dirLeft:'Sinistra',dirRight:'Destra',startAngle:'Posizione iniziale',bendAngle:'Angolo di curvatura',overlap:'Sovrapposizione',imagesCount:'Immagini',throughOne:'Sposta una sì e una no',throughOneHint:'Ogni seconda immagine della pila si scosta dal centro del ventaglio.',cropCard:'Ritaglia a scheda uniforme',cropHint:'Tutte le immagini sono ritagliate al centro alle dimensioni medie.',chaosTitle:'Casualità',chaosShift:'Spostamento',chaosSize:'Dimensione',chaosRotate:'Rotazione',cappedHint:'Vengono usate solo le prime 12 di {n} immagini',create:'CREATE',creating:'Creazione del ventaglio…',created:'Ventaglio creato',unsupported:'Tipo di livello non supportato',selectionChanged:'Seleziona di nuovo le immagini sorgente.',genericError:'Impossibile creare il ventaglio',trial:'PROVA',forever:'PER SEMPRE',annual:'1 ANNO',noKey:'Inserisci una chiave',badKey:'Controlla il formato',activating:'Verifica chiave…',activated:'Licenza attivata',keyError:'Chiave non trovata, scaduta o già associata.',networkError:'Server licenze non disponibile',trialEnded:'Creazioni gratuite esaurite',trialEndedText:'Attiva una chiave per creare ventagli senza limiti.',activate:'Attiva',buy:'Acquista licenza'},
- pt:{subtitle:'Leque de imagens',previewHint:'Selecione até 12 imagens no Figma',fanTitle:'Leque',direction:'Direção',dirLeft:'Esquerda',dirRight:'Direita',startAngle:'Posição inicial',bendAngle:'Ângulo de curvatura',overlap:'Sobreposição',imagesCount:'Imagens',throughOne:'Alternar deslocamento',throughOneHint:'Cada segunda imagem da pilha se afasta do centro do leque.',cropCard:'Cortar em cartão uniforme',cropHint:'Todas as imagens são cortadas ao centro no tamanho médio.',chaosTitle:'Aleatoriedade',chaosShift:'Deslocamento',chaosSize:'Tamanho',chaosRotate:'Rotação',cappedHint:'Apenas as primeiras 12 de {n} imagens são usadas',create:'CREATE',creating:'Montando o leque…',created:'Leque criado',unsupported:'Tipo de camada não suportado',selectionChanged:'Selecione novamente as imagens de origem.',genericError:'Não foi possível criar o leque',trial:'TESTE',forever:'PARA SEMPRE',annual:'1 ANO',noKey:'Digite uma chave',badKey:'Verifique o formato',activating:'Verificando…',activated:'Licença ativada',keyError:'Chave não encontrada, expirada ou vinculada.',networkError:'Servidor de licenças indisponível',trialEnded:'Criações gratuitas esgotadas',trialEndedText:'Ative uma chave para criar leques ilimitados.',activate:'Ativar',buy:'Comprar licença'},
- fr:{subtitle:'Éventail d’images',previewHint:'Sélectionnez jusqu’à 12 images dans Figma',fanTitle:'Éventail',direction:'Direction',dirLeft:'Gauche',dirRight:'Droite',startAngle:'Position de départ',bendAngle:'Angle de courbure',overlap:'Chevauchement',imagesCount:'Images',throughOne:'Décaler une image sur deux',throughOneHint:'Une image sur deux s’écarte du centre de l’éventail.',cropCard:'Rogner en carte uniforme',cropHint:'Toutes les images sont rognées au centre à la taille moyenne.',chaosTitle:'Aléatoire',chaosShift:'Décalage',chaosSize:'Taille',chaosRotate:'Rotation',cappedHint:'Seules les 12 premières images sur {n} sont utilisées',create:'CREATE',creating:'Création de l’éventail…',created:'Éventail créé',unsupported:'Type de calque non pris en charge',selectionChanged:'Sélectionnez à nouveau les images source.',genericError:'Impossible de créer l’éventail',trial:'ESSAI',forever:'À VIE',annual:'1 AN',noKey:'Saisissez une clé',badKey:'Vérifiez le format',activating:'Vérification…',activated:'Licence activée',keyError:'Clé introuvable, expirée ou déjà liée.',networkError:'Serveur de licences indisponible',trialEnded:'Créations gratuites épuisées',trialEndedText:'Activez une clé pour créer des éventails illimités.',activate:'Activer',buy:'Acheter une licence'},
- zh:{subtitle:'图片扇形拼贴',previewHint:'在 Figma 中选择最多 12 张图片',fanTitle:'扇形',direction:'方向',dirLeft:'向左',dirRight:'向右',startAngle:'起始位置',bendAngle:'弯曲角度',overlap:'重叠度',imagesCount:'图片',throughOne:'隔一张偏移',throughOneHint:'堆叠中每隔一张图片向外偏离扇形中心。',cropCard:'裁剪为统一卡片',cropHint:'所有图片按中心裁剪到平均卡片尺寸。',chaosTitle:'随机度',chaosShift:'位移',chaosSize:'大小',chaosRotate:'旋转',cappedHint:'仅使用前 12 张图片（共 {n} 张）',create:'CREATE',creating:'正在生成扇形…',created:'扇形已创建',unsupported:'不支持此图层类型',selectionChanged:'请重新选择源图片。',genericError:'无法创建扇形',trial:'试用',forever:'永久',annual:'1 年',noKey:'请输入许可证密钥',badKey:'请检查密钥格式',activating:'正在验证…',activated:'许可证已激活',keyError:'密钥不存在、已过期或已绑定。',networkError:'许可证服务器不可用',trialEnded:'免费创建次数已用完',trialEndedText:'激活密钥即可无限创建扇形。',activate:'激活',buy:'购买许可证'},
- ja:{subtitle:'画像の扇形コラージュ',previewHint:'Figmaで最大12枚の画像を選択',fanTitle:'扇形',direction:'方向',dirLeft:'左',dirRight:'右',startAngle:'開始位置',bendAngle:'曲げ角度',overlap:'重なり',imagesCount:'画像',throughOne:'1枚おきにシフト',throughOneHint:'重なりの1枚おきの画像が扇の中心から外側へずれます。',cropCard:'統一カードに切り抜き',cropHint:'すべての画像を平均カードサイズに中心から切り抜きます。',chaosTitle:'ランダム度',chaosShift:'シフト',chaosSize:'サイズ',chaosRotate:'回転',cappedHint:'先頭の12枚のみ使用します（全{n}枚）',create:'CREATE',creating:'扇形を作成中…',created:'扇形を作成しました',unsupported:'このレイヤー形式は未対応です',selectionChanged:'元の画像を再選択してください。',genericError:'扇形を作成できませんでした',trial:'試用',forever:'永久',annual:'1年',noKey:'ライセンスキーを入力',badKey:'キー形式を確認してください',activating:'確認中…',activated:'ライセンスを有効化しました',keyError:'キーがない、期限切れ、または別アカウントに紐付いています。',networkError:'ライセンスサーバーに接続できません',trialEnded:'無料作成回数を使い切りました',trialEndedText:'キーを有効化すると無制限に作成できます。',activate:'有効化',buy:'ライセンスを購入'}
+ en:{subtitle:'Image fan maker',previewHint:'Select up to 12 images in Figma',fanTitle:'Fan',direction:'Direction',dirLeft:'Left',dirRight:'Right',startAngle:'Start position',bendAngle:'Bend angle',overlap:'Overlap',imagesCount:'Images',throughOne:'Shift every other image',throughOneHint:'Every second image of the stack steps along the radius: outward (+) or inward (−).',shiftAmount:'Shift',hierarchySize:'Size',hierarchyHint:'Positive values shrink every next card of the hierarchy; negative values enlarge it.',cropCard:'Crop to a uniform card',cropHint:'All images are centre-cropped to the average card size.',chaosTitle:'Randomness',chaosShift:'Shift',chaosSize:'Size',chaosRotate:'Rotation',cappedHint:'Only the first 12 of {n} images are used',create:'CREATE',creating:'Building the fan…',created:'Fan created',unsupported:'This layer type is not supported',selectionChanged:'Select the source images again.',genericError:'Could not build the fan',trial:'TRIAL',forever:'FOREVER',annual:'1 YEAR',noKey:'Enter a license key',badKey:'Check the key format',activating:'Checking key…',activated:'License activated',keyError:'Key not found, expired, or bound to another account.',networkError:'License server is unavailable',trialEnded:'Free creations used up',trialEndedText:'Activate a key to create unlimited fans.',activate:'Activate',buy:'Buy a license'},
+ ru:{subtitle:'Веер из изображений',previewHint:'Выберите до 12 изображений в Figma',fanTitle:'Веер',direction:'Направление',dirLeft:'Влево',dirRight:'Вправо',startAngle:'Начальная позиция',bendAngle:'Угол сгиба',overlap:'Наложение',imagesCount:'Изображения',throughOne:'Сдвиг «через 1»',throughOneHint:'Каждое второе изображение стопки смещается по радиусу: наружу (+) или внутрь (−).',shiftAmount:'Сдвиг',hierarchySize:'Размер',hierarchyHint:'Положительные значения уменьшают каждую следующую карточку по иерархии, отрицательные — увеличивают.',cropCard:'Обрезка до единой карточки',cropHint:'Все изображения обрезаются по центру до среднего размера карточки.',chaosTitle:'Случайность',chaosShift:'Сдвиг',chaosSize:'Размер',chaosRotate:'Поворот',cappedHint:'Используются только первые 12 из {n} изображений',create:'CREATE',creating:'Собираем веер…',created:'Веер создан',unsupported:'Этот тип слоя не поддерживается',selectionChanged:'Снова выберите исходные изображения.',genericError:'Не удалось собрать веер',trial:'ПРОБА',forever:'НАВСЕГДА',annual:'1 ГОД',noKey:'Введите ключ лицензии',badKey:'Проверьте формат ключа',activating:'Проверяем ключ…',activated:'Лицензия активирована',keyError:'Ключ не найден, истёк или привязан к другому аккаунту.',networkError:'Нет связи с сервером лицензий',trialEnded:'Пробные создания закончились',trialEndedText:'Активируйте ключ, чтобы собирать веера без ограничений.',activate:'Активировать',buy:'Купить лицензию'},
+ it:{subtitle:'Ventaglio di immagini',previewHint:'Seleziona fino a 12 immagini in Figma',fanTitle:'Ventaglio',direction:'Direzione',dirLeft:'Sinistra',dirRight:'Destra',startAngle:'Posizione iniziale',bendAngle:'Angolo di curvatura',overlap:'Sovrapposizione',imagesCount:'Immagini',throughOne:'Sposta una sì e una no',throughOneHint:'Ogni seconda immagine della pila si sposta lungo il raggio: verso l’esterno (+) o verso l’interno (−).',shiftAmount:'Spostamento',hierarchySize:'Dimensione',hierarchyHint:'I valori positivi riducono ogni scheda successiva della gerarchia; quelli negativi la ingrandiscono.',cropCard:'Ritaglia a scheda uniforme',cropHint:'Tutte le immagini sono ritagliate al centro alle dimensioni medie.',chaosTitle:'Casualità',chaosShift:'Spostamento',chaosSize:'Dimensione',chaosRotate:'Rotazione',cappedHint:'Vengono usate solo le prime 12 di {n} immagini',create:'CREATE',creating:'Creazione del ventaglio…',created:'Ventaglio creato',unsupported:'Tipo di livello non supportato',selectionChanged:'Seleziona di nuovo le immagini sorgente.',genericError:'Impossibile creare il ventaglio',trial:'PROVA',forever:'PER SEMPRE',annual:'1 ANNO',noKey:'Inserisci una chiave',badKey:'Controlla il formato',activating:'Verifica chiave…',activated:'Licenza attivata',keyError:'Chiave non trovata, scaduta o già associata.',networkError:'Server licenze non disponibile',trialEnded:'Creazioni gratuite esaurite',trialEndedText:'Attiva una chiave per creare ventagli senza limiti.',activate:'Attiva',buy:'Acquista licenza'},
+ pt:{subtitle:'Leque de imagens',previewHint:'Selecione até 12 imagens no Figma',fanTitle:'Leque',direction:'Direção',dirLeft:'Esquerda',dirRight:'Direita',startAngle:'Posição inicial',bendAngle:'Ângulo de curvatura',overlap:'Sobreposição',imagesCount:'Imagens',throughOne:'Alternar deslocamento',throughOneHint:'Cada segunda imagem da pilha se move ao longo do raio: para fora (+) ou para dentro (−).',shiftAmount:'Deslocamento',hierarchySize:'Tamanho',hierarchyHint:'Valores positivos diminuem cada próximo cartão da hierarquia; negativos aumentam.',cropCard:'Cortar em cartão uniforme',cropHint:'Todas as imagens são cortadas ao centro no tamanho médio.',chaosTitle:'Aleatoriedade',chaosShift:'Deslocamento',chaosSize:'Tamanho',chaosRotate:'Rotação',cappedHint:'Apenas as primeiras 12 de {n} imagens são usadas',create:'CREATE',creating:'Montando o leque…',created:'Leque criado',unsupported:'Tipo de camada não suportado',selectionChanged:'Selecione novamente as imagens de origem.',genericError:'Não foi possível criar o leque',trial:'TESTE',forever:'PARA SEMPRE',annual:'1 ANO',noKey:'Digite uma chave',badKey:'Verifique o formato',activating:'Verificando…',activated:'Licença ativada',keyError:'Chave não encontrada, expirada ou vinculada.',networkError:'Servidor de licenças indisponível',trialEnded:'Criações gratuitas esgotadas',trialEndedText:'Ative uma chave para criar leques ilimitados.',activate:'Ativar',buy:'Comprar licença'},
+ fr:{subtitle:'Éventail d’images',previewHint:'Sélectionnez jusqu’à 12 images dans Figma',fanTitle:'Éventail',direction:'Direction',dirLeft:'Gauche',dirRight:'Droite',startAngle:'Position de départ',bendAngle:'Angle de courbure',overlap:'Chevauchement',imagesCount:'Images',throughOne:'Décaler une image sur deux',throughOneHint:'Une image sur deux se déplace le long du rayon : vers l’extérieur (+) ou l’intérieur (−).',shiftAmount:'Décalage',hierarchySize:'Taille',hierarchyHint:'Les valeurs positives réduisent chaque carte suivante de la hiérarchie ; les négatives l’agrandissent.',cropCard:'Rogner en carte uniforme',cropHint:'Toutes les images sont rognées au centre à la taille moyenne.',chaosTitle:'Aléatoire',chaosShift:'Décalage',chaosSize:'Taille',chaosRotate:'Rotation',cappedHint:'Seules les 12 premières images sur {n} sont utilisées',create:'CREATE',creating:'Création de l’éventail…',created:'Éventail créé',unsupported:'Type de calque non pris en charge',selectionChanged:'Sélectionnez à nouveau les images source.',genericError:'Impossible de créer l’éventail',trial:'ESSAI',forever:'À VIE',annual:'1 AN',noKey:'Saisissez une clé',badKey:'Vérifiez le format',activating:'Vérification…',activated:'Licence activée',keyError:'Clé introuvable, expirée ou déjà liée.',networkError:'Serveur de licences indisponible',trialEnded:'Créations gratuites épuisées',trialEndedText:'Activez une clé pour créer des éventails illimités.',activate:'Activer',buy:'Acheter une licence'},
+ zh:{subtitle:'图片扇形拼贴',previewHint:'在 Figma 中选择最多 12 张图片',fanTitle:'扇形',direction:'方向',dirLeft:'向左',dirRight:'向右',startAngle:'起始位置',bendAngle:'弯曲角度',overlap:'重叠度',imagesCount:'图片',throughOne:'隔一张偏移',throughOneHint:'堆叠中每隔一张图片沿半径偏移：向外（+）或向内（−）。',shiftAmount:'偏移量',hierarchySize:'大小',hierarchyHint:'正值让层级中每下一张卡片更小，负值则更大。',cropCard:'裁剪为统一卡片',cropHint:'所有图片按中心裁剪到平均卡片尺寸。',chaosTitle:'随机度',chaosShift:'位移',chaosSize:'大小',chaosRotate:'旋转',cappedHint:'仅使用前 12 张图片（共 {n} 张）',create:'CREATE',creating:'正在生成扇形…',created:'扇形已创建',unsupported:'不支持此图层类型',selectionChanged:'请重新选择源图片。',genericError:'无法创建扇形',trial:'试用',forever:'永久',annual:'1 年',noKey:'请输入许可证密钥',badKey:'请检查密钥格式',activating:'正在验证…',activated:'许可证已激活',keyError:'密钥不存在、已过期或已绑定。',networkError:'许可证服务器不可用',trialEnded:'免费创建次数已用完',trialEndedText:'激活密钥即可无限创建扇形。',activate:'激活',buy:'购买许可证'},
+ ja:{subtitle:'画像の扇形コラージュ',previewHint:'Figmaで最大12枚の画像を選択',fanTitle:'扇形',direction:'方向',dirLeft:'左',dirRight:'右',startAngle:'開始位置',bendAngle:'曲げ角度',overlap:'重なり',imagesCount:'画像',throughOne:'1枚おきにシフト',throughOneHint:'重なりの1枚おきの画像が半径方向にずれます：外側（+）または内側（−）。',shiftAmount:'シフト',hierarchySize:'サイズ',hierarchyHint:'正の値は階層の後続カードを小さく、負の値は大きくします。',cropCard:'統一カードに切り抜き',cropHint:'すべての画像を平均カードサイズに中心から切り抜きます。',chaosTitle:'ランダム度',chaosShift:'シフト',chaosSize:'サイズ',chaosRotate:'回転',cappedHint:'先頭の12枚のみ使用します（全{n}枚）',create:'CREATE',creating:'扇形を作成中…',created:'扇形を作成しました',unsupported:'このレイヤー形式は未対応です',selectionChanged:'元の画像を再選択してください。',genericError:'扇形を作成できませんでした',trial:'試用',forever:'永久',annual:'1年',noKey:'ライセンスキーを入力',badKey:'キー形式を確認してください',activating:'確認中…',activated:'ライセンスを有効化しました',keyError:'キーがない、期限切れ、または別アカウントに紐付いています。',networkError:'ライセンスサーバーに接続できません',trialEnded:'無料作成回数を使い切りました',trialEndedText:'キーを有効化すると無制限に作成できます。',activate:'有効化',buy:'ライセンスを購入'}
 };
 function $(id){return document.getElementById(id)}
 function t(key,vars){var text=(I18N[language]&&I18N[language][key])||I18N.en[key]||key;Object.keys(vars||{}).forEach(function(k){text=text.split('{'+k+'}').join(vars[k])});return text}
@@ -512,19 +545,44 @@ function setDirection(value){state.direction=value==='left'?'left':'right';docum
 $('dirSegment').addEventListener('click',function(e){var button=e.target.closest('button[data-value]');if(button)setDirection(button.dataset.value)});
 
 /* ---------- Sliders ---------- */
-function paintRange(id,suffix){var input=$(id),out=$(id+'Out'),pct=((+input.value-+input.min)/(+input.max-+input.min))*100;input.style.setProperty('--fill',pct+'%');if(out)out.textContent=input.value+(suffix||'')}
-var ranges=[['startAngle','°'],['bend','°'],['overlap','%'],['chaosShift','%'],['chaosSize','%'],['chaosRotate','%']];
-ranges.forEach(function(entry){var input=$(entry[0]),out=$(entry[0]+'Out');paintRange(entry[0],entry[1]);input.addEventListener('wheel',function(){input.blur()},{passive:true});input.addEventListener('pointerdown',function(){input.classList.add('dragging')});input.addEventListener('pointerup',function(){input.classList.remove('dragging')});input.addEventListener('pointercancel',function(){input.classList.remove('dragging')});input.addEventListener('input',function(){paintRange(entry[0],entry[1]);changed(false)});
-if(out){out.tabIndex=0;out.title='Click to type';out.addEventListener('click',function(){if(out.isContentEditable)return;out.contentEditable='true';out.textContent=input.value;out.focus();var range=document.createRange();range.selectNodeContents(out);var sel=window.getSelection();sel.removeAllRanges();sel.addRange(range)});function commit(cancel){if(!out.isContentEditable)return;var value=cancel?+input.value:parseFloat(out.textContent);if(!Number.isFinite(value))value=+input.value;value=Math.max(+input.min,Math.min(+input.max,value));var step=+input.step||1;value=Math.round(value/step)*step;input.value=value;out.contentEditable='false';paintRange(entry[0],entry[1]);changed(false)}out.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();commit(false)}if(e.key==='Escape'){e.preventDefault();commit(true)}});out.addEventListener('blur',function(){commit(false)})}});
+/* Bipolar sliders (−100…+100, 0 in the middle) map to degrees for the angles:
+   start position 1 unit = 1.8° (±180°), bend 1 unit = 3.6° (±360°). */
+var ranges=[
+ {id:'startAngle',suffix:'°',map:function(v){return Math.round(v*1.8)},inv:function(x){return x/1.8}},
+ {id:'bend',suffix:'°',map:function(v){return Math.round(v*3.6)},inv:function(x){return x/3.6}},
+ {id:'overlap',suffix:'%'},
+ {id:'hierarchy',suffix:'%'},
+ {id:'alternateShift',suffix:'%'},
+ {id:'chaosShift',suffix:'%'},
+ {id:'chaosSize',suffix:'%'},
+ {id:'chaosRotate',suffix:'%'}
+];
+function findRange(id){for(var i=0;i<ranges.length;i++)if(ranges[i].id===id)return ranges[i];return null}
+function paintRange(id){var entry=findRange(id),input=$(id),out=$(id+'Out'),pct=((+input.value-+input.min)/(+input.max-+input.min))*100;if(+input.min<0){input.classList.add('bipolar');var lo=Math.min(50,pct),hi=Math.max(50,pct);input.style.setProperty('--fill-lo',lo+'%');input.style.setProperty('--fill-hi',hi+'%')}else{input.style.setProperty('--fill',pct+'%')}if(out){var shown=entry&&entry.map?entry.map(+input.value):+input.value;out.textContent=shown+(entry&&entry.suffix||'')}}
+ranges.forEach(function(entry){var id=entry.id,input=$(id),out=$(id+'Out');paintRange(id);
+ /* A slider only changes while the mouse button is held: the wheel never
+    adjusts a focused input and arrow keys are disabled. */
+ input.addEventListener('wheel',function(e){if(document.activeElement===this){e.preventDefault();this.blur()}},{passive:false});
+ input.addEventListener('keydown',function(e){if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','PageUp','PageDown','Home','End',' '].indexOf(e.key)>=0)e.preventDefault()});
+ input.addEventListener('pointerdown',function(){input.classList.add('dragging')});
+ input.addEventListener('pointerup',function(){input.classList.remove('dragging');try{this.blur()}catch(error){}});
+ input.addEventListener('pointercancel',function(){input.classList.remove('dragging')});
+ input.addEventListener('input',function(){paintRange(id);changed(false)});
+if(out){out.tabIndex=0;out.title='Click to type';out.addEventListener('click',function(){if(out.isContentEditable)return;out.contentEditable='true';out.textContent=entry.map?entry.map(+input.value):input.value;out.focus();var range=document.createRange();range.selectNodeContents(out);var sel=window.getSelection();sel.removeAllRanges();sel.addRange(range)});function commit(cancel){if(!out.isContentEditable)return;var typed=parseFloat(String(out.textContent).replace(',','.'));if(!Number.isFinite(typed))typed=entry.map?entry.map(+input.value):+input.value;var value=entry.inv?entry.inv(typed):typed;value=Math.round(value);if(!Number.isFinite(value))value=+input.value;value=Math.max(+input.min,Math.min(+input.max,value));var step=+input.step||1;value=Math.round(value/step)*step;input.value=value;out.contentEditable='false';paintRange(id);changed(false)}out.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();commit(false)}if(e.key==='Escape'){e.preventDefault();commit(true)}});out.addEventListener('blur',function(){commit(false)})}});
+
 ['alternate','crop'].forEach(function(id){$(id).addEventListener('input',changed)});
 
 /* ---------- Settings ---------- */
-function readSettings(){return{direction:state.direction,startAngle:$('startAngle').value,bend:$('bend').value,overlap:$('overlap').value,chaosShift:$('chaosShift').value,chaosSize:$('chaosSize').value,chaosRotate:$('chaosRotate').value,alternate:$('alternate').checked,crop:$('crop').checked,seed:(typeof state.seed==='number'?state.seed:1),order:state.order?state.order.slice():null}}
-function applySettings(saved){if(!saved)return;if(saved.direction)state.direction=saved.direction==='left'?'left':'right';state.seed=Number(saved.seed)||1;state.order=Array.isArray(saved.order)?saved.order.slice():null;['startAngle','bend','overlap','chaosShift','chaosSize','chaosRotate'].forEach(function(id){if(saved[id]!==undefined)$(id).value=saved[id]});['alternate','crop'].forEach(function(id){if(saved[id]!==undefined)$(id).checked=!!saved[id]});document.querySelectorAll('#dirSegment>button').forEach(function(b){b.classList.toggle('active',b.dataset.value===state.direction)});ranges.forEach(function(x){paintRange(x[0],x[1])});requestAnimationFrame(updateDirGlider)}
-function changed(animate){if(animate===undefined)animate=true;renderFan(animate);clearTimeout(saveTimer);saveTimer=setTimeout(function(){cacheSave('settings',readSettings())},250)}
+/* Sliders store bipolar units; the fan engine eats degrees and percents. */
+function unitsToSlider(id,value){var entry=findRange(id),number=Number(value);if(!Number.isFinite(number))return 0;return Math.round(entry&&entry.inv?entry.inv(number):number)}
+function readSettings(){return{direction:state.direction,startAngle:Math.round(+$('startAngle').value*1.8),bend:Math.round(+$('bend').value*3.6),overlap:+$('overlap').value,hierarchy:+$('hierarchy').value,alternateShift:+$('alternateShift').value,chaosShift:+$('chaosShift').value,chaosSize:+$('chaosSize').value,chaosRotate:+$('chaosRotate').value,alternate:$('alternate').checked,crop:$('crop').checked,seed:(typeof state.seed==='number'?state.seed:1),order:state.order?state.order.slice():null}}
+function applySettings(saved){if(!saved)return;if(saved.direction)state.direction=saved.direction==='left'?'left':'right';state.seed=Number(saved.seed)||1;state.order=Array.isArray(saved.order)?saved.order.slice():null;['startAngle','bend'].forEach(function(id){if(saved[id]!==undefined)$(id).value=unitsToSlider(id,+saved[id])});['overlap','hierarchy','alternateShift','chaosShift','chaosSize','chaosRotate'].forEach(function(id){if(saved[id]!==undefined)$(id).value=Math.round(+saved[id])});['alternate','crop'].forEach(function(id){if(saved[id]!==undefined)$(id).checked=!!saved[id]});document.querySelectorAll('#dirSegment>button').forEach(function(b){b.classList.toggle('active',b.dataset.value===state.direction)});ranges.forEach(function(x){paintRange(x.id)});updateDynamicUI();requestAnimationFrame(updateDirGlider)}
+function changed(animate){if(animate===undefined)animate=true;updateDynamicUI();renderFan(animate);clearTimeout(saveTimer);saveTimer=setTimeout(function(){cacheSave('settings',readSettings())},250)}
+/* The «через 1» shift slider works only when the mode is on. */
+function updateDynamicUI(){var row=$('alternateShiftRow'),input=$('alternateShift');var enabled=$('alternate').checked;row.classList.toggle('disabled',!enabled);input.disabled=!enabled}
 
 /* ---------- Counters ---------- */
-function updateCountUI(){var text=Math.min(selection.count,12)+' / 12';$('countChipText').textContent=text;$('countValue').textContent=text;$('countChip').classList.toggle('capped',selection.capped);$('countChip').title=selection.capped?t('cappedHint',{n:selection.count}):''}
+function updateCountUI(){var text=Math.min(selection.count,12)+' / 12';$('countChipText').textContent=text;$('countChip').classList.toggle('capped',selection.capped);$('countChip').title=selection.capped?t('cappedHint',{n:selection.count}):''}
 
 /* ---------- Preview canvas ---------- */
 var previewProgress=0;
@@ -533,28 +591,28 @@ function roundedRect(ctx,x,y,w,h,r){var radius=Math.max(0,Math.min(r,w/2,h/2));c
 function easeOutBack(t){var c1=1.70158,c3=c1+1;return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2)}
 
 /* Live render state per stack slot: current transform + optional transition. */
-var view={built:null,k:1,ox:0,oy:0,placed:[],hover:-1,dropTarget:-1,drag:null,raf:0};
+var view={built:null,k:1,ox:0,oy:0,placed:[],hover:-1,drag:null,raf:0};
 function fanItems(){return selection.items.length?selection.items:[{width:400,height:280}]}
 function computeLayout(){var settings=VeerCore.normalizeSettings(readSettings()),items=fanItems();var built=VeerCore.buildFan(settings,items);var rect=fanRect(),pad=Math.max(14,28-14*previewProgress),bw=Math.max(1,built.bbox.width),bh=Math.max(1,built.bbox.height);var k=Math.min((rect.w-pad*2)/bw,(rect.h-pad*2)/bh);if(!Number.isFinite(k)||k<=0)k=1;view.built=built;view.k=k;view.ox=rect.x+(rect.w-bw*k)/2-built.bbox.x*k;view.oy=rect.y+(rect.h-bh*k)/2-built.bbox.y*k}
-function slotTargets(){var built=view.built,targets=[];if(!built)return targets;built.cards.forEach(function(card){var isDrag=view.drag&&view.drag.slot===card.slot,isHover=view.hover===card.slot,isDrop=view.dropTarget===card.slot;targets[card.slot]={x:view.ox+card.x*view.k,y:view.oy+card.y*view.k,angle:card.angle,scale:isDrag||isHover?1.08:1,hl:isDrag?1:(isHover?1:(isDrop?0.45:0))}});return targets}
+function slotTargets(){var built=view.built,targets=[];if(!built)return targets;built.cards.forEach(function(card){var isDrag=view.drag&&view.drag.slot===card.slot,isHover=view.hover===card.slot;targets[card.slot]={x:view.ox+card.x*view.k,y:view.oy+card.y*view.k,angle:card.angle,scale:isDrag||isHover?1.08:1,hl:isDrag?1:(isHover?1:0)}});return targets}
 function startTransition(placed,from,to,dur){placed.trans={from:{x:from.x,y:from.y,angle:from.angle,scale:from.scale,hl:from.hl},to:to,t0:performance.now(),dur:dur||260}}
 function retarget(animate,dur){var targets=slotTargets();view.placed.forEach(function(placed){if(!placed)return;var to=targets[placed.slot];if(!to)return;
  /* The card being dragged follows the pointer directly, without transitions. */
  if(view.drag&&view.drag.slot===placed.slot){placed.trans=null;if(view.drag.moved){placed.scale=to.scale;placed.hl=to.hl}else Object.assign(placed,to);return}
  if(!animate){placed.trans=null;Object.assign(placed,to)}else if(!placed.trans||placed.trans.to.x!==to.x||placed.trans.to.y!==to.y||placed.trans.to.angle!==to.angle||placed.trans.to.scale!==to.scale||placed.trans.to.hl!==to.hl){startTransition(placed,placed,to,dur)}});kickFrame()}
 function syncPlaced(){var count=view.built?view.built.cards.length:0;view.placed=[];for(var slot=0;slot<count;slot++)view.placed.push({slot:slot,x:0,y:0,angle:0,scale:1,hl:0,trans:null})}
-function renderFan(animate){if(animate===undefined)animate=true;computeLayout();if(!view.built)return;if(!view.placed.length||view.placed.length!==view.built.cards.length){syncPlaced();animate=false}retarget(animate===true)}
+function renderFan(animate,dur){if(animate===undefined)animate=true;computeLayout();if(!view.built)return;if(!view.placed.length||view.placed.length!==view.built.cards.length){syncPlaced();animate=false}retarget(animate===true,dur)}
 function drawCard(ctx,slot){var placed=view.placed[slot],card=view.built.cards[slot];if(!placed||!card)return;var thumb=selection.thumbs[card.source],s=placed;ctx.save();ctx.translate(s.x,s.y);ctx.rotate(s.angle*Math.PI/180);var w=card.width*view.k*s.scale,h=card.height*view.k*s.scale,iw=card.imageWidth*view.k*s.scale,ih=card.imageHeight*view.k*s.scale;
- if(view.drag&&view.drag.slot===slot&&view.drag.moved){ctx.save();ctx.shadowColor='rgba(43,33,24,.32)';ctx.shadowBlur=22;ctx.shadowOffsetY=8;ctx.fillStyle='#fff';ctx.fillRect(-w/2,-h/2,w,h);ctx.restore()}
- if(card.crop){ctx.beginPath();ctx.rect(-w/2,-h/2,w,h);ctx.clip()}
- if(thumb){try{ctx.drawImage(thumb,-iw/2,-ih/2,iw,ih)}catch(error){}}else{ctx.fillStyle='#E9DFCE';ctx.fillRect(-w/2,-h/2,w,h);ctx.fillStyle='#A96A1F';ctx.font='700 '+Math.max(9,Math.round(w*.22))+'px Montserrat,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(card.source+1),0,0)}
- if(s.hl>0.01){ctx.fillStyle='rgba(255,255,255,'+(0.4*s.hl).toFixed(3)+')';ctx.fillRect(-w/2,-h/2,w,h)}
+ /* Interface-only rounding: the exported cards keep square corners. */
+ var radius=Math.max(0,Math.min(12,Math.min(w,h)/2));
+ if(view.drag&&view.drag.slot===slot&&view.drag.moved){ctx.save();ctx.shadowColor='rgba(43,33,24,.32)';ctx.shadowBlur=22;ctx.shadowOffsetY=8;ctx.fillStyle='#fff';roundedRect(ctx,-w/2,-h/2,w,h,radius);ctx.fill();ctx.restore()}
+ ctx.beginPath();roundedRect(ctx,-w/2,-h/2,w,h,radius);ctx.clip();
+ if(thumb){try{ctx.drawImage(thumb,-iw/2,-ih/2,iw,ih)}catch(error){}}else{ctx.fillStyle='#E9DFCE';roundedRect(ctx,-w/2,-h/2,w,h,radius);ctx.fill();ctx.fillStyle='#A96A1F';ctx.font='700 '+Math.max(9,Math.round(w*.22))+'px Montserrat,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(card.source+1),0,0)}
+ if(s.hl>0.01){ctx.fillStyle='rgba(255,255,255,'+(0.4*s.hl).toFixed(3)+')';roundedRect(ctx,-w/2,-h/2,w,h,radius);ctx.fill()}
  ctx.restore()}
 function drawPreview(){var canvas=$('preview'),stage=$('previewStage'),ratio=window.devicePixelRatio||1,w=stage.clientWidth||576,h=stage.clientHeight||460;if(canvas.width!==Math.round(w*ratio)||canvas.height!==Math.round(h*ratio)){canvas.width=Math.round(w*ratio);canvas.height=Math.round(h*ratio)}var ctx=canvas.getContext('2d');ctx.setTransform(ratio,0,0,ratio,0,0);ctx.clearRect(0,0,w,h);var rect=fanRect(),radius=8+(22-8)*previewProgress;
- /* White artboard card with the dark-grey border, like the Patternique preview. */
- ctx.save();roundedRect(ctx,rect.x,rect.y,rect.w,rect.h,radius);ctx.fillStyle='#FFFFFF';ctx.fill();ctx.restore();
+ /* The preview background stays fully transparent — only the images render. */
  if(selection.valid&&view.built){var order=view.built.cards.map(function(c){return c.slot}).filter(function(slot){return !(view.drag&&view.drag.slot===slot&&view.drag.moved)});order.forEach(function(slot){drawCard(ctx,slot)});if(view.drag&&view.drag.moved)drawCard(ctx,view.drag.slot)}
- ctx.save();ctx.lineWidth=3;ctx.strokeStyle='#555555';roundedRect(ctx,rect.x+1.5,rect.y+1.5,rect.w-3,rect.h-3,Math.max(2,radius-1.5));ctx.stroke();ctx.restore();
  var hint=$('previewHint');hint.style.left=rect.x+'px';hint.style.top=rect.y+'px';hint.style.width=rect.w+'px';hint.style.height=rect.h+'px';hint.style.borderRadius=radius+'px';hint.style.transform='none';hint.classList.toggle('hidden',selection.valid)}
 function tick(){view.raf=0;var active=false,now=performance.now();view.placed.forEach(function(placed){if(!placed||!placed.trans)return;var tr=placed.trans,t=Math.min(1,(now-tr.t0)/tr.dur),e=easeOutBack(t);['x','y','angle','scale','hl'].forEach(function(key){placed[key]=tr.from[key]+(tr.to[key]-tr.from[key])*e});if(t>=1){placed.trans=null;Object.assign(placed,tr.to)}else active=true});drawPreview();if(active||view.drag)view.raf=requestAnimationFrame(tick)}
 function kickFrame(){if(!view.raf)view.raf=requestAnimationFrame(tick)}
@@ -564,13 +622,24 @@ function localPoint(event){var canvas=$('preview'),rect=canvas.getBoundingClient
 function fanPoint(p){return{x:(p.x-view.ox)/view.k,y:(p.y-view.oy)/view.k}}
 function cardAt(point,excludeSlot){if(!view.built||!selection.valid)return -1;var cards=view.built.cards;for(var slot=cards.length-1;slot>=0;slot--){if(slot===excludeSlot)continue;var card=cards[slot],radians=card.angle*Math.PI/180,cos=Math.cos(-radians),sin=Math.sin(-radians),dx=point.x-card.x,dy=point.y-card.y,lx=dx*cos-dy*sin,ly=dx*sin+dy*cos;if(Math.abs(lx)<=card.width/2&&Math.abs(ly)<=card.height/2)return slot}return -1}
 function updateHover(event){if(!selection.valid||view.drag){return}var slot=cardAt(fanPoint(localPoint(event)));if(slot!==view.hover){view.hover=slot;var canvas=$('preview');canvas.style.cursor=slot>=0?'grab':'default';retarget(true,200)}}
+/* Distance from a point to a segment; t is the projection parameter. */
+function pointSegmentDistance(point,a,b){var dx=b.x-a.x,dy=b.y-a.y,len=dx*dx+dy*dy,t=0,d;if(len<1e-9){d=Math.hypot(point.x-a.x,point.y-a.y)}else{t=((point.x-a.x)*dx+(point.y-a.y)*dy)/len;t=Math.max(0,Math.min(1,t));var px=a.x+dx*t,py=a.y+dy*t;d=Math.hypot(point.x-px,point.y-py)}return{d:d,t:t}}
+/* The insertion slot is where the polyline through the other card centres
+   comes closest to the pointer: the stack opens exactly there. */
+function insertionIndexAt(point,excludeSlot){if(!view.built)return 0;var pts=[];view.built.cards.forEach(function(card){if(card.slot!==excludeSlot)pts.push(card)});if(!pts.length)return 0;
+ if(pts.length===1){var only=pts[0],rad=only.angle*Math.PI/180,lx=(point.x-only.x)*Math.cos(rad)+(point.y-only.y)*Math.sin(rad);return lx<0?0:1}
+ var best=0,bestD=Infinity,bestT=0;for(var i=0;i<pts.length-1;i++){var seg=pointSegmentDistance(point,pts[i],pts[i+1]);if(seg.d<bestD){bestD=seg.d;best=i;bestT=seg.t}}
+ if(best===0&&bestT<=0)return 0;if(best===pts.length-2&&bestT>=1)return pts.length;return best+1}
+/* While dragging, the rest of the stack re-lays out live and lets the card
+   slip between its neighbours. */
+function applyLiveInsertion(){var drag=view.drag;if(!drag||!view.built)return;var order=view.built.order.slice(),source=order[drag.slot];order.splice(drag.slot,1);order.splice(drag.insert,0,source);state.order=order;drag.slot=order.indexOf(source);var placed=view.placed[drag.slot];if(placed&&drag.px!==undefined){placed.trans=null;placed.x=drag.px;placed.y=drag.py}renderFan(true,220);kickFrame()}
 $('preview').addEventListener('pointermove',function(event){
- if(view.drag){if(!view.drag.moved&&Math.hypot(event.clientX-view.drag.startX,event.clientY-view.drag.startY)>4)view.drag.moved=true;
-  if(view.drag.moved){var p=localPoint(event),placed=view.placed[view.drag.slot];if(placed){placed.trans=null;placed.x=p.x;placed.y=p.y}var target=cardAt(fanPoint(p),view.drag.slot);if(target!==view.dropTarget){view.dropTarget=target;retarget(true,180)}kickFrame();return}
+ if(view.drag){if(!view.drag.moved&&Math.hypot(event.clientX-view.drag.startX,event.clientY-view.drag.startY)>4){view.drag.moved=true;view.drag.insert=view.drag.slot}
+  if(view.drag.moved){var p=localPoint(event),drag=view.drag;drag.px=p.x;drag.py=p.y;var placed=view.placed[drag.slot];if(placed){placed.trans=null;placed.x=p.x;placed.y=p.y}var insert=insertionIndexAt(fanPoint(p),drag.slot);if(insert!==drag.insert){drag.insert=insert;applyLiveInsertion()}kickFrame();return}
   return}
  updateHover(event)});
-$('preview').addEventListener('pointerdown',function(event){if(!selection.valid)return;var slot=cardAt(fanPoint(localPoint(event)));if(slot<0)return;view.drag={slot:slot,startX:event.clientX,startY:event.clientY,moved:false};view.hover=-1;view.dropTarget=-1;this.setPointerCapture(event.pointerId);this.style.cursor='grabbing';retarget(true,180);kickFrame()});
-function finishDrag(){var drag=view.drag;if(!drag)return;view.drag=null;var canvas=$('preview');canvas.style.cursor='default';if(drag.moved&&drag.slot>=0&&view.built){var order=view.built.order.slice(),moving=order[drag.slot];if(view.dropTarget>=0&&view.dropTarget!==drag.slot){order.splice(drag.slot,1);order.splice(view.dropTarget,0,moving)}state.order=order}view.hover=-1;view.dropTarget=-1;changed(true)}
+$('preview').addEventListener('pointerdown',function(event){if(!selection.valid)return;var slot=cardAt(fanPoint(localPoint(event)));if(slot<0)return;view.drag={slot:slot,insert:slot,startX:event.clientX,startY:event.clientY,moved:false};view.hover=-1;this.setPointerCapture(event.pointerId);this.style.cursor='grabbing';retarget(true,180);kickFrame()});
+function finishDrag(){var drag=view.drag;if(!drag)return;view.drag=null;var canvas=$('preview');canvas.style.cursor='default';view.hover=-1;changed(true)}
 $('preview').addEventListener('pointerup',finishDrag);
 $('preview').addEventListener('pointercancel',finishDrag);
 $('preview').addEventListener('pointerleave',function(){if(!view.drag&&view.hover>=0){view.hover=-1;this.style.cursor='default';retarget(true,200)}});
@@ -582,7 +651,7 @@ window.addEventListener('scroll',schedulePreviewProgress,{passive:true});
 window.addEventListener('resize',function(){schedulePreviewProgress();updateDirGlider()});
 
 /* ---------- Selection ---------- */
-function updateSelectionUI(reason){$('previewHint').textContent=selection.valid?'':t(reason==='unsupported'?'unsupported':'previewHint');$('previewHint').classList.toggle('hidden',selection.valid);$('createBtn').disabled=!selection.valid||createPending||license.locked;updateCountUI();view.hover=-1;view.dropTarget=-1;view.drag=null;renderFan(false)}
+function updateSelectionUI(reason){$('previewHint').textContent=selection.valid?'':t(reason==='unsupported'?'unsupported':'previewHint');$('previewHint').classList.toggle('hidden',selection.valid);$('createBtn').disabled=!selection.valid||createPending||license.locked;updateCountUI();view.hover=-1;view.drag=null;renderFan(false)}
 function bytesToImage(bytes){return new Promise(function(resolve){if(!bytes)return resolve(null);var url=URL.createObjectURL(new Blob([new Uint8Array(bytes)],{type:'image/png'})),image=new Image();image.onload=function(){URL.revokeObjectURL(url);resolve(image)};image.onerror=function(){URL.revokeObjectURL(url);resolve(null)};image.src=url})}
 
 /* ---------- Cache / license (same flow as Patternique) ---------- */
@@ -622,7 +691,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closePresets
 /* Randomizer: reshuffles the fan geometry and the chaos seed. */
 function randPick(list){return list[Math.floor(Math.random()*list.length)]}
 function randInt(a,b){return Math.round(a+Math.random()*(b-a))}
-function randomizeSettings(){var next={direction:randPick(['left','right']),startAngle:randPick([0,15,30,45,60,90,135,180,225,270,315]),bend:randPick([0,20,45,60,90,120,140,180,220,270,360]),overlap:randInt(0,90),alternate:Math.random()<0.3,chaosShift:Math.random()<0.55?0:randInt(10,100),chaosSize:Math.random()<0.65?0:randInt(10,60),chaosRotate:Math.random()<0.65?0:randInt(10,50),seed:randInt(1,99999),crop:$('crop').checked};applySettings(next);changed(true)}
+function randomizeSettings(){var next={direction:randPick(['left','right']),startAngle:randPick([0,15,30,45,60,90,135,180,-45,-90,-135,-180]),bend:randPick([0,20,45,60,90,120,140,180,220,270,360,-90,-140,-180]),overlap:randInt(0,90),alternate:Math.random()<0.3,alternateShift:randPick([50,-50,70,-70,100]),hierarchy:Math.random()<0.35?randInt(-70,70):0,chaosShift:Math.random()<0.55?0:randInt(-100,100),chaosSize:Math.random()<0.65?0:randInt(-60,60),chaosRotate:Math.random()<0.65?0:randInt(-50,50),seed:randInt(1,99999),crop:$('crop').checked};applySettings(next);changed(true)}
 $('randomBtn').addEventListener('click',randomizeSettings);
 
 applyLanguage();updateSelectionUI();updateDirGlider();updatePreviewProgress();updateLicenseUI();parent.postMessage({pluginMessage:{type:'get-user'}},'*');initLicense();

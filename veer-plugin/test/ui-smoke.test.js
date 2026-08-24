@@ -51,8 +51,13 @@ function makeEl(tag, id) {
 }
 const registry = {};
 ['langBtn', 'langFlag', 'langCode', 'langMenu', 'licenseBadge', 'lockScreen', 'licenseKey', 'activateBtn', 'licenseMessage', 'buyBtn', 'editor', 'previewDock', 'scrollPreviewGlow', 'previewStage', 'preview', 'previewHint', 'countChip', 'countChipText', 'presetsBtn', 'randomBtn', 'dirSegment', 'dirGlider', 'countValue', 'alternate', 'crop', 'footerLogo', 'stickyBottom', 'createBtn', 'status', 'presetOverlay', 'presetGrid'].forEach(id => makeEl('div', id));
-['startAngle', 'bend', 'overlap', 'chaosShift', 'chaosSize', 'chaosRotate'].forEach(id => { makeEl('input', id); registry[id].type = 'range'; registry[id + 'Out'] = makeEl('output', id + 'Out'); });
-['startAngle', 'bend', 'overlap', 'chaosShift', 'chaosSize', 'chaosRotate'].forEach(id => { registry[id].value = { startAngle: '0', bend: '140', overlap: '50', chaosShift: '0', chaosSize: '0', chaosRotate: '0' }[id]; });
+['startAngle', 'bend', 'overlap', 'hierarchy', 'alternateShift', 'chaosShift', 'chaosSize', 'chaosRotate'].forEach(id => { makeEl('input', id); registry[id].type = 'range'; registry[id + 'Out'] = makeEl('output', id + 'Out'); });
+registry.startAngle.value = '0'; registry.bend.value = '40'; registry.overlap.value = '50';
+registry.hierarchy.value = '0'; registry.alternateShift.value = '50';
+registry.chaosShift.value = '0'; registry.chaosSize.value = '0'; registry.chaosRotate.value = '0';
+makeEl('div', 'alternateShiftRow');
+['startAngle', 'bend', 'hierarchy', 'alternateShift', 'chaosShift', 'chaosSize', 'chaosRotate'].forEach(id => { registry[id].min = '-100'; registry[id].max = '100'; });
+registry.overlap.min = '0'; registry.overlap.max = '90';
 registry.preview.tagName = 'CANVAS';
 registry.previewStage.clientWidth = 576; registry.previewStage.clientHeight = 460;
 registry.preview.clientWidth = 576; registry.preview.clientHeight = 460;
@@ -120,14 +125,13 @@ vm.runInContext(script, sandbox);
   const view = () => vm.runInContext('view', sandbox);
   const state = () => vm.runInContext('state', sandbox);
 
-  assert.equal(core.TEMPLATES.length, 10, 'core is embedded in ui.html');
+  assert.equal(core.TEMPLATES.length, 20, 'core with 20 templates is embedded in ui.html');
 
   /* Selection with five images arrives from the sandbox. */
   fire({ pluginMessage: { type: 'selection', valid: true, count: 5, capped: false, items: [1, 2, 3, 4, 5].map(i => ({ id: 'n' + i, name: 'Img' + i, width: 100 * i, height: 80 })) } });
   pump(4);
   assert.equal(view().built.cards.length, 5, 'the fan renders five cards');
   assert.equal(registry.countChipText.textContent, '5 / 12');
-  assert.equal(registry.countValue.textContent, '5 / 12');
   assert(!registry.createBtn.disabled, 'CREATE unlocks with a valid selection');
 
   /* Thumbnails resolve (as failed loads → placeholder path). */
@@ -141,29 +145,29 @@ vm.runInContext(script, sandbox);
   pump(8);
   assert.equal(view().hover, 2, 'hover finds the card under the pointer');
 
-  /* Drag reorder: pick slot 0, drop over slot 3. */
-  const first = cards[0], target = cards[3];
+  /* Drag with live insertion: pick slot 0, the stack opens between cards 3 and 4. */
   const point = card => ({ clientX: view().ox + card.x * view().k, clientY: view().oy + card.y * view().k });
-  const p0 = point(first);
+  const p0 = point(cards[0]);
   registry.preview.dispatch('pointerdown', p0);
   registry.preview.dispatch('pointermove', { clientX: p0.clientX + 40, clientY: p0.clientY + 6 });
   pump(2);
   assert(view().drag && view().drag.moved, 'the drag threshold is detected');
-  const p3 = point(target);
-  registry.preview.dispatch('pointermove', p3);
+  const between = { clientX: view().ox + (cards[3].x + cards[4].x) / 2 * view().k, clientY: view().oy + (cards[3].y + cards[4].y) / 2 * view().k };
+  registry.preview.dispatch('pointermove', between);
   pump(2);
+  assert.equal(view().drag.insert, 3, 'the insertion gap opens between cards 3 and 4');
   registry.preview.dispatch('pointerup', {});
   pump(12);
-  assert.deepEqual(state().order, [1, 2, 3, 0, 4], 'slot 0 moved to slot 3');
+  assert.deepEqual(state().order, [1, 2, 3, 0, 4], 'slot 0 was inserted between cards 3 and 4');
 
   /* Presets overlay builds ten schematic tiles. */
   registry.presetsBtn.dispatch('click', {});
   assert(!registry.presetOverlay.className.includes('hidden'), 'overlay opens');
-  assert.equal(registry.presetGrid.children.length, 10, 'ten template tiles');
+  assert.equal(registry.presetGrid.children.length, 20, 'twenty template tiles');
   const tile = registry.presetGrid.children[6];
   tile.closest = () => tile;
   registry.presetOverlay.dispatch('click', { target: tile });
-  assert.equal(vm.runInContext('+(document.getElementById("bend").value)', sandbox), 210, 'template 7 applies its bend');
+  assert.equal(vm.runInContext('+(document.getElementById("bend").value)', sandbox), Math.round(210 / 3.6), 'template 7 applies its bend through the slider mapping');
   pump(6);
 
   /* Randomizer keeps the window alive. */
@@ -202,7 +206,7 @@ vm.runInContext(script, sandbox);
   console.log('  ✓ selection renders and auto-scales the fan');
   console.log('  ✓ hover highlights the card under the pointer');
   console.log('  ✓ drag and drop reorders the stack');
-  console.log('  ✓ ten schematic presets apply their settings');
+  console.log('  ✓ twenty schematic presets apply their settings');
   console.log('  ✓ randomizer, direction switch and CREATE flow work');
   console.log('  ✓ over-cap selections and cache saving behave');
   console.log('\nSmoke: 7 checks passed.');

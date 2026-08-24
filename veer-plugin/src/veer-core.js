@@ -3,10 +3,11 @@
 
 var VeerCore = (function () {
   var MAX_IMAGES = 12;
-  var CHAOS_SHIFT_SPAN = 2.5;    /* random shift lives within ±250% of the card container */
+  var CHAOS_SHIFT_SPAN = 1.25;   /* random shift lives within ±125% of the card container */
   var CHAOS_SIZE_RANGE = 0.7;    /* ±70% size deviation at full chaos */
   var CHAOS_ROTATE_RANGE = 180;  /* ±180° extra rotation at full chaos */
-  var ALTERNATE_OFFSET = 0.5;    /* «через 1» radial offset as a share of the card height */
+  var ALTERNATE_SHIFT_RANGE = 1; /* «через 1» offset at ±100 equals one card height */
+  var HIERARCHY_RANGE = 0.6;     /* hierarchy size at ±100 fades the farthest card to 40% / 160% */
   var NAME_PREFIX = '_veer_';
 
   function clamp(value, min, max) {
@@ -34,17 +35,26 @@ var VeerCore = (function () {
 
   function normalizeSettings(input) {
     var source = input || {};
+    /* Sliders are bipolar −100…+100 with 0 in the middle: a negative value
+       gives the opposite effect of the positive one. Angles map 1 unit = 1.8°
+       for the start position and 3.6° for the bend, so +100 = +180° / +360°. */
     return {
       direction: source.direction === 'left' ? 'left' : 'right',
-      /* Clock convention: 0° = top, 90° = right, 180° = bottom, 270° = left. */
-      startAngle: Math.round(clamp(source.startAngle === undefined ? 0 : source.startAngle, 0, 360)),
-      /* 0° = straight line of images, 360° = the line curls into a full circle. */
-      bend: Math.round(clamp(source.bend === undefined ? 140 : source.bend, 0, 360)),
+      /* Clock convention: 0° = top, 90° = right, ±180° = bottom. */
+      startAngle: Math.round(clamp(source.startAngle === undefined ? 0 : source.startAngle, -180, 180)),
+      /* 0° = straight line of images, ±360° = the line curls into a full
+         circle; the sign flips the bend to the opposite side. */
+      bend: Math.round(clamp(source.bend === undefined ? 144 : source.bend, -360, 360)),
       overlap: Math.round(clamp(source.overlap === undefined ? 50 : source.overlap, 0, 90)),
-      chaosShift: Math.round(clamp(source.chaosShift === undefined ? 0 : source.chaosShift, 0, 100)),
-      chaosSize: Math.round(clamp(source.chaosSize === undefined ? 0 : source.chaosSize, 0, 100)),
-      chaosRotate: Math.round(clamp(source.chaosRotate === undefined ? 0 : source.chaosRotate, 0, 100)),
+      chaosShift: Math.round(clamp(source.chaosShift === undefined ? 0 : source.chaosShift, -100, 100)),
+      chaosSize: Math.round(clamp(source.chaosSize === undefined ? 0 : source.chaosSize, -100, 100)),
+      chaosRotate: Math.round(clamp(source.chaosRotate === undefined ? 0 : source.chaosRotate, -100, 100)),
       alternate: source.alternate === true || source.alternate === 'true',
+      /* «Через 1» step size: +100 = one card height outward, −100 = inward. */
+      alternateShift: Math.round(clamp(source.alternateShift === undefined ? 50 : source.alternateShift, -100, 100)),
+      /* Hierarchy size: positive shrinks every next card of the stack,
+         negative enlarges it; 0 keeps all cards equal. */
+      hierarchy: Math.round(clamp(source.hierarchy === undefined ? 0 : source.hierarchy, -100, 100)),
       crop: source.crop === undefined ? true : (source.crop === true || source.crop === 'true'),
       seed: Math.round(clamp(source.seed === undefined ? 1 : source.seed, 1, 999999)),
       order: normalizeOrder(source.order)
@@ -143,14 +153,18 @@ var VeerCore = (function () {
     var step = average.width * (1 - settings.overlap / 100);
     var arcLength = (count - 1) * step;
     var bendRad = settings.bend * Math.PI / 180;
-    var straight = settings.bend < 0.5 || count < 2;
-    var radius = straight ? 0 : arcLength / bendRad;
+    var bendMagnitude = Math.abs(bendRad);
+    var straight = bendMagnitude < 0.5 * Math.PI / 180 || count < 2;
+    var radius = straight ? 0 : arcLength / bendMagnitude;
     var startRad = (settings.startAngle - 90) * Math.PI / 180;
-    var sweep = settings.direction === 'left' ? -1 : 1;
+    /* Direction and the bend sign both flip the sweep, so a negative bend
+       curls the fan to the opposite side of the same start position. */
+    var sweep = (settings.direction === 'left' ? -1 : 1) * (settings.bend < 0 ? -1 : 1);
     var tangent = { x: sweep * -Math.sin(startRad), y: sweep * Math.cos(startRad) };
 
     /* Randomness is tied to the source image, not the slot: reordering images
-       in the stack keeps each picture's own drift and jitter. */
+       in the stack keeps each picture's own drift and jitter. A negative chaos
+       value mirrors the positive drift of the same seed. */
     var random = mulberry32(settings.seed);
     var drift = [];
     for (var source = 0; source < count; source++) {
@@ -168,7 +182,7 @@ var VeerCore = (function () {
       var sourceIndex = order[slot];
       var container = containers[sourceIndex];
       var t = count > 1 ? slot / (count - 1) : 0;
-      var angleRad = startRad + sweep * bendRad * t;
+      var angleRad = startRad + sweep * bendMagnitude * t;
       var x, y, baseRotation;
       if (straight) {
         x = slot * step * tangent.x;
@@ -179,18 +193,22 @@ var VeerCore = (function () {
         y = radius * Math.sin(angleRad);
         baseRotation = angleRad;
       }
-      /* «Через 1»: every second image of the stack steps away from the pivot. */
+      /* «Через 1»: every second image of the stack steps along the radius;
+         the signed shift drives it outward (+) or inward (−). */
       if (settings.alternate && slot % 2 === 1) {
         var outwardX = straight ? Math.cos(startRad) : Math.cos(angleRad);
         var outwardY = straight ? Math.sin(startRad) : Math.sin(angleRad);
-        var offset = ALTERNATE_OFFSET * average.height;
+        var offset = (settings.alternateShift / 100) * ALTERNATE_SHIFT_RANGE * average.height;
         x += outwardX * offset;
         y += outwardY * offset;
       }
+      /* Hierarchy: every next card of the stack is a bit smaller (+) or
+         larger (−) than the previous one. */
+      var hierarchyScale = Math.max(0.05, 1 - (settings.hierarchy / 100) * HIERARCHY_RANGE * t);
       var chaos = drift[sourceIndex];
       x += chaos.dx;
       y += chaos.dy;
-      var factor = Math.max(0.05, chaos.factor);
+      var factor = Math.max(0.05, chaos.factor) * hierarchyScale;
       cards.push({
         slot: slot,
         source: sourceIndex,
@@ -223,24 +241,35 @@ var VeerCore = (function () {
     return String(Math.abs(Math.round(index)) + 1).padStart(2, '0') + NAME_PREFIX;
   }
 
-  /* Ten built-in templates. The preset overlay previews them schematically. */
+  /* Twenty built-in templates. The preset overlay previews them schematically. */
   var TEMPLATES = [
-    { direction: 'right', startAngle: 0, bend: 140, overlap: 55, alternate: false, crop: true,  chaosShift: 0,  chaosSize: 0,  chaosRotate: 0,  seed: 1 },  /* classic fan */
-    { direction: 'right', startAngle: 90, bend: 0, overlap: 35, alternate: false, crop: true,  chaosShift: 0,  chaosSize: 0,  chaosRotate: 0,  seed: 1 },  /* straight row */
-    { direction: 'right', startAngle: 0, bend: 360, overlap: 62, alternate: false, crop: true,  chaosShift: 0,  chaosSize: 0,  chaosRotate: 0,  seed: 1 },  /* full circle */
-    { direction: 'left',  startAngle: 90, bend: 180, overlap: 45, alternate: false, crop: true,  chaosShift: 0,  chaosSize: 0,  chaosRotate: 0,  seed: 1 },  /* left half-arc */
-    { direction: 'right', startAngle: 30, bend: 60, overlap: 25, alternate: false, crop: true,  chaosShift: 0,  chaosSize: 0,  chaosRotate: 0,  seed: 1 },  /* gentle arc */
-    { direction: 'right', startAngle: 0, bend: 90, overlap: 60, alternate: false, crop: true,  chaosShift: 55, chaosSize: 35, chaosRotate: 45, seed: 7 },  /* chaotic scatter */
-    { direction: 'right', startAngle: 270, bend: 210, overlap: 72, alternate: true,  crop: true,  chaosShift: 0,  chaosSize: 0,  chaosRotate: 0,  seed: 1 },  /* two-row fan */
-    { direction: 'right', startAngle: 270, bend: 24, overlap: 86, alternate: false, crop: true,  chaosShift: 0,  chaosSize: 0,  chaosRotate: 0,  seed: 1 },  /* tight stack */
-    { direction: 'right', startAngle: 270, bend: 180, overlap: 0, alternate: false, crop: true,  chaosShift: 0,  chaosSize: 0,  chaosRotate: 0,  seed: 1 },  /* open half, no overlap */
-    { direction: 'right', startAngle: 45, bend: 360, overlap: 40, alternate: true,  crop: true,  chaosShift: 0,  chaosSize: 15, chaosRotate: 0,  seed: 3 }   /* alternating wreath */
+    { direction: 'right', startAngle: 0, bend: 140, overlap: 55, alternate: false, alternateShift: 50, hierarchy: 0, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 1 },   /* classic fan */
+    { direction: 'right', startAngle: 90, bend: 0, overlap: 35, alternate: false, alternateShift: 50, hierarchy: 0, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 1 },   /* straight row */
+    { direction: 'right', startAngle: 0, bend: 360, overlap: 62, alternate: false, alternateShift: 50, hierarchy: 0, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 1 },   /* full circle */
+    { direction: 'left', startAngle: 90, bend: 180, overlap: 45, alternate: false, alternateShift: 50, hierarchy: 0, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 1 },   /* left half-arc */
+    { direction: 'right', startAngle: 30, bend: 60, overlap: 25, alternate: false, alternateShift: 50, hierarchy: 0, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 1 },   /* gentle arc */
+    { direction: 'right', startAngle: 0, bend: 90, overlap: 60, alternate: false, alternateShift: 50, hierarchy: 0, crop: true, chaosShift: 55, chaosSize: 35, chaosRotate: 45, seed: 7 }, /* chaotic scatter */
+    { direction: 'right', startAngle: -90, bend: 210, overlap: 72, alternate: true, alternateShift: 50, hierarchy: 0, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 1 },  /* two-row fan */
+    { direction: 'right', startAngle: -90, bend: 24, overlap: 86, alternate: false, alternateShift: 50, hierarchy: 0, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 1 },  /* tight stack */
+    { direction: 'right', startAngle: -90, bend: 180, overlap: 0, alternate: false, alternateShift: 50, hierarchy: 0, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 1 },  /* open half */
+    { direction: 'right', startAngle: 45, bend: 360, overlap: 40, alternate: true, alternateShift: 50, hierarchy: 15, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 3 },  /* alternating wreath */
+    { direction: 'left', startAngle: 0, bend: 140, overlap: 55, alternate: false, alternateShift: 50, hierarchy: 0, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 1 },    /* mirrored classic */
+    { direction: 'right', startAngle: 90, bend: 0, overlap: 30, alternate: false, alternateShift: 50, hierarchy: 70, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 1 },   /* receding row */
+    { direction: 'right', startAngle: 0, bend: 360, overlap: 55, alternate: false, alternateShift: 50, hierarchy: 60, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 1 },  /* shrinking circle */
+    { direction: 'right', startAngle: -90, bend: 180, overlap: 70, alternate: true, alternateShift: -50, hierarchy: 0, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 1 }, /* inward two-row */
+    { direction: 'right', startAngle: 0, bend: 60, overlap: 40, alternate: false, alternateShift: 50, hierarchy: 0, crop: true, chaosShift: 40, chaosSize: 0, chaosRotate: 90, seed: 12 }, /* spinning scatter */
+    { direction: 'right', startAngle: 90, bend: 0, overlap: 70, alternate: false, alternateShift: 50, hierarchy: 0, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 1 },    /* tight row */
+    { direction: 'right', startAngle: -90, bend: 80, overlap: 10, alternate: false, alternateShift: 50, hierarchy: 0, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 1 },  /* wide arc from the left */
+    { direction: 'right', startAngle: 90, bend: 0, overlap: 45, alternate: false, alternateShift: 50, hierarchy: 50, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 1 },   /* vertical cascade */
+    { direction: 'right', startAngle: 0, bend: 360, overlap: 25, alternate: true, alternateShift: 70, hierarchy: 0, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 1 },    /* wide two-row ring */
+    { direction: 'left', startAngle: 0, bend: 160, overlap: 65, alternate: false, alternateShift: 50, hierarchy: 50, crop: true, chaosShift: 0, chaosSize: 0, chaosRotate: 0, seed: 1 }    /* perspective fan */
   ];
 
   return {
     MAX_IMAGES: MAX_IMAGES,
     CHAOS_SHIFT_SPAN: CHAOS_SHIFT_SPAN,
-    ALTERNATE_OFFSET: ALTERNATE_OFFSET,
+    ALTERNATE_SHIFT_RANGE: ALTERNATE_SHIFT_RANGE,
+    HIERARCHY_RANGE: HIERARCHY_RANGE,
     TEMPLATES: TEMPLATES,
     clamp: clamp,
     mod: mod,
