@@ -513,7 +513,7 @@ var VeerCore = (function () {
 
 if (typeof module === 'object' && module.exports) module.exports = VeerCore;
 
-var SITE_URL='https://pattern.lednique.ru',ACTIVATE_URL=SITE_URL,TRIAL_LIMIT=5;
+var SITE_URL='https://veer.lednique.ru',ACTIVATE_URL=SITE_URL,TRIAL_LIMIT=5;
 var LANGS={en:{flag:'🇬🇧',label:'English'},ru:{flag:'🇷🇺',label:'Русский'},it:{flag:'🇮🇹',label:'Italiano'},pt:{flag:'🇵🇹',label:'Português'},fr:{flag:'🇫🇷',label:'Français'},zh:{flag:'🇨🇳',label:'中文'},ja:{flag:'🇯🇵',label:'日本語'}};
 var language=(function(){var code=(navigator.language||'en').toLowerCase().slice(0,2);return LANGS[code]?code:'en';})();
 var state={direction:'right',order:null};

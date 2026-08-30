@@ -7,6 +7,6 @@
   "documentAccess": "dynamic-page",
   "editorType": ["figma"],
   "networkAccess": {
-    "allowedDomains": ["https://pattern.lednique.ru"]
+    "allowedDomains": ["https://veer.lednique.ru"]
   }
 }

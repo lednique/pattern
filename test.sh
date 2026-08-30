@@ -21,3 +21,8 @@ cd "$(dirname "$0")"
   node test/backend.test.js
   node test/site.test.js
 )
+(
+  cd veer-backend
+  node test/backend.test.js
+  node test/site.test.js
+)
